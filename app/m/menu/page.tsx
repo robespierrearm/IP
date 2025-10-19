@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { MessageSquare, FolderOpen, Shield, LogOut, User, Settings } from 'lucide-react';
+import { MessageSquare, FolderOpen, Shield, LogOut, User, Settings, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function MenuPage() {
@@ -38,6 +38,7 @@ export default function MenuPage() {
   };
 
   const menuItems = [
+    { icon: Sparkles, label: 'ИИ-помощник', href: '/m/ai', color: 'bg-gradient-to-br from-purple-100 to-blue-100 text-purple-600' },
     { icon: MessageSquare, label: 'Чат', href: '/m/chat', color: 'bg-blue-100 text-blue-600' },
     { icon: FolderOpen, label: 'Файлы', href: '/m/files', color: 'bg-purple-100 text-purple-600' },
     { icon: Shield, label: 'Админка', href: '/m/admin', color: 'bg-red-100 text-red-600' },
