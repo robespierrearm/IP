@@ -33,10 +33,26 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Проверяем пароль
-    // ВРЕМЕННО: прямое сравнение (пока пароли не захешированы)
-    // TODO: После хеширования паролей использовать bcrypt.compare
-    const isValidPassword = password === user.password;
-    // const isValidPassword = await bcrypt.compare(password, user.password);
+    // Проверяем, захеширован ли пароль в базе
+    const isBcryptHash = user.password.startsWith('$2a$') || user.password.startsWith('$2b$');
+    
+    let isValidPassword = false;
+    if (isBcryptHash) {
+      // Пароль захеширован - используем bcrypt
+      isValidPassword = await bcrypt.compare(password, user.password);
+    } else {
+      // Пароль не захеширован - прямое сравнение (для обратной совместимости)
+      isValidPassword = password === user.password;
+      
+      // Автоматически хешируем пароль при успешном входе
+      if (isValidPassword) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await supabase
+          .from('users')
+          .update({ password: hashedPassword })
+          .eq('id', user.id);
+      }
+    }
     
     if (!isValidPassword) {
       return NextResponse.json(
