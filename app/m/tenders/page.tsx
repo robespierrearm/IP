@@ -1,11 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase, Tender, STATUS_LABELS } from '@/lib/supabase';
 import { Plus, Search, Filter, Calendar, DollarSign, MapPin } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 
 export default function TendersPage() {
+  const router = useRouter();
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -179,11 +181,6 @@ export default function TendersPage() {
         )}
       </div>
 
-      {/* FAB кнопка добавления */}
-      <button className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-500 text-white rounded-full shadow-lg active:shadow-xl transition-shadow flex items-center justify-center z-30">
-        <Plus className="w-6 h-6" />
-      </button>
-
       {/* Модальное окно детального просмотра */}
       {selectedTender && (
         <div
@@ -284,6 +281,14 @@ export default function TendersPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Action Button */}
+      <button
+        onClick={() => alert('Функция добавления тендера в разработке')}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
     </div>
   );
 }

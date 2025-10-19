@@ -149,11 +149,6 @@ export default function SuppliersPage() {
         )}
       </div>
 
-      {/* FAB кнопка добавления */}
-      <button className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-500 text-white rounded-full shadow-lg active:shadow-xl transition-shadow flex items-center justify-center z-30">
-        <Plus className="w-6 h-6" />
-      </button>
-
       {/* Модальное окно детального просмотра */}
       {selectedSupplier && (
         <div
@@ -255,6 +250,14 @@ export default function SuppliersPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Action Button */}
+      <button
+        onClick={() => alert('Функция добавления поставщика в разработке')}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
+      >
+        <Plus className="w-6 h-6" />
+      </button>
     </div>
   );
 }

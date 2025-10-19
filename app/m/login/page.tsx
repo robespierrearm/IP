@@ -77,8 +77,8 @@ export default function LoginPage() {
       }
 
       console.log('🚀 Редирект на dashboard...');
-      // Перенаправляем на мобильный дашборд
-      window.location.href = '/m/dashboard';
+      // Используем router.push вместо window.location для избежания полной перезагрузки
+      router.push('/m/dashboard');
     } catch (err) {
       console.error('❌ Критическая ошибка входа:', err);
       setError('Произошла ошибка при входе');
