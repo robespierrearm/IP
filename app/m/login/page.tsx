@@ -32,16 +32,17 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Проверяем пользователя в базе
+      // Проверяем пользователя в базе (по username ИЛИ email)
       const { data: users, error: dbError } = await supabase
         .from('users')
         .select('*')
-        .eq('username', username)
+        .or(`username.eq.${username},email.eq.${username}`)
         .eq('password', password)
         .eq('is_active', true)
         .limit(1);
 
       if (dbError) {
+        console.error('Database error:', dbError);
         throw new Error('Ошибка подключения к базе данных');
       }
 
@@ -64,6 +65,9 @@ export default function LoginPage() {
 
       // Сохраняем в localStorage
       localStorage.setItem('currentUser', JSON.stringify(user));
+      
+      // Сохраняем токен в cookie для middleware
+      document.cookie = `auth-token=${user.id}; path=/; max-age=86400`;
 
       // Перенаправляем на дашборд
       router.push('/m/dashboard');

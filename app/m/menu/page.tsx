@@ -20,6 +20,8 @@ export default function MenuPage() {
   const handleLogout = () => {
     if (confirm('Вы уверены, что хотите выйти?')) {
       localStorage.removeItem('currentUser');
+      // Удаляем cookie
+      document.cookie = 'auth-token=; path=/; max-age=0';
       router.push('/m/login');
     }
   };
