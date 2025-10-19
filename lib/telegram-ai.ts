@@ -128,6 +128,8 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     // Получаем настройки текущей модели
     const modelConfig = AI_MODELS[currentModel as keyof typeof AI_MODELS];
     
+    console.log('Using AI model:', currentModel, modelConfig);
+    
     let response;
     
     if (modelConfig.provider === 'google') {
@@ -228,10 +230,24 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     }
 
     return { text: aiResponse, action: null };
-  } catch (error) {
+  } catch (error: any) {
     console.error('AI processing error:', error);
+    console.error('Error details:', error.message, error.stack);
+    
+    // Возвращаем более информативное сообщение
+    let errorMsg = '❌ Произошла ошибка при обработке запроса.\n\n';
+    
+    if (error.message) {
+      errorMsg += `Детали: ${error.message}\n\n`;
+    }
+    
+    errorMsg += 'Попробуйте:\n';
+    errorMsg += '/dashboard - Статистика\n';
+    errorMsg += '/tenders - Тендеры\n';
+    errorMsg += '/ai - Сменить AI модель';
+    
     return { 
-      text: '❌ Произошла ошибка при обработке запроса. Попробуйте позже или используйте команды:\n/dashboard - Статистика\n/tenders - Тендеры\n/reminders - Напоминания',
+      text: errorMsg,
       action: null 
     };
   }

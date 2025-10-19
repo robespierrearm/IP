@@ -410,11 +410,15 @@ async function handleTextMessage(message: any) {
     body: JSON.stringify({ chat_id: chatId, action: 'typing' }),
   });
 
-  // Импортируем AI функцию динамически
-  const { processAICommand } = await import('@/lib/telegram-ai');
-  
   try {
+    // Импортируем AI функцию динамически
+    const { processAICommand } = await import('@/lib/telegram-ai');
+    
+    console.log('Processing AI command:', text);
+    
     const result = await processAICommand(text, auth.user_id);
+    
+    console.log('AI result:', result);
     
     // Отправляем ответ
     await sendMessage(chatId, result.text);
@@ -423,10 +427,13 @@ async function handleTextMessage(message: any) {
     if (result.action) {
       await sendMessage(chatId, '✨ Действие выполнено успешно!');
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('AI error:', error);
+    console.error('Error stack:', error.stack);
+    
     await sendMessage(chatId, 
       '❌ Произошла ошибка при обработке запроса.\n\n' +
+      `Ошибка: ${error.message || 'Неизвестная ошибка'}\n\n` +
       'Попробуйте использовать команды:\n' +
       '/dashboard - Статистика\n' +
       '/tenders - Тендеры\n' +
