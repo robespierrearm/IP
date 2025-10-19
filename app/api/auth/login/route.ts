@@ -33,7 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 2. Проверяем пароль
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // ВРЕМЕННО: прямое сравнение (пока пароли не захешированы)
+    // TODO: После хеширования паролей использовать bcrypt.compare
+    const isValidPassword = password === user.password;
+    // const isValidPassword = await bcrypt.compare(password, user.password);
+    
     if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
