@@ -28,8 +28,8 @@ export const AI_MODELS = {
   'gemini-flash': { provider: 'google', model: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
 };
 
-// Модель по умолчанию
-let currentModel = 'llama';
+// Модель по умолчанию (используем Gemini - он точно работает)
+let currentModel = 'gemini';
 
 // Смена модели
 export function setAIModel(modelKey: string): string {
