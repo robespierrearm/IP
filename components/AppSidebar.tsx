@@ -84,6 +84,15 @@ export function AppSidebar() {
     }
   }, []);
 
+  // Сворачиваем меню тендеров при переходе на другие страницы
+  useEffect(() => {
+    if (!pathname.startsWith('/tenders')) {
+      setIsTendersOpen(false);
+    } else {
+      setIsTendersOpen(true);
+    }
+  }, [pathname]);
+
   // Функция выхода
   const handleLogout = async () => {
     try {
