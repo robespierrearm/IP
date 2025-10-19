@@ -143,18 +143,28 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         };
       }
 
+      const requestBody = {
+        contents: [{
+          parts: [{ text: `${systemPrompt}\n\nПользователь: ${userMessage}` }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 1000,
+        }
+      };
+      
+      console.log('Gemini request:', JSON.stringify(requestBody, null, 2));
+      
       response = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${googleKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [{ text: systemPrompt + '\n\nПользователь: ' + userMessage }]
-            }]
-          })
+          body: JSON.stringify(requestBody)
         }
       );
+      
+      console.log('Gemini response status:', response.status);
     } else {
       // Intelligence.io
       const aiKey = getAIKey();
@@ -187,10 +197,15 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI API error:', response.status, errorText);
-      throw new Error(`AI API error: ${response.status}`);
+      
+      return {
+        text: `❌ Ошибка AI API (${response.status})\n\n${errorText.substring(0, 200)}\n\nПопробуйте /ai для смены модели`,
+        action: null
+      };
     }
 
     const data = await response.json();
+    console.log('AI response data:', JSON.stringify(data, null, 2));
     
     let aiResponse: string;
     
