@@ -35,7 +35,8 @@ export async function getAIContext() {
         },
         totalStartPrice: tenders?.reduce((sum, t) => sum + (t.start_price || 0), 0) || 0,
         totalWinPrice: tenders?.reduce((sum, t) => sum + (t.win_price || 0), 0) || 0,
-        recentTenders: tenders?.slice(0, 5).map(t => ({
+        recentTenders: tenders?.slice(0, 10).map(t => ({
+          id: t.id,
           name: t.name,
           status: t.status,
           start_price: t.start_price,
@@ -85,13 +86,41 @@ export async function getAIContext() {
   }
 }
 
-// Выполнение действий AI (добавление тендеров, расходов, поставщиков)
+// Поиск тендера по имени или ID
+export async function findTender(query: string | number) {
+  try {
+    if (typeof query === 'number') {
+      const { data, error } = await supabase
+        .from('tenders')
+        .select('*')
+        .eq('id', query)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    } else {
+      const { data, error } = await supabase
+        .from('tenders')
+        .select('*')
+        .ilike('name', `%${query}%`)
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    }
+  } catch (error) {
+    console.error('Ошибка поиска тендера:', error);
+    return null;
+  }
+}
+
+// Выполнение действий AI (добавление, редактирование, удаление)
 export async function executeAIAction(action: string, data: any) {
   try {
-    const normalizedAction = action.toLowerCase().replace('add_', '');
+    const normalizedAction = action.toLowerCase();
 
-    switch (normalizedAction) {
-      case 'tender':
+    // Добавление тендера
+    if (normalizedAction === 'add_tender') {
         const { error: tenderError } = await supabase.from('tenders').insert([{
           name: data.name,
           purchase_number: data.purchase_number || null,
@@ -109,7 +138,8 @@ export async function executeAIAction(action: string, data: any) {
         if (tenderError) throw new Error(`Ошибка добавления тендера: ${tenderError.message}`);
         return { success: true, message: `Тендер "${data.name}" успешно добавлен` };
 
-      case 'expense':
+    // Добавление расхода
+    } else if (normalizedAction === 'add_expense') {
         const { error: expenseError } = await supabase.from('expenses').insert([{
           tender_id: data.tender_id,
           category: data.category || 'Прочее',
@@ -120,7 +150,8 @@ export async function executeAIAction(action: string, data: any) {
         if (expenseError) throw new Error(`Ошибка добавления расхода: ${expenseError.message}`);
         return { success: true, message: `Расход на сумму ${data.amount} ₽ успешно добавлен` };
 
-      case 'supplier':
+    // Добавление поставщика
+    } else if (normalizedAction === 'add_supplier') {
         const { error: supplierError } = await supabase.from('suppliers').insert([{
           name: data.name,
           contact_person: data.contact_person || null,
@@ -133,8 +164,48 @@ export async function executeAIAction(action: string, data: any) {
         if (supplierError) throw new Error(`Ошибка добавления поставщика: ${supplierError.message}`);
         return { success: true, message: `Поставщик "${data.name}" успешно добавлен` };
 
-      default:
-        throw new Error(`Неизвестное действие: ${action}`);
+    // Редактирование тендера
+    } else if (normalizedAction === 'update_tender') {
+      const { error: updateError } = await supabase
+        .from('tenders')
+        .update(data.updates)
+        .eq('id', data.id);
+
+      if (updateError) throw new Error(`Ошибка обновления тендера: ${updateError.message}`);
+      return { success: true, message: `Тендер #${data.id} успешно обновлён` };
+
+    // Удаление тендера
+    } else if (normalizedAction === 'delete_tender') {
+      const { error: deleteError } = await supabase
+        .from('tenders')
+        .delete()
+        .eq('id', data.id);
+
+      if (deleteError) throw new Error(`Ошибка удаления тендера: ${deleteError.message}`);
+      return { success: true, message: `Тендер #${data.id} успешно удалён` };
+
+    // Удаление расхода
+    } else if (normalizedAction === 'delete_expense') {
+      const { error: deleteError } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', data.id);
+
+      if (deleteError) throw new Error(`Ошибка удаления расхода: ${deleteError.message}`);
+      return { success: true, message: `Расход #${data.id} успешно удалён` };
+
+    // Удаление поставщика
+    } else if (normalizedAction === 'delete_supplier') {
+      const { error: deleteError } = await supabase
+        .from('suppliers')
+        .delete()
+        .eq('id', data.id);
+
+      if (deleteError) throw new Error(`Ошибка удаления поставщика: ${deleteError.message}`);
+      return { success: true, message: `Поставщик #${data.id} успешно удалён` };
+
+    } else {
+      throw new Error(`Неизвестное действие: ${action}`);
     }
   } catch (error: any) {
     throw new Error(error.message || 'Ошибка выполнения действия');

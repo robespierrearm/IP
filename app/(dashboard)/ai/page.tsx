@@ -15,7 +15,7 @@ interface AIMessage {
   content: string;
   timestamp: string;
   action?: {
-    type: 'ADD_TENDER' | 'ADD_EXPENSE' | 'ADD_SUPPLIER';
+    type: 'ADD_TENDER' | 'ADD_EXPENSE' | 'ADD_SUPPLIER' | 'UPDATE_TENDER' | 'DELETE_TENDER' | 'DELETE_EXPENSE' | 'DELETE_SUPPLIER';
     data: any;
   };
 }
@@ -124,11 +124,11 @@ export default function AIPage() {
       let aiResponseText = data.message;
 
       // Парсим команды действий
-      const actionMatch = aiResponseText.match(/\[ACTION:(ADD_TENDER|ADD_EXPENSE|ADD_SUPPLIER)\]([\s\S]*?)\[\/ACTION\]/);
+      const actionMatch = aiResponseText.match(/\[ACTION:(ADD_TENDER|ADD_EXPENSE|ADD_SUPPLIER|UPDATE_TENDER|DELETE_TENDER|DELETE_EXPENSE|DELETE_SUPPLIER)\]([\s\S]*?)\[\/ACTION\]/);
       let parsedAction = undefined;
       if (actionMatch) {
         try {
-          const actionType = actionMatch[1] as 'ADD_TENDER' | 'ADD_EXPENSE' | 'ADD_SUPPLIER';
+          const actionType = actionMatch[1] as 'ADD_TENDER' | 'ADD_EXPENSE' | 'ADD_SUPPLIER' | 'UPDATE_TENDER' | 'DELETE_TENDER' | 'DELETE_EXPENSE' | 'DELETE_SUPPLIER';
           const actionData = JSON.parse(actionMatch[2].trim());
           parsedAction = { type: actionType, data: actionData };
           aiResponseText = aiResponseText.replace(actionMatch[0], '').trim();
@@ -315,10 +315,18 @@ export default function AIPage() {
                 {message.role === 'assistant' && message.action && (
                   <Button
                     onClick={() => handleExecuteAction(message.action!)}
-                    className="mt-2 bg-green-600 hover:bg-green-700 text-white"
+                    className={`mt-2 text-white ${
+                      message.action.type.startsWith('DELETE')
+                        ? 'bg-red-600 hover:bg-red-700'
+                        : message.action.type.startsWith('UPDATE')
+                        ? 'bg-blue-600 hover:bg-blue-700'
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
                     size="sm"
                   >
-                    ✓ Подтвердить и выполнить
+                    {message.action.type.startsWith('DELETE') && '🗑️ Подтвердить удаление'}
+                    {message.action.type.startsWith('UPDATE') && '✏️ Подтвердить изменение'}
+                    {message.action.type.startsWith('ADD') && '✓ Подтвердить добавление'}
                   </Button>
                 )}
                 
