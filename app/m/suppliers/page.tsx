@@ -1,10 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase, Supplier } from '@/lib/supabase';
 import { Search, Phone, Mail, Building2, User, Plus } from 'lucide-react';
 
 export default function SuppliersPage() {
+  const router = useRouter();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -223,7 +225,7 @@ export default function SuppliersPage() {
                 {selectedSupplier.phone && (
                   <button
                     onClick={() => handleCall(selectedSupplier.phone!)}
-                    className="flex-1 bg-green-500 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2"
+                    className="flex-1 bg-green-500 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 active:bg-green-600 transition-colors"
                   >
                     <Phone className="w-5 h-5" />
                     Позвонить
@@ -232,7 +234,7 @@ export default function SuppliersPage() {
                 {selectedSupplier.email && (
                   <button
                     onClick={() => handleEmail(selectedSupplier.email!)}
-                    className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2"
+                    className="flex-1 bg-blue-500 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 active:bg-blue-600 transition-colors"
                   >
                     <Mail className="w-5 h-5" />
                     Написать
@@ -241,8 +243,18 @@ export default function SuppliersPage() {
               </div>
 
               <button
+                onClick={() => {
+                  setSelectedSupplier(null);
+                  router.push(`/m/suppliers/edit/${selectedSupplier.id}`);
+                }}
+                className="w-full mt-3 bg-primary-500 text-white py-3 rounded-xl font-medium active:bg-primary-600 transition-colors"
+              >
+                Редактировать
+              </button>
+
+              <button
                 onClick={() => setSelectedSupplier(null)}
-                className="w-full mt-3 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium"
+                className="w-full mt-3 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors"
               >
                 Закрыть
               </button>
@@ -253,7 +265,7 @@ export default function SuppliersPage() {
 
       {/* Floating Action Button */}
       <button
-        onClick={() => alert('Функция добавления поставщика в разработке')}
+        onClick={() => router.push('/m/suppliers/add')}
         className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
       >
         <Plus className="w-6 h-6" />

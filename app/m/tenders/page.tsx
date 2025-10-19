@@ -292,7 +292,7 @@ export default function TendersPage() {
 
       {/* Floating Action Button */}
       <button
-        onClick={() => alert('Функция добавления тендера в разработке')}
+        onClick={() => router.push('/m/tenders/add')}
         className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
       >
         <Plus className="w-6 h-6" />
