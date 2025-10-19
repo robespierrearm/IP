@@ -93,13 +93,20 @@ export default function DashboardPage() {
   // Загрузка тендеров
   useEffect(() => {
     const loadTenders = async () => {
-      const { data, error } = await supabase
-        .from('tenders')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
+      try {
+        const { data, error } = await supabase
+          .from('tenders')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
 
-      if (!error && data) {
+        if (error) {
+          console.error('Ошибка загрузки тендеров:', error);
+          setTenders([]);
+          return;
+        }
+
+        if (data) {
         setTenders(data);
         
         // Подсчёт статистики
@@ -127,6 +134,10 @@ export default function DashboardPage() {
         });
         
         setReminderTenders(reminders);
+        }
+      } catch (err) {
+        console.error('Критическая ошибка загрузки тендеров:', err);
+        setTenders([]);
       }
     };
 
@@ -136,15 +147,26 @@ export default function DashboardPage() {
   // Загрузка файлов для дашборда
   useEffect(() => {
     const loadDashboardFiles = async () => {
-      const { data, error } = await supabase
-        .from('files')
-        .select('*')
-        .eq('show_on_dashboard', true)
-        .order('uploaded_at', { ascending: false })
-        .limit(5);
+      try {
+        const { data, error } = await supabase
+          .from('files')
+          .select('*')
+          .eq('show_on_dashboard', true)
+          .order('uploaded_at', { ascending: false })
+          .limit(5);
 
-      if (!error && data) {
-        setDashboardFiles(data);
+        if (error) {
+          console.error('Ошибка загрузки файлов:', error);
+          setDashboardFiles([]);
+          return;
+        }
+
+        if (data) {
+          setDashboardFiles(data);
+        }
+      } catch (err) {
+        console.error('Критическая ошибка загрузки файлов:', err);
+        setDashboardFiles([]);
       }
     };
 
