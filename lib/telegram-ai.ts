@@ -3,8 +3,39 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || process.env.AI_API_KEY || '';
+const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Доступные AI модели
+export const AI_MODELS = {
+  // Intelligence.io
+  'llama': { provider: 'intelligence', model: 'meta-llama/Llama-3.3-70B-Instruct', name: 'Llama 3.3 70B' },
+  'mistral': { provider: 'intelligence', model: 'mistralai/Mistral-Nemo-Instruct-2407', name: 'Mistral Nemo' },
+  'qwen': { provider: 'intelligence', model: 'Intel/Qwen3-Coder-480B-A35B-Instruct-int4-mixed-ar', name: 'Qwen3 Coder' },
+  
+  // Google Gemini
+  'gemini': { provider: 'google', model: 'gemini-2.0-flash-exp', name: 'Gemini 2.0 Flash' },
+  'gemini-pro': { provider: 'google', model: 'gemini-1.5-pro', name: 'Gemini 1.5 Pro' },
+  'gemini-flash': { provider: 'google', model: 'gemini-1.5-flash', name: 'Gemini 1.5 Flash' },
+};
+
+// Модель по умолчанию
+let currentModel = 'llama';
+
+// Смена модели
+export function setAIModel(modelKey: string): string {
+  if (AI_MODELS[modelKey as keyof typeof AI_MODELS]) {
+    currentModel = modelKey;
+    return `✅ AI модель изменена на: ${AI_MODELS[modelKey as keyof typeof AI_MODELS].name}`;
+  }
+  return '❌ Неизвестная модель';
+}
+
+// Получить текущую модель
+export function getCurrentModel(): string {
+  return AI_MODELS[currentModel as keyof typeof AI_MODELS].name;
+}
 
 // Получение контекста для AI
 async function getContext() {
@@ -86,32 +117,60 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
 
 Отвечай полезно и помогай пользователю управлять тендерами.`;
 
-    // Проверяем наличие API ключа
-    if (!AI_API_KEY) {
-      console.error('AI_API_KEY is not set');
-      return {
-        text: '⚠️ AI помощник временно недоступен.\n\nИспользуйте команды:\n/dashboard - Статистика\n/tenders - Тендеры\n/reminders - Напоминания',
-        action: null
-      };
-    }
+    // Получаем настройки текущей модели
+    const modelConfig = AI_MODELS[currentModel as keyof typeof AI_MODELS];
+    
+    let response;
+    
+    if (modelConfig.provider === 'google') {
+      // Google Gemini
+      if (!GOOGLE_API_KEY) {
+        console.error('Google API key is not set');
+        return {
+          text: '⚠️ Google AI временно недоступен. Переключитесь на другую модель командой /ai',
+          action: null
+        };
+      }
 
-    // Вызов AI API
-    const response = await fetch('https://intelligence.io.solutions/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userMessage },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    });
+      response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${GOOGLE_API_KEY}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [{ text: systemPrompt + '\n\nПользователь: ' + userMessage }]
+            }]
+          })
+        }
+      );
+    } else {
+      // Intelligence.io
+      if (!AI_API_KEY) {
+        console.error('AI_API_KEY is not set');
+        return {
+          text: '⚠️ AI помощник временно недоступен.\n\nИспользуйте команды:\n/dashboard - Статистика\n/tenders - Тендеры\n/reminders - Напоминания',
+          action: null
+        };
+      }
+
+      response = await fetch('https://intelligence.io.solutions/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${AI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: modelConfig.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userMessage },
+          ],
+          temperature: 0.7,
+          max_tokens: 1000,
+        }),
+      });
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -121,12 +180,23 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
 
     const data = await response.json();
     
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error('Invalid AI response:', data);
-      throw new Error('Invalid AI response');
-    }
+    let aiResponse: string;
     
-    const aiResponse = data.choices[0].message.content;
+    if (modelConfig.provider === 'google') {
+      // Парсинг ответа Gemini
+      if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        console.error('Invalid Gemini response:', data);
+        throw new Error('Invalid Gemini response');
+      }
+      aiResponse = data.candidates[0].content.parts[0].text;
+    } else {
+      // Парсинг ответа Intelligence.io
+      if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('Invalid AI response:', data);
+        throw new Error('Invalid AI response');
+      }
+      aiResponse = data.choices[0].message.content;
+    }
 
     // Проверяем есть ли команда для выполнения
     const actionMatch = aiResponse.match(/\[ACTION:(ADD_TENDER|ADD_EXPENSE|ADD_SUPPLIER)\]([\s\S]*?)\[\/ACTION\]/);

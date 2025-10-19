@@ -243,6 +243,53 @@ async function handleReminders(message: any) {
   await sendMessage(chatId, text);
 }
 
+// Обработка команды /ai (выбор модели)
+async function handleAI(message: any) {
+  const chatId = message.chat.id;
+  const telegramId = message.from.id.toString();
+
+  const auth = await checkAuth(telegramId);
+  if (!auth) {
+    await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
+    return;
+  }
+
+  const { AI_MODELS, getCurrentModel } = await import('@/lib/telegram-ai');
+  const currentModel = getCurrentModel();
+
+  let text = `🤖 <b>Выбор AI модели</b>\n\n`;
+  text += `Текущая модель: <b>${currentModel}</b>\n\n`;
+  text += `<b>Доступные модели:</b>\n\n`;
+  text += `<b>Intelligence.io:</b>\n`;
+  text += `/ai_llama - Llama 3.3 70B (умная)\n`;
+  text += `/ai_mistral - Mistral Nemo (быстрая)\n`;
+  text += `/ai_qwen - Qwen3 Coder (для кода)\n\n`;
+  text += `<b>Google Gemini:</b>\n`;
+  text += `/ai_gemini - Gemini 2.0 Flash (новая)\n`;
+  text += `/ai_gemini_pro - Gemini 1.5 Pro (мощная)\n`;
+  text += `/ai_gemini_flash - Gemini 1.5 Flash (быстрая)\n\n`;
+  text += `💡 Для распознавания чеков автоматически используется Gemini`;
+
+  await sendMessage(chatId, text);
+}
+
+// Обработка смены модели
+async function handleModelChange(message: any, modelKey: string) {
+  const chatId = message.chat.id;
+  const telegramId = message.from.id.toString();
+
+  const auth = await checkAuth(telegramId);
+  if (!auth) {
+    await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
+    return;
+  }
+
+  const { setAIModel } = await import('@/lib/telegram-ai');
+  const result = setAIModel(modelKey);
+  
+  await sendMessage(chatId, result);
+}
+
 // Обработка команды /help
 async function handleHelp(message: any) {
   const chatId = message.chat.id;
@@ -254,14 +301,94 @@ async function handleHelp(message: any) {
     `/dashboard - Статистика\n` +
     `/tenders - Список активных тендеров\n` +
     `/reminders - Напоминания о дедлайнах\n` +
+    `/ai - Выбор AI модели\n` +
     `/help - Эта справка\n\n` +
     `<b>AI Помощник:</b>\n` +
     `Просто напишите мне:\n` +
     `• "Добавь расход 5000р на материалы"\n` +
     `• "Покажи финансы за месяц"\n` +
     `• "Сколько тендеров в работе?"\n\n` +
+    `<b>Распознавание чеков:</b>\n` +
+    `Отправьте фото чека, и я автоматически:\n` +
+    `• Распознаю сумму\n` +
+    `• Определю категорию\n` +
+    `• Предложу добавить расход\n\n` +
     `Я понимаю естественный язык! 🧠`
   );
+}
+
+// Обработка фото (распознавание чеков)
+async function handlePhoto(message: any) {
+  const chatId = message.chat.id;
+  const telegramId = message.from.id.toString();
+
+  const auth = await checkAuth(telegramId);
+  if (!auth) {
+    await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
+    return;
+  }
+
+  await sendMessage(chatId, '🔍 Анализирую чек через Gemini Vision...');
+
+  try {
+    // Получаем самое большое фото
+    const photos = message.photo;
+    const largestPhoto = photos[photos.length - 1];
+
+    // Получаем URL фото
+    const fileResponse = await fetch(
+      `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${largestPhoto.file_id}`
+    );
+    const fileData = await fileResponse.json();
+    const photoUrl = `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${fileData.result.file_path}`;
+
+    // Распознаём чек
+    const { recognizeReceipt } = await import('@/lib/telegram-ocr');
+    const receiptData = await recognizeReceipt(photoUrl);
+
+    if (!receiptData) {
+      await sendMessage(chatId, '❌ Не удалось распознать чек. Попробуйте сфотографировать чётче.');
+      return;
+    }
+
+    // Формируем сообщение с результатом
+    let text = `✅ <b>Чек распознан!</b>\n\n`;
+    text += `💰 Сумма: <b>${formatPrice(receiptData.amount)}</b>\n`;
+    if (receiptData.date) text += `📅 Дата: ${receiptData.date}\n`;
+    if (receiptData.store) text += `🏪 Магазин: ${receiptData.store}\n`;
+    if (receiptData.category) text += `📦 Категория: ${receiptData.category}\n`;
+    if (receiptData.description) text += `📝 Описание: ${receiptData.description}\n`;
+    text += `\n<b>К какому тендеру добавить расход?</b>`;
+
+    await sendMessage(chatId, text);
+
+    // Получаем активные тендеры для выбора
+    const { data: tenders } = await supabase
+      .from('tenders')
+      .select('id, name')
+      .in('status', ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'])
+      .order('created_at', { ascending: false})
+      .limit(5);
+
+    if (tenders && tenders.length > 0) {
+      let tendersText = '\n<b>Выберите тендер:</b>\n\n';
+      tenders.forEach((tender, index) => {
+        tendersText += `${index + 1}. ${tender.name} (ID: ${tender.id})\n`;
+      });
+      tendersText += `\nОтветьте номером тендера или ID`;
+
+      await sendMessage(chatId, tendersText);
+
+      // Сохраняем данные чека для последующего добавления
+      // TODO: Реализовать state management для хранения данных между сообщениями
+    } else {
+      await sendMessage(chatId, '⚠️ Нет активных тендеров. Создайте тендер сначала.');
+    }
+
+  } catch (error) {
+    console.error('Photo processing error:', error);
+    await sendMessage(chatId, '❌ Ошибка при обработке фото. Попробуйте ещё раз.');
+  }
 }
 
 // Обработка текстовых сообщений (AI)
@@ -359,6 +486,12 @@ export async function POST(request: NextRequest) {
         .eq('telegram_id', message.from.id.toString());
     }
 
+    // Обработка фото
+    if (message.photo) {
+      await handlePhoto(message);
+      return NextResponse.json({ ok: true });
+    }
+
     // Обработка команд
     if (message.text) {
       const text = message.text.trim();
@@ -371,6 +504,11 @@ export async function POST(request: NextRequest) {
         await handleTenders(message);
       } else if (text === '/reminders') {
         await handleReminders(message);
+      } else if (text === '/ai') {
+        await handleAI(message);
+      } else if (text.startsWith('/ai_')) {
+        const modelKey = text.substring(4); // Убираем '/ai_'
+        await handleModelChange(message, modelKey);
       } else if (text === '/help') {
         await handleHelp(message);
       } else {
