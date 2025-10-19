@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, Tender, STATUS_LABELS } from '@/lib/supabase';
-import { Plus, Search, Filter, Calendar, DollarSign, MapPin } from 'lucide-react';
+import { Tender, STATUS_LABELS } from '@/lib/supabase';
+import { apiClient } from '@/lib/api-client';
+import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -25,13 +27,10 @@ export default function TendersPage() {
 
   const loadTenders = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('tenders')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await apiClient.getTenders();
 
-    if (!error && data) {
-      setTenders(data);
+    if (!result.error && result.data) {
+      setTenders(result.data as Tender[]);
     }
     setIsLoading(false);
   };
@@ -255,6 +254,15 @@ export default function TendersPage() {
                   </div>
                 )}
 
+                {selectedTender.submitted_price && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Цена по которой подали</div>
+                    <div className="text-lg font-bold text-blue-600">
+                      {formatPrice(selectedTender.submitted_price)}
+                    </div>
+                  </div>
+                )}
+
                 {selectedTender.win_price && (
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Цена победы</div>
@@ -263,6 +271,36 @@ export default function TendersPage() {
                     </div>
                   </div>
                 )}
+
+                {selectedTender.link && (
+                  <div>
+                    <div className="text-sm text-gray-600 mb-1">Ссылка</div>
+                    <a
+                      href={selectedTender.link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 font-medium flex items-center gap-1"
+                    >
+                      Открыть тендер
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Смена статуса */}
+              <div className="mt-6 p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl border border-gray-200">
+                <div className="text-sm font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                  <ArrowRight className="w-4 h-4 text-primary-500" />
+                  Изменить статус
+                </div>
+                <MobileTenderStatusChanger
+                  tender={selectedTender}
+                  onStatusChanged={() => {
+                    loadTenders();
+                    setSelectedTender(null);
+                  }}
+                />
               </div>
 
               {/* Кнопки действий */}

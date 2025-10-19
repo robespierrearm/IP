@@ -80,10 +80,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    // Валидация
-    if (!body.name || !body.region || !body.status) {
+    // Валидация - только name и publication_date обязательны
+    if (!body.name || !body.publication_date) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        { error: 'Missing required fields: name and publication_date' },
         { status: 400 }
       );
     }
