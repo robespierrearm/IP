@@ -9,20 +9,35 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Отправка сообщения в Telegram
 async function sendMessage(chatId: number, text: string, options: any = {}) {
-  const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
-  
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      chat_id: chatId,
-      text,
-      parse_mode: 'HTML',
-      ...options,
-    }),
-  });
+  try {
+    const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    
+    console.log('Sending message to chat:', chatId, 'Text length:', text.length);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text,
+        parse_mode: 'HTML',
+        ...options,
+      }),
+    });
 
-  return response.json();
+    const result = await response.json();
+    
+    if (!response.ok) {
+      console.error('Telegram API error:', result);
+    } else {
+      console.log('Message sent successfully');
+    }
+    
+    return result;
+  } catch (error) {
+    console.error('Error sending message:', error);
+    throw error;
+  }
 }
 
 // Проверка авторизации пользователя
@@ -478,12 +493,17 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
+    console.log('Telegram webhook received:', JSON.stringify(body, null, 2));
+    
     // Telegram отправляет обновления в поле "message"
     const message = body.message;
     
     if (!message) {
+      console.log('No message in body');
       return NextResponse.json({ ok: true });
     }
+    
+    console.log('Processing message from:', message.from?.username || message.from?.id);
 
     // Обновляем last_activity
     if (message.from) {
@@ -503,7 +523,10 @@ export async function POST(request: NextRequest) {
     if (message.text) {
       const text = message.text.trim();
       
+      console.log('Processing text command:', text);
+      
       if (text.startsWith('/start')) {
+        console.log('Handling /start command');
         await handleStart(message);
       } else if (text === '/dashboard') {
         await handleDashboard(message);
