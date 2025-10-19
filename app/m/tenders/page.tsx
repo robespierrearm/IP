@@ -16,6 +16,10 @@ export default function TendersPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
+  const [editingSubmissionDate, setEditingSubmissionDate] = useState(false);
+  const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
+  const [tempSubmissionDate, setTempSubmissionDate] = useState('');
+  const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
 
   useEffect(() => {
     loadTenders();
@@ -239,14 +243,52 @@ export default function TendersPage() {
                   </div>
 
                   {/* Дата подачи показываем только со статуса 'на рассмотрении' */}
-                  {selectedTender.submission_date && 
-                   selectedTender.status !== 'новый' && 
+                  {selectedTender.status !== 'новый' && 
                    selectedTender.status !== 'подано' && (
                     <div>
                       <div className="text-sm text-gray-600 mb-1">Дата подачи</div>
-                      <div className="font-medium text-gray-900">
-                        {formatDate(selectedTender.submission_date)}
-                      </div>
+                      {selectedTender.status === 'на рассмотрении' ? (
+                        editingSubmissionDate ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              value={tempSubmissionDate}
+                              onChange={(e) => setTempSubmissionDate(e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                            />
+                            <button
+                              onClick={async () => {
+                                await apiClient.updateTender(selectedTender.id, { submission_date: tempSubmissionDate });
+                                setEditingSubmissionDate(false);
+                                loadTenders();
+                              }}
+                              className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => setEditingSubmissionDate(false)}
+                              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => {
+                              setTempSubmissionDate(selectedTender.submission_date || new Date().toISOString().split('T')[0]);
+                              setEditingSubmissionDate(true);
+                            }}
+                            className="font-medium text-gray-900 cursor-pointer hover:text-primary-600 transition-colors"
+                          >
+                            {selectedTender.submission_date ? formatDate(selectedTender.submission_date) : '— (нажмите для редактирования)'}
+                          </div>
+                        )
+                      ) : (
+                        <div className="font-medium text-gray-900">
+                          {selectedTender.submission_date ? formatDate(selectedTender.submission_date) : '—'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -264,14 +306,54 @@ export default function TendersPage() {
                 {selectedTender.status !== 'новый' && (
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Цена подачи</div>
-                    {selectedTender.submitted_price ? (
-                      <div className="text-lg font-bold text-blue-600">
-                        {formatPrice(selectedTender.submitted_price)}
-                      </div>
+                    {selectedTender.status === 'на рассмотрении' ? (
+                      editingSubmittedPrice ? (
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            value={tempSubmittedPrice}
+                            onChange={(e) => setTempSubmittedPrice(e.target.value)}
+                            placeholder="Введите цену"
+                            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                          />
+                          <button
+                            onClick={async () => {
+                              await apiClient.updateTender(selectedTender.id, { submitted_price: parseFloat(tempSubmittedPrice) });
+                              setEditingSubmittedPrice(false);
+                              loadTenders();
+                            }}
+                            className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => setEditingSubmittedPrice(false)}
+                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => {
+                            setTempSubmittedPrice(selectedTender.submitted_price?.toString() || '');
+                            setEditingSubmittedPrice(true);
+                          }}
+                          className="text-lg font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+                        >
+                          {selectedTender.submitted_price ? formatPrice(selectedTender.submitted_price) : '— (нажмите для редактирования)'}
+                        </div>
+                      )
                     ) : (
-                      <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-                        ⚠️ Цена подачи не заполнена
-                      </div>
+                      selectedTender.submitted_price ? (
+                        <div className="text-lg font-bold text-blue-600">
+                          {formatPrice(selectedTender.submitted_price)}
+                        </div>
+                      ) : (
+                        <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                          ⚠️ Цена подачи не заполнена
+                        </div>
+                      )
                     )}
                   </div>
                 )}
