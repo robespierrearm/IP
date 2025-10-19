@@ -2,20 +2,26 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, STATUS_LABELS } from '@/lib/supabase';
+import { TenderInsert, STATUS_LABELS } from '@/lib/supabase';
+import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Save } from 'lucide-react';
 
 export default function AddTenderPage() {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
   
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<TenderInsert>({
     name: '',
-    status: 'новый' as const,
+    status: 'новый',
     purchase_number: '',
+    link: '',
     region: '',
-    start_price: '',
-    win_price: '',
+    publication_date: new Date().toISOString().split('T')[0],
+    submission_date: '',
+    submission_deadline: '',
+    start_price: null,
+    submitted_price: null,
+    win_price: null,
   });
 
   const handleSave = async () => {
@@ -25,23 +31,23 @@ export default function AddTenderPage() {
     }
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from('tenders')
-      .insert({
-        name: formData.name,
-        status: formData.status,
-        purchase_number: formData.purchase_number || null,
-        region: formData.region || null,
-        start_price: formData.start_price ? parseFloat(formData.start_price) : null,
-        win_price: formData.win_price ? parseFloat(formData.win_price) : null,
-      });
+    
+    const payload = {
+      ...formData,
+      purchase_number: formData.purchase_number || null,
+      link: formData.link || null,
+      submission_date: formData.submission_date || null,
+      submission_deadline: formData.submission_deadline || null,
+    };
+    
+    const result = await apiClient.createTender(payload);
 
     setIsSaving(false);
 
-    if (!error) {
+    if (!result.error) {
       router.push('/m/tenders');
     } else {
-      alert('Ошибка при создании тендера');
+      alert(result.error || 'Ошибка при создании тендера');
     }
   };
 
@@ -97,13 +103,27 @@ export default function AddTenderPage() {
         {/* Номер закупки */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Номер закупки
+            Номер гос закупки
           </label>
           <input
             type="text"
-            value={formData.purchase_number}
+            value={formData.purchase_number || ''}
             onChange={(e) => setFormData({ ...formData, purchase_number: e.target.value })}
-            placeholder="Например: T-2025-001"
+            placeholder="№ 0123456789012345678901"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Ссылка */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Ссылка на тендер
+          </label>
+          <input
+            type="url"
+            value={formData.link || ''}
+            onChange={(e) => setFormData({ ...formData, link: e.target.value })}
+            placeholder="https://..."
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
@@ -111,40 +131,91 @@ export default function AddTenderPage() {
         {/* Регион */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Регион
+            Регион / Адрес
           </label>
           <input
             type="text"
-            value={formData.region}
+            value={formData.region || ''}
             onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-            placeholder="Например: Москва"
+            placeholder="Москва, Россия"
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Начальная цена */}
+        {/* Даты */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Дата публикации *
+            </label>
+            <input
+              type="date"
+              value={formData.publication_date}
+              onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
+              required
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Дата подачи
+            </label>
+            <input
+              type="date"
+              value={formData.submission_date || ''}
+              onChange={(e) => setFormData({ ...formData, submission_date: e.target.value })}
+              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Срок подачи заявок
+          </label>
+          <input
+            type="date"
+            value={formData.submission_deadline || ''}
+            onChange={(e) => setFormData({ ...formData, submission_deadline: e.target.value })}
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+
+        {/* Цены */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Начальная цена (₽)
           </label>
           <input
             type="number"
-            value={formData.start_price}
-            onChange={(e) => setFormData({ ...formData, start_price: e.target.value })}
+            value={formData.start_price || ''}
+            onChange={(e) => setFormData({ ...formData, start_price: e.target.value ? parseFloat(e.target.value) : null })}
             placeholder="0"
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Цена победы */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Цена по которой подали (₽)
+          </label>
+          <input
+            type="number"
+            value={formData.submitted_price || ''}
+            onChange={(e) => setFormData({ ...formData, submitted_price: e.target.value ? parseFloat(e.target.value) : null })}
+            placeholder="0"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Цена победы (₽)
           </label>
           <input
             type="number"
-            value={formData.win_price}
-            onChange={(e) => setFormData({ ...formData, win_price: e.target.value })}
+            value={formData.win_price || ''}
+            onChange={(e) => setFormData({ ...formData, win_price: e.target.value ? parseFloat(e.target.value) : null })}
             placeholder="0"
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
