@@ -80,7 +80,7 @@ export default function LoginPage() {
 
       console.log('🚀 Редирект на dashboard...');
       // Перенаправляем на дашборд
-      router.push('/dashboard');
+      window.location.href = '/dashboard';
     } catch (err) {
       console.error('❌ Критическая ошибка входа:', err);
       setError('Произошла ошибка при входе');
