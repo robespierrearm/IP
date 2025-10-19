@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase, Tender, Expense } from '@/lib/supabase';
-import { TrendingUp, TrendingDown, DollarSign, FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, FileText, ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
 interface TenderWithExpenses {
@@ -14,6 +14,9 @@ export default function AccountingPage() {
   const [tendersWithExpenses, setTendersWithExpenses] = useState<TenderWithExpenses[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
+  const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
+  const [selectedTenderId, setSelectedTenderId] = useState<number | null>(null);
+  const [newExpense, setNewExpense] = useState({ category: '', amount: '', description: '' });
 
   useEffect(() => {
     loadData();
@@ -70,6 +73,42 @@ export default function AccountingPage() {
 
   const toggleTender = (tenderId: number) => {
     setExpandedTenderId(expandedTenderId === tenderId ? null : tenderId);
+  };
+
+  const handleAddExpense = async () => {
+    if (!selectedTenderId || !newExpense.category || !newExpense.amount) {
+      alert('Заполните обязательные поля');
+      return;
+    }
+
+    const { error } = await supabase.from('expenses').insert([{
+      tender_id: selectedTenderId,
+      category: newExpense.category,
+      amount: parseFloat(newExpense.amount),
+      description: newExpense.description || null,
+    }]);
+
+    if (error) {
+      alert('Ошибка при добавлении расхода');
+      return;
+    }
+
+    setShowAddExpenseModal(false);
+    setNewExpense({ category: '', amount: '', description: '' });
+    loadData();
+  };
+
+  const handleDeleteExpense = async (expenseId: number) => {
+    if (!confirm('Удалить этот расход?')) return;
+
+    const { error } = await supabase.from('expenses').delete().eq('id', expenseId);
+
+    if (error) {
+      alert('Ошибка при удалении расхода');
+      return;
+    }
+
+    loadData();
   };
 
   return (
@@ -205,8 +244,20 @@ export default function AccountingPage() {
                       {/* Раскрывающийся список расходов */}
                       {isExpanded && (
                         <div className="border-t border-gray-100 p-4 bg-gray-50">
-                          <div className="text-sm font-semibold text-gray-900 mb-3">
-                            Расходы ({item.expenses.length})
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="text-sm font-semibold text-gray-900">
+                              Расходы ({item.expenses.length})
+                            </div>
+                            <button
+                              onClick={() => {
+                                setSelectedTenderId(item.tender.id);
+                                setShowAddExpenseModal(true);
+                              }}
+                              className="px-3 py-1.5 bg-green-600 text-white text-xs font-medium rounded-lg flex items-center gap-1 active:bg-green-700 transition-colors"
+                            >
+                              <Plus className="w-3 h-3" />
+                              Добавить
+                            </button>
                           </div>
 
                           {item.expenses.length === 0 ? (
@@ -216,17 +267,23 @@ export default function AccountingPage() {
                               {item.expenses.map((expense) => (
                                 <div
                                   key={expense.id}
-                                  className="bg-white rounded-xl p-3 flex items-center justify-between"
+                                  className="bg-white rounded-xl p-3 flex items-center justify-between gap-2"
                                 >
-                                  <div className="flex-1">
+                                  <div className="flex-1 min-w-0">
                                     <div className="font-medium text-gray-900 text-sm">{expense.category}</div>
                                     {expense.description && (
                                       <div className="text-xs text-gray-600 mt-1">{expense.description}</div>
                                     )}
                                   </div>
-                                  <div className="font-semibold text-red-600 ml-3">
+                                  <div className="font-semibold text-red-600">
                                     {formatPrice(expense.amount)}
                                   </div>
+                                  <button
+                                    onClick={() => handleDeleteExpense(expense.id)}
+                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg active:bg-red-100 transition-colors flex-shrink-0"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -240,6 +297,97 @@ export default function AccountingPage() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Модальное окно добавления расхода */}
+      {showAddExpenseModal && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-end"
+          onClick={() => setShowAddExpenseModal(false)}
+        >
+          <div
+            className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex justify-center py-3">
+              <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+            </div>
+
+            <div className="px-6 pb-6">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-bold text-gray-900">Добавить расход</h2>
+                <button
+                  onClick={() => setShowAddExpenseModal(false)}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Категория *
+                  </label>
+                  <select
+                    value={newExpense.category}
+                    onChange={(e) => setNewExpense({ ...newExpense, category: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  >
+                    <option value="">Выберите категорию</option>
+                    <option value="Материалы">Материалы</option>
+                    <option value="Доставка">Доставка</option>
+                    <option value="Работы">Работы</option>
+                    <option value="Техника">Техника</option>
+                    <option value="Инструменты">Инструменты</option>
+                    <option value="Прочее">Прочее</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Сумма (₽) *
+                  </label>
+                  <input
+                    type="number"
+                    value={newExpense.amount}
+                    onChange={(e) => setNewExpense({ ...newExpense, amount: e.target.value })}
+                    placeholder="Введите сумму"
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Описание
+                  </label>
+                  <textarea
+                    value={newExpense.description}
+                    onChange={(e) => setNewExpense({ ...newExpense, description: e.target.value })}
+                    placeholder="Дополнительная информация"
+                    rows={3}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-3 mt-6">
+                <button
+                  onClick={handleAddExpense}
+                  className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium active:scale-95 transition-transform"
+                >
+                  Добавить расход
+                </button>
+                <button
+                  onClick={() => setShowAddExpenseModal(false)}
+                  className="px-6 bg-gray-100 text-gray-700 py-4 rounded-xl font-medium active:bg-gray-200 transition-colors"
+                >
+                  Отмена
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

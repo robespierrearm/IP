@@ -1,37 +1,77 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Градиентный фон -->
   <defs>
+    <!-- Анимированный градиент фона -->
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#6366F1"/>
-      <stop offset="100%" stop-color="#8B5CF6"/>
+      <stop offset="0%" stop-color="#667EEA">
+        <animate attributeName="stop-color" values="#667EEA; #764BA2; #667EEA" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="50%" stop-color="#764BA2">
+        <animate attributeName="stop-color" values="#764BA2; #F093FB; #764BA2" dur="4s" repeatCount="indefinite"/>
+      </stop>
+      <stop offset="100%" stop-color="#F093FB">
+        <animate attributeName="stop-color" values="#F093FB; #667EEA; #F093FB" dur="4s" repeatCount="indefinite"/>
+      </stop>
     </linearGradient>
+    
+    <!-- Градиент для букв -->
+    <linearGradient id="letterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
+    </linearGradient>
+    
+    <!-- Градиент для акцента -->
     <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10B981"/>
       <stop offset="100%" stop-color="#34D399"/>
     </linearGradient>
+    
+    <!-- Тень -->
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Свечение -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
   <!-- Фон с закругленными углами -->
   <rect width="512" height="512" rx="110" fill="url(#bgGradient)"/>
   
-  <!-- Иконка документа с галочкой (тендер) -->
-  <g transform="translate(100, 80)">
-    <!-- Документ -->
-    <path d="M 50 0 L 262 0 L 312 50 L 312 352 L 50 352 Z" fill="white" opacity="0.95"/>
-    <path d="M 262 0 L 262 50 L 312 50" fill="#E0E7FF"/>
-    
-    <!-- Линии текста -->
-    <rect x="80" y="80" width="200" height="12" rx="6" fill="#C7D2FE"/>
-    <rect x="80" y="110" width="160" height="12" rx="6" fill="#C7D2FE"/>
-    <rect x="80" y="140" width="180" height="12" rx="6" fill="#C7D2FE"/>
-    
-    <!-- Большая галочка (успех) -->
-    <path d="M 120 220 L 160 270 L 250 170" stroke="url(#accentGradient)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Декоративные круги на фоне -->
+  <circle cx="100" cy="100" r="60" fill="white" opacity="0.05"/>
+  <circle cx="420" cy="400" r="80" fill="white" opacity="0.05"/>
+  <circle cx="400" cy="120" r="40" fill="white" opacity="0.08"/>
+  
+  <!-- Главная буква T с эффектами -->
+  <g filter="url(#shadow)">
+    <text x="256" y="320" font-size="280" font-weight="900" fill="url(#letterGradient)" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" filter="url(#glow)">T</text>
   </g>
   
-  <!-- Акцент - значок стройки (кран) в углу -->
-  <g transform="translate(380, 60)">
-    <circle cx="0" cy="0" r="50" fill="url(#accentGradient)"/>
-    <path d="M -20 -10 L -20 10 L 20 10 L 20 -10 M 0 -10 L 0 -25 M -15 -25 L 15 -25" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  <!-- Декоративный элемент - галочка в круге -->
+  <g transform="translate(360, 140)">
+    <circle cx="0" cy="0" r="45" fill="url(#accentGradient)" filter="url(#shadow)"/>
+    <path d="M -15 -2 L -5 8 L 15 -12" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </g>
+  
+  <!-- Маленький акцент - точка -->
+  <circle cx="256" cy="400" r="12" fill="#10B981" opacity="0.8">
+    <animate attributeName="opacity" values="0.8; 1; 0.8" dur="2s" repeatCount="indefinite"/>
+  </circle>
+  
+  <!-- Подпись снизу -->
+  <text x="256" y="440" font-size="32" font-weight="600" fill="white" fill-opacity="0.9" text-anchor="middle" font-family="system-ui, sans-serif" letter-spacing="2">CRM</text>
 </svg>
