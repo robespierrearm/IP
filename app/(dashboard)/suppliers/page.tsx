@@ -17,6 +17,7 @@ import { AddSupplierDialog } from '@/components/AddSupplierDialog';
 import { EditSupplierDialog } from '@/components/EditSupplierDialog';
 import { Pencil, Trash2, Search, Phone, Mail, FileText } from 'lucide-react';
 import { formatPhoneForDisplay } from '@/lib/phoneUtils';
+import { SuppliersSkeleton } from '@/components/SuppliersSkeleton';
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -105,6 +106,11 @@ export default function SuppliersPage() {
       loadSuppliers();
     }
   };
+
+  // Показываем skeleton при загрузке
+  if (isLoading) {
+    return <SuppliersSkeleton />;
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">

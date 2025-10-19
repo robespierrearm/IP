@@ -13,6 +13,7 @@ import { TenderStatusChanger } from '@/components/TenderStatusChanger';
 import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
 import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
+import { TendersSkeleton } from '@/components/TendersSkeleton';
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';
@@ -290,6 +291,11 @@ function TendersContent() {
   };
 
   const counts = getCounts();
+
+  // Показываем skeleton при загрузке
+  if (isLoading) {
+    return <TendersSkeleton />;
+  }
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
