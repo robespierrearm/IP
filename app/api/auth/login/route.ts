@@ -17,49 +17,66 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 1. Находим пользователя
+    // Приводим email к нижнему регистру для поиска
+    const normalizedEmail = email.toLowerCase().trim();
+
+    console.log('🔐 Попытка входа:', normalizedEmail);
+
+    // 1. Находим пользователя (регистронезависимый поиск)
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .ilike('email', normalizedEmail)
       .eq('is_active', true)
       .single();
 
     if (error || !user) {
+      console.error('❌ Пользователь не найден:', error);
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
         { status: 401 }
       );
     }
+
+    console.log('✅ Пользователь найден:', user.email);
 
     // 2. Проверяем пароль
     // Проверяем, захеширован ли пароль в базе
     const isBcryptHash = user.password.startsWith('$2a$') || user.password.startsWith('$2b$');
     
+    console.log('🔑 Пароль захеширован:', isBcryptHash);
+    
     let isValidPassword = false;
     if (isBcryptHash) {
       // Пароль захеширован - используем bcrypt
       isValidPassword = await bcrypt.compare(password, user.password);
+      console.log('🔐 Проверка bcrypt:', isValidPassword);
     } else {
       // Пароль не захеширован - прямое сравнение (для обратной совместимости)
       isValidPassword = password === user.password;
+      console.log('🔓 Прямое сравнение:', isValidPassword);
       
       // Автоматически хешируем пароль при успешном входе
       if (isValidPassword) {
+        console.log('💾 Хеширую пароль...');
         const hashedPassword = await bcrypt.hash(password, 10);
         await supabase
           .from('users')
           .update({ password: hashedPassword })
           .eq('id', user.id);
+        console.log('✅ Пароль захеширован');
       }
     }
     
     if (!isValidPassword) {
+      console.error('❌ Неверный пароль');
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
         { status: 401 }
       );
     }
+
+    console.log('🎉 Вход успешен!');
 
     // 3. Создаём JWT токен
     const token = jwt.sign(
