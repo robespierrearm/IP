@@ -2,8 +2,9 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { supabase, Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
+import { Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
 import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AddTenderDialog } from '@/components/AddTenderDialog';
@@ -39,18 +40,16 @@ function TendersContent() {
     }
   }, [tabParam]);
 
-  // Загрузка тендеров
+  // Загрузка тендеров через API
   const loadTenders = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('tenders')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await apiClient.getTenders();
 
-    if (error) {
-      console.error('Ошибка загрузки тендеров:', error);
+    if (result.error) {
+      console.error('Ошибка загрузки тендеров:', result.error);
+      setTenders([]);
     } else {
-      setTenders(data || []);
+      setTenders((result.data as Tender[]) || []);
     }
     setIsLoading(false);
   };
@@ -70,7 +69,7 @@ function TendersContent() {
     }
   }, [editParam, tenders]);
 
-  // Добавление тендера
+  // Добавление тендера через API
   const handleAddTender = async (tender: TenderInsert) => {
     const payload = {
       ...tender,
@@ -83,11 +82,11 @@ function TendersContent() {
       win_price: tender.win_price ?? null,
     };
 
-    const { error } = await supabase.from('tenders').insert([payload]);
+    const result = await apiClient.createTender(payload);
 
-    if (error) {
-      console.error('Ошибка добавления тендера:', error?.message || error, error);
-      alert(error?.message || 'Ошибка при добавлении тендера');
+    if (result.error) {
+      console.error('Ошибка добавления тендера:', result.error);
+      alert(result.error || 'Ошибка при добавлении тендера');
     } else {
       // Логируем добавление тендера
       await logActivity(
@@ -106,15 +105,12 @@ function TendersContent() {
     }
   };
 
-  // Обновление тендера
+  // Обновление тендера через API
   const handleUpdateTender = async (id: number, updates: Partial<Tender>) => {
-    const { error } = await supabase
-      .from('tenders')
-      .update(updates)
-      .eq('id', id);
+    const result = await apiClient.updateTender(id, updates);
 
-    if (error) {
-      console.error('Ошибка обновления тендера:', error);
+    if (result.error) {
+      console.error('Ошибка обновления тендера:', result.error);
       alert('Ошибка при обновлении тендера');
     } else {
       // Логируем редактирование тендера
@@ -133,7 +129,7 @@ function TendersContent() {
     }
   };
 
-  // Удаление тендера
+  // Удаление тендера через API
   const handleDeleteTender = async (id: number) => {
     const tenderToDelete = tenders.find(t => t.id === id);
     
@@ -141,10 +137,10 @@ function TendersContent() {
       return;
     }
 
-    const { error } = await supabase.from('tenders').delete().eq('id', id);
+    const result = await apiClient.deleteTender(id);
 
-    if (error) {
-      console.error('Ошибка удаления тендера:', error);
+    if (result.error) {
+      console.error('Ошибка удаления тендера:', result.error);
       alert('Ошибка при удалении тендера');
     } else {
       // Логируем удаление тендера
@@ -177,14 +173,11 @@ function TendersContent() {
       ...additionalData,
     };
 
-    const { error } = await supabase
-      .from('tenders')
-      .update(updateData)
-      .eq('id', tenderId);
+    const result = await apiClient.updateTender(tenderId, updateData);
 
-    if (error) {
-      console.error('Ошибка смены статуса:', error);
-      throw error;
+    if (result.error) {
+      console.error('Ошибка смены статуса:', result.error);
+      throw new Error(result.error);
     }
 
     // Логируем смену статуса
@@ -201,16 +194,7 @@ function TendersContent() {
     );
 
     // Автоматическое создание записи в бухгалтерии при переходе в "Победа"
-    if (newStatus === 'победа') {
-      // Проверяем, нет ли уже записи для этого тендера в expenses
-      const { data: existingExpenses } = await supabase
-        .from('expenses')
-        .select('id')
-        .eq('tender_id', tenderId)
-        .limit(1);
-
-      // Если записей нет - запись в бухгалтерии будет создана автоматически при добавлении первого расхода
-    }
+    // Запись в бухгалтерии будет создана автоматически при добавлении первого расхода
 
     loadTenders();
   };

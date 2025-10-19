@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, Supplier, SupplierInsert } from '@/lib/supabase';
+import { Supplier, SupplierInsert } from '@/lib/supabase';
+import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -25,19 +26,18 @@ export default function SuppliersPage() {
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Загрузка поставщиков
+  // Загрузка поставщиков через API
   const loadSuppliers = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('suppliers')
-      .select('*')
-      .order('created_at', { ascending: false });
+    const result = await apiClient.getSuppliers();
 
-    if (error) {
-      console.error('Ошибка загрузки поставщиков:', error);
+    if (result.error) {
+      console.error('Ошибка загрузки поставщиков:', result.error);
+      setSuppliers([]);
+      setFilteredSuppliers([]);
     } else {
-      setSuppliers(data || []);
-      setFilteredSuppliers(data || []);
+      setSuppliers((result.data as Supplier[]) || []);
+      setFilteredSuppliers((result.data as Supplier[]) || []);
     }
     setIsLoading(false);
   };
@@ -64,12 +64,12 @@ export default function SuppliersPage() {
     setFilteredSuppliers(filtered);
   }, [searchQuery, suppliers]);
 
-  // Добавление поставщика
+  // Добавление поставщика через API
   const handleAddSupplier = async (supplier: SupplierInsert) => {
-    const { error } = await supabase.from('suppliers').insert([supplier]);
+    const result = await apiClient.createSupplier(supplier);
 
-    if (error) {
-      console.error('Ошибка добавления поставщика:', error);
+    if (result.error) {
+      console.error('Ошибка добавления поставщика:', result.error);
       alert('Ошибка при добавлении поставщика');
     } else {
       loadSuppliers();
@@ -77,15 +77,12 @@ export default function SuppliersPage() {
     }
   };
 
-  // Обновление поставщика
+  // Обновление поставщика через API
   const handleUpdateSupplier = async (id: number, updates: Partial<Supplier>) => {
-    const { error } = await supabase
-      .from('suppliers')
-      .update(updates)
-      .eq('id', id);
+    const result = await apiClient.updateSupplier(id, updates);
 
-    if (error) {
-      console.error('Ошибка обновления поставщика:', error);
+    if (result.error) {
+      console.error('Ошибка обновления поставщика:', result.error);
       alert('Ошибка при обновлении поставщика');
     } else {
       loadSuppliers();
@@ -93,16 +90,16 @@ export default function SuppliersPage() {
     }
   };
 
-  // Удаление поставщика
+  // Удаление поставщика через API
   const handleDeleteSupplier = async (id: number) => {
     if (!confirm('Вы уверены, что хотите удалить этого поставщика?')) {
       return;
     }
 
-    const { error } = await supabase.from('suppliers').delete().eq('id', id);
+    const result = await apiClient.deleteSupplier(id);
 
-    if (error) {
-      console.error('Ошибка удаления поставщика:', error);
+    if (result.error) {
+      console.error('Ошибка удаления поставщика:', result.error);
       alert('Ошибка при удалении поставщика');
     } else {
       loadSuppliers();
