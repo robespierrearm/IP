@@ -386,16 +386,23 @@ async function handlePhoto(message: any) {
       .limit(5);
 
     if (tenders && tenders.length > 0) {
+      // Сохраняем данные чека в БД
+      await supabase.from('pending_receipts').insert([{
+        telegram_id: telegramId,
+        amount: receiptData.amount,
+        date: receiptData.date,
+        store: receiptData.store,
+        category: receiptData.category,
+        description: receiptData.description,
+      }]);
+
       let tendersText = '\n<b>Выберите тендер:</b>\n\n';
       tenders.forEach((tender, index) => {
         tendersText += `${index + 1}. ${tender.name} (ID: ${tender.id})\n`;
       });
-      tendersText += `\nОтветьте номером тендера или ID`;
+      tendersText += `\n💡 Ответьте номером (например: 1) или ID тендера`;
 
       await sendMessage(chatId, tendersText);
-
-      // Сохраняем данные чека для последующего добавления
-      // TODO: Реализовать state management для хранения данных между сообщениями
     } else {
       await sendMessage(chatId, '⚠️ Нет активных тендеров. Создайте тендер сначала.');
     }
@@ -416,6 +423,76 @@ async function handleTextMessage(message: any) {
   if (!auth) {
     await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
     return;
+  }
+
+  // Проверяем есть ли ожидающий чек
+  const { data: pendingReceipt } = await supabase
+    .from('pending_receipts')
+    .select('*')
+    .eq('telegram_id', telegramId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (pendingReceipt) {
+    // Пользователь отвечает на вопрос о тендере
+    const tenderIdMatch = text.match(/\d+/);
+    
+    if (tenderIdMatch) {
+      const inputNumber = parseInt(tenderIdMatch[0]);
+      
+      // Получаем список тендеров
+      const { data: tenders } = await supabase
+        .from('tenders')
+        .select('id, name')
+        .in('status', ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'])
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      let tenderId: number | null = null;
+      let tenderName = '';
+
+      if (tenders) {
+        // Проверяем это номер по порядку или ID
+        if (inputNumber <= tenders.length) {
+          // Номер по порядку
+          tenderId = tenders[inputNumber - 1].id;
+          tenderName = tenders[inputNumber - 1].name;
+        } else {
+          // Возможно это ID
+          const tender = tenders.find(t => t.id === inputNumber);
+          if (tender) {
+            tenderId = tender.id;
+            tenderName = tender.name;
+          }
+        }
+      }
+
+      if (tenderId) {
+        // Добавляем расход
+        const { error } = await supabase.from('expenses').insert([{
+          tender_id: tenderId,
+          category: pendingReceipt.category || 'Прочее',
+          amount: pendingReceipt.amount,
+          description: pendingReceipt.description || (pendingReceipt.store ? `Чек из ${pendingReceipt.store}` : 'Чек'),
+        }]);
+
+        // Удаляем использованный чек
+        await supabase.from('pending_receipts').delete().eq('id', pendingReceipt.id);
+
+        if (error) {
+          await sendMessage(chatId, `❌ Ошибка при добавлении расхода: ${error.message}`);
+        } else {
+          let successText = `✅ <b>Расход добавлен!</b>\n\n`;
+          successText += `💰 Сумма: <b>${formatPrice(pendingReceipt.amount)}</b>\n`;
+          successText += `📦 Категория: ${pendingReceipt.category}\n`;
+          successText += `📋 Тендер: ${tenderName}`;
+          
+          await sendMessage(chatId, successText);
+        }
+        return;
+      }
+    }
   }
 
   // Отправляем "печатает..."
@@ -493,7 +570,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
-    console.log('Telegram webhook received:', JSON.stringify(body, null, 2));
+    console.log('Telegram webhook received');
     
     // Telegram отправляет обновления в поле "message"
     const message = body.message;
@@ -503,7 +580,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true });
     }
     
-    console.log('Processing message from:', message.from?.username || message.from?.id);
+    const chatId = message.chat?.id;
+    if (!chatId) {
+      console.log('No chat ID');
+      return NextResponse.json({ ok: true });
+    }
+    
+    console.log('Processing message from chat:', chatId);
 
     // Обновляем last_activity
     if (message.from) {
@@ -525,30 +608,37 @@ export async function POST(request: NextRequest) {
       
       console.log('Processing text command:', text);
       
-      if (text.startsWith('/start')) {
-        console.log('Handling /start command');
-        await handleStart(message);
-      } else if (text === '/dashboard') {
-        await handleDashboard(message);
-      } else if (text === '/tenders') {
-        await handleTenders(message);
-      } else if (text === '/reminders') {
-        await handleReminders(message);
-      } else if (text === '/ai') {
-        await handleAI(message);
-      } else if (text.startsWith('/ai_')) {
-        const modelKey = text.substring(4); // Убираем '/ai_'
-        await handleModelChange(message, modelKey);
-      } else if (text === '/help') {
-        await handleHelp(message);
-      } else {
-        await handleTextMessage(message);
+      try {
+        if (text.startsWith('/start')) {
+          console.log('Handling /start command');
+          await handleStart(message);
+        } else if (text === '/dashboard') {
+          await handleDashboard(message);
+        } else if (text === '/tenders') {
+          await handleTenders(message);
+        } else if (text === '/reminders') {
+          await handleReminders(message);
+        } else if (text === '/ai') {
+          await handleAI(message);
+        } else if (text.startsWith('/ai_')) {
+          const modelKey = text.substring(4);
+          await handleModelChange(message, modelKey);
+        } else if (text === '/help') {
+          await handleHelp(message);
+        } else {
+          await handleTextMessage(message);
+        }
+      } catch (cmdError: any) {
+        console.error('Command handling error:', cmdError);
+        // Отправляем сообщение об ошибке пользователю
+        await sendMessage(chatId, `❌ Ошибка: ${cmdError.message}\n\nПопробуйте /help`);
       }
     }
 
     return NextResponse.json({ ok: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Telegram webhook error:', error);
+    console.error('Error stack:', error.stack);
     return NextResponse.json({ ok: true }); // Всегда возвращаем ok для Telegram
   }
 }
