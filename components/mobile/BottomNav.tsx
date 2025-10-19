@@ -5,11 +5,11 @@ import { Home, FileText, DollarSign, Users, Menu } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { icon: Home, label: 'Главная', href: '/dashboard' },
-  { icon: FileText, label: 'Тендеры', href: '/tenders' },
-  { icon: DollarSign, label: 'Финансы', href: '/accounting' },
-  { icon: Users, label: 'Контакты', href: '/suppliers' },
-  { icon: Menu, label: 'Ещё', href: '/menu' },
+  { icon: Home, label: 'Главная', href: '/m/dashboard' },
+  { icon: FileText, label: 'Тендеры', href: '/m/tenders' },
+  { icon: DollarSign, label: 'Финансы', href: '/m/accounting' },
+  { icon: Users, label: 'Контакты', href: '/m/suppliers' },
+  { icon: Menu, label: 'Ещё', href: '/m/menu' },
 ];
 
 export function BottomNav() {

@@ -116,7 +116,7 @@ export default function DashboardPage() {
         {/* Статистика */}
         <div className="grid grid-cols-3 gap-3">
           <div
-            onClick={() => router.push('/tenders')}
+            onClick={() => router.push('/m/tenders')}
             className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
           >
             <Briefcase className="w-6 h-6 text-white mb-2" />
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            onClick={() => router.push('/tenders')}
+            onClick={() => router.push('/m/tenders')}
             className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
           >
             <Eye className="w-6 h-6 text-white mb-2" />
@@ -134,7 +134,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            onClick={() => router.push('/tenders')}
+            onClick={() => router.push('/m/tenders')}
             className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
           >
             <Bell className="w-6 h-6 text-white mb-2" />
@@ -149,7 +149,7 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-gray-900">Последние тендеры</h2>
           <button
-            onClick={() => router.push('/tenders')}
+            onClick={() => router.push('/m/tenders')}
             className="text-primary-600 text-sm font-medium flex items-center gap-1"
           >
             Все
@@ -161,7 +161,7 @@ export default function DashboardPage() {
           {tenders.slice(0, 5).map((tender) => (
             <div
               key={tender.id}
-              onClick={() => router.push(`/tenders?id=${tender.id}`)}
+              onClick={() => router.push(`/m/tenders?id=${tender.id}`)}
               className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between mb-2">
