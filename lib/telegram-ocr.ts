@@ -1,7 +1,7 @@
 // Распознавание чеков через Google Gemini Vision
 
 function getGoogleKey() {
-  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || 'AIzaSyB4q--whZbW0GpezMXfJncEQibZayhRbaA';
 }
 
 export interface ReceiptData {

@@ -6,11 +6,11 @@ const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 // Для серверных API routes используем обычные env переменные
 function getAIKey() {
-  return process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY || '';
+  return process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY || 'io-v2-eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJvd25lciI6IjNmMzg4Yzc0LWYzZjItNDI0ZC04MmExLTFlNzhhMzUxY2NjNiIsImV4cCI6NDkxNDQxMTI2MH0.TDGo9AQD2jWlIj56dy8Vk0_EMq7jQX6bcTWgsfyZLmr-vTyv2ygvOIb03CNJWtAE6jecQyNPB2YMvRap9fqs-A';
 }
 
 function getGoogleKey() {
-  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || 'AIzaSyB4q--whZbW0GpezMXfJncEQibZayhRbaA';
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
