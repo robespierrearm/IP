@@ -90,87 +90,34 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Загрузка тендеров
+  // Загрузка данных через API
   useEffect(() => {
-    const loadTenders = async () => {
+    const loadDashboardData = async () => {
       try {
-        const { data, error } = await supabase
-          .from('tenders')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5);
+        const response = await fetch('/api/dashboard');
+        const result = await response.json();
 
-        if (error) {
-          console.error('Ошибка загрузки тендеров:', error);
+        if (result.error) {
+          console.error('Ошибка загрузки данных dashboard:', result.error);
           setTenders([]);
-          return;
-        }
-
-        if (data) {
-        setTenders(data);
-        
-        // Подсчёт статистики
-        const inWorkCount = data.filter(t => t.status === 'в работе').length;
-        const underReviewCount = data.filter(t => t.status === 'на рассмотрении').length;
-        
-        // Напоминания: тендеры с дедлайном в ближайшие 3 дня
-        const threeDaysFromNow = new Date();
-        threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-        const reminders = data.filter(t => {
-          if (!t.submission_deadline) return false;
-          const deadline = new Date(t.submission_deadline);
-          const now = new Date();
-          return deadline >= now && deadline <= threeDaysFromNow;
-        }).map(t => ({
-          id: t.id,
-          name: t.name,
-          deadline: t.submission_deadline!
-        }));
-
-        setStats({
-          inWork: inWorkCount,
-          underReview: underReviewCount,
-          reminders: reminders.length,
-        });
-        
-        setReminderTenders(reminders);
-        }
-      } catch (err) {
-        console.error('Критическая ошибка загрузки тендеров:', err);
-        setTenders([]);
-      }
-    };
-
-    loadTenders();
-  }, []);
-
-  // Загрузка файлов для дашборда
-  useEffect(() => {
-    const loadDashboardFiles = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('files')
-          .select('*')
-          .eq('show_on_dashboard', true)
-          .order('uploaded_at', { ascending: false })
-          .limit(5);
-
-        if (error) {
-          console.error('Ошибка загрузки файлов:', error);
           setDashboardFiles([]);
           return;
         }
 
-        if (data) {
-          setDashboardFiles(data);
+        if (result.data) {
+          setTenders(result.data.tenders);
+          setDashboardFiles(result.data.files);
+          setStats(result.data.stats);
+          setReminderTenders(result.data.reminderTenders);
         }
       } catch (err) {
-        console.error('Критическая ошибка загрузки файлов:', err);
+        console.error('Критическая ошибка загрузки dashboard:', err);
+        setTenders([]);
         setDashboardFiles([]);
       }
     };
 
-    loadDashboardFiles();
+    loadDashboardData();
   }, []);
 
   // Предпросмотр файла
