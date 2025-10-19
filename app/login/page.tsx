@@ -34,6 +34,8 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      console.log('🔐 Попытка входа:', email);
+      
       // Вызываем новый API route для логина
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -42,33 +44,45 @@ export default function LoginPage() {
         credentials: 'include', // Важно для cookies
       });
 
+      console.log('📡 Ответ сервера:', response.status, response.statusText);
+
       const data = await response.json();
+      console.log('📦 Данные:', data);
 
       if (!response.ok) {
+        console.error('❌ Ошибка:', data.error);
         setError(data.error || 'Ошибка входа');
         setIsLoading(false);
         return;
       }
+
+      console.log('✅ Вход успешен!');
 
       // Сохраняем данные пользователя в localStorage (только для UI)
       // Токен хранится в httpOnly cookie (безопасно)
       localStorage.setItem('currentUser', JSON.stringify(data.user));
 
       // Добавляем лог входа
-      await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: data.user.id,
-          username: data.user.username,
-          action: 'Вход в систему',
-          action_type: 'login',
-          details: { email: data.user.email }
-        });
+      try {
+        await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: data.user.id,
+            username: data.user.username,
+            action: 'Вход в систему',
+            action_type: 'login',
+            details: { email: data.user.email }
+          });
+      } catch (logError) {
+        console.warn('⚠️ Не удалось записать лог:', logError);
+        // Не блокируем вход если лог не записался
+      }
 
+      console.log('🚀 Редирект на dashboard...');
       // Перенаправляем на дашборд
       router.push('/dashboard');
     } catch (err) {
-      console.error('Ошибка входа:', err);
+      console.error('❌ Критическая ошибка входа:', err);
       setError('Произошла ошибка при входе');
     } finally {
       setIsLoading(false);
