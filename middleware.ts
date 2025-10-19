@@ -13,7 +13,7 @@ export function middleware(request: NextRequest) {
   const isMobile = isMobileDevice(userAgent);
 
   // Публичные пути (доступны без авторизации)
-  const publicPaths = ['/login', '/test-env'];
+  const publicPaths = ['/login', '/m/login', '/test-env'];
   const isPublicPath = publicPaths.includes(path);
 
   // Получаем токен из cookies
@@ -39,6 +39,9 @@ export function middleware(request: NextRequest) {
 
   // Если нет токена - редирект на логин
   if (!token) {
+    if (isMobile) {
+      return NextResponse.redirect(new URL('/m/login', request.url));
+    }
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

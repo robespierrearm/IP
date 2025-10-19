@@ -24,8 +24,8 @@ export default function MobileLayout({
         console.log('MobileLayout: Checking auth...', { currentUser: !!currentUser, pathname });
         
         if (!currentUser) {
-          console.log('MobileLayout: No user, redirecting to /login');
-          router.replace('/login');
+          console.log('MobileLayout: No user, redirecting to /m/login');
+          router.replace('/m/login');
           setIsLoading(false);
         } else {
           console.log('MobileLayout: User found, authenticated');
@@ -35,7 +35,7 @@ export default function MobileLayout({
       } catch (error) {
         console.error('MobileLayout: Error checking auth', error);
         setIsLoading(false);
-        router.replace('/login');
+        router.replace('/m/login');
       }
     }, 100);
 
