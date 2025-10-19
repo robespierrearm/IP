@@ -557,6 +557,12 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json({ 
     status: 'Telegram webhook is running',
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    env: {
+      hasGoogleKey: !!process.env.GOOGLE_API_KEY,
+      hasAIKey: !!process.env.AI_API_KEY,
+      hasTelegramToken: !!process.env.TELEGRAM_BOT_TOKEN,
+      hasSupabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    }
   });
 }
