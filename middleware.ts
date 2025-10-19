@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import jwt from 'jsonwebtoken';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
 
 export function middleware(request: NextRequest) {
   // Получаем путь
@@ -17,37 +14,20 @@ export function middleware(request: NextRequest) {
 
   // Если путь публичный
   if (isPublicPath) {
-    // Если есть валидный токен - редирект на dashboard
+    // Если есть токен - редирект на dashboard (без проверки JWT в Edge)
     if (token) {
-      try {
-        jwt.verify(token, JWT_SECRET);
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-      } catch (error) {
-        // Токен невалидный - удаляем и пропускаем на логин
-        const response = NextResponse.next();
-        response.cookies.delete('auth-token');
-        return response;
-      }
+      return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     return NextResponse.next();
   }
 
-  // Если путь приватный
+  // Если путь приватный и нет токена - редирект на логин
   if (!token) {
-    // Нет токена - редирект на логин
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  try {
-    // Проверяем токен
-    jwt.verify(token, JWT_SECRET);
-    return NextResponse.next();
-  } catch (error) {
-    // Токен невалидный или истёк - удаляем и редирект на логин
-    const response = NextResponse.redirect(new URL('/login', request.url));
-    response.cookies.delete('auth-token');
-    return response;
-  }
+  // Есть токен - пропускаем (проверка JWT будет на сервере)
+  return NextResponse.next();
 }
 
 // Применяем middleware ко всем путям кроме статических файлов
