@@ -20,9 +20,11 @@ import {
   Ban,
   CheckCircle,
   X,
-  FolderOpen
+  FolderOpen,
+  Send
 } from 'lucide-react';
 import { FilesPanel } from '@/components/FilesPanel';
+import { TelegramPanel } from '@/components/TelegramPanel';
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -34,7 +36,7 @@ export default function AdminPage() {
   const [filterActionType, setFilterActionType] = useState('all');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [activePanel, setActivePanel] = useState<'users' | 'files'>('users');
+  const [activePanel, setActivePanel] = useState<'users' | 'files' | 'telegram'>('users');
   
   const [newUser, setNewUser] = useState<UserInsert>({
     username: '',
@@ -330,6 +332,25 @@ export default function AdminPage() {
               </div>
             </div>
           </Card>
+
+          {/* Карточка Telegram */}
+          <Card 
+            className="p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-2 border-green-200 bg-white"
+            onClick={() => {
+              setActivePanel('telegram');
+              setIsPanelOpen(true);
+            }}
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 rounded-xl bg-green-50">
+                <Send className="h-8 w-8 text-green-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Telegram</h3>
+                <p className="text-sm text-gray-600 mt-0.5">Подключение бота</p>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
 
@@ -361,21 +382,25 @@ export default function AdminPage() {
               <div className={`flex items-center justify-between px-6 py-4 border-b ${
                 activePanel === 'users' 
                   ? 'bg-gradient-to-r from-blue-50 to-white' 
-                  : 'bg-gradient-to-r from-purple-50 to-white'
+                  : activePanel === 'files'
+                  ? 'bg-gradient-to-r from-purple-50 to-white'
+                  : 'bg-gradient-to-r from-green-50 to-white'
               }`}>
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${
-                    activePanel === 'users' ? 'bg-blue-100' : 'bg-purple-100'
+                    activePanel === 'users' ? 'bg-blue-100' : activePanel === 'files' ? 'bg-purple-100' : 'bg-green-100'
                   }`}>
                     {activePanel === 'users' ? (
                       <Users className="h-5 w-5 text-blue-600" />
-                    ) : (
+                    ) : activePanel === 'files' ? (
                       <FolderOpen className="h-5 w-5 text-purple-600" />
+                    ) : (
+                      <Send className="h-5 w-5 text-green-600" />
                     )}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
-                      {activePanel === 'users' ? 'Пользователи и журнал' : 'Файловая система'}
+                      {activePanel === 'users' ? 'Пользователи и журнал' : activePanel === 'files' ? 'Файловая система' : 'Telegram Бот'}
                     </h2>
                     {activePanel === 'users' && selectedUser && (
                       <p className="text-xs text-gray-600 mt-0.5">Журнал: {selectedUser.username}</p>
@@ -400,6 +425,10 @@ export default function AdminPage() {
                 {activePanel === 'files' ? (
                   <div className="w-full p-6">
                     <FilesPanel isActive={activePanel === 'files'} />
+                  </div>
+                ) : activePanel === 'telegram' ? (
+                  <div className="w-full p-6 overflow-y-auto">
+                    <TelegramPanel isActive={activePanel === 'telegram'} />
                   </div>
                 ) : (
                   <>
