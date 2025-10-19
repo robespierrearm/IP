@@ -34,53 +34,36 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Проверяем пользователя в базе
-      const { data: user, error: dbError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email)
-        .eq('password', password)
-        .single();
+      // Вызываем новый API route для логина
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Важно для cookies
+      });
 
-      if (dbError || !user) {
-        setError('Неверный email или пароль');
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.error || 'Ошибка входа');
         setIsLoading(false);
         return;
       }
 
-      // Проверяем, активен ли пользователь (кроме главного администратора)
-      const isMainAdmin = user.email.toLowerCase() === 'armen@gmail.com';
-      if (!isMainAdmin && !user.is_active) {
-        setError('Ваш аккаунт деактивирован. Обратитесь к администратору.');
-        setIsLoading(false);
-        return;
-      }
-
-      // Обновляем статус онлайн
-      await supabase
-        .from('users')
-        .update({ 
-          is_online: true, 
-          last_activity: new Date().toISOString() 
-        })
-        .eq('id', user.id);
+      // Сохраняем данные пользователя в localStorage (только для UI)
+      // Токен хранится в httpOnly cookie (безопасно)
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
 
       // Добавляем лог входа
       await supabase
         .from('activity_logs')
         .insert({
-          user_id: user.id,
-          username: user.username,
+          user_id: data.user.id,
+          username: data.user.username,
           action: 'Вход в систему',
           action_type: 'login',
-          details: { email: user.email }
+          details: { email: data.user.email }
         });
-
-      // Сохраняем пользователя в localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-
-      // Устанавливаем cookie для middleware
-      document.cookie = `auth-token=${user.id}; path=/; max-age=86400`; // 24 часа
 
       // Перенаправляем на дашборд
       router.push('/dashboard');

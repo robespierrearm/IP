@@ -99,25 +99,25 @@ export function AppSidebar() {
       // Логируем выход
       await logActivity('Выход из системы', ACTION_TYPES.LOGOUT);
 
-      // Обновляем статус пользователя
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      if (currentUser.id) {
-        await supabase
-          .from('users')
-          .update({ is_online: false })
-          .eq('id', currentUser.id);
-      }
+      // Вызываем API logout (удаляет httpOnly cookie и обновляет статус)
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
 
       // Очищаем localStorage
-      localStorage.removeItem('currentUser');
+      localStorage.clear();
 
-      // Удаляем cookie
-      document.cookie = 'auth-token=; path=/; max-age=0';
+      // Очищаем sessionStorage
+      sessionStorage.clear();
 
       // Перенаправляем на страницу входа
       router.push('/login');
     } catch (error) {
       console.error('Ошибка при выходе:', error);
+      // Даже при ошибке очищаем и редиректим
+      localStorage.clear();
+      router.push('/login');
     }
   };
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);

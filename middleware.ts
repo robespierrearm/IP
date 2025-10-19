@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import jwt from 'jsonwebtoken';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
 
 export function middleware(request: NextRequest) {
   // Получаем путь
@@ -7,24 +10,44 @@ export function middleware(request: NextRequest) {
 
   // Публичные пути (доступны без авторизации)
   const publicPaths = ['/login', '/test-env'];
-
-  // Проверяем, является ли путь публичным
   const isPublicPath = publicPaths.includes(path);
 
   // Получаем токен из cookies
-  const token = request.cookies.get('auth-token')?.value || '';
+  const token = request.cookies.get('auth-token')?.value;
 
-  // Если путь публичный и пользователь авторизован - редирект на дашборд
-  if (isPublicPath && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
+  // Если путь публичный
+  if (isPublicPath) {
+    // Если есть валидный токен - редирект на dashboard
+    if (token) {
+      try {
+        jwt.verify(token, JWT_SECRET);
+        return NextResponse.redirect(new URL('/dashboard', request.url));
+      } catch (error) {
+        // Токен невалидный - удаляем и пропускаем на логин
+        const response = NextResponse.next();
+        response.cookies.delete('auth-token');
+        return response;
+      }
+    }
+    return NextResponse.next();
   }
 
-  // Если путь приватный и пользователь НЕ авторизован - редирект на логин
-  if (!isPublicPath && !token) {
+  // Если путь приватный
+  if (!token) {
+    // Нет токена - редирект на логин
     return NextResponse.redirect(new URL('/login', request.url));
   }
 
-  return NextResponse.next();
+  try {
+    // Проверяем токен
+    jwt.verify(token, JWT_SECRET);
+    return NextResponse.next();
+  } catch (error) {
+    // Токен невалидный или истёк - удаляем и редирект на логин
+    const response = NextResponse.redirect(new URL('/login', request.url));
+    response.cookies.delete('auth-token');
+    return response;
+  }
 }
 
 // Применяем middleware ко всем путям кроме статических файлов
