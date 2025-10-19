@@ -17,12 +17,23 @@ export default function MenuPage() {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (confirm('Вы уверены, что хотите выйти?')) {
+      try {
+        // Вызываем API logout (удалит httpOnly cookie)
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      
+      // Удаляем данные из localStorage
       localStorage.removeItem('currentUser');
-      // Удаляем cookie
-      document.cookie = 'auth-token=; path=/; max-age=0';
-      router.push('/m/login');
+      
+      // Редиректим на логин
+      window.location.href = '/m/login';
     }
   };
 

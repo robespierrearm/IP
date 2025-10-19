@@ -32,47 +32,57 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Проверяем пользователя в базе (по username ИЛИ email)
-      const { data: users, error: dbError } = await supabase
-        .from('users')
-        .select('*')
-        .or(`username.eq.${username},email.eq.${username}`)
-        .eq('password', password)
-        .eq('is_active', true)
-        .limit(1);
+      console.log('🔐 Попытка входа:', username);
+      
+      // Вызываем тот же API route что и десктопная версия
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: username, password }),
+        credentials: 'include', // Важно для cookies
+      });
 
-      if (dbError) {
-        console.error('Database error:', dbError);
-        throw new Error('Ошибка подключения к базе данных');
-      }
+      console.log('📡 Ответ сервера:', response.status, response.statusText);
 
-      if (!users || users.length === 0) {
-        setError('Неверный логин или пароль');
+      const data = await response.json();
+      console.log('📦 Данные:', data);
+
+      if (!response.ok) {
+        console.error('❌ Ошибка:', data.error);
+        setError(data.error || 'Ошибка входа');
         setIsLoading(false);
         return;
       }
 
-      const user = users[0];
+      console.log('✅ Вход успешен!');
 
-      // Обновляем статус онлайн
-      await supabase
-        .from('users')
-        .update({
-          is_online: true,
-          last_activity: new Date().toISOString(),
-        })
-        .eq('id', user.id);
+      // Сохраняем данные пользователя в localStorage (только для UI)
+      // Токен хранится в httpOnly cookie (безопасно)
+      localStorage.setItem('currentUser', JSON.stringify(data.user));
 
-      // Сохраняем в localStorage
-      localStorage.setItem('currentUser', JSON.stringify(user));
-      
-      // Сохраняем токен в cookie для middleware
-      document.cookie = `auth-token=${user.id}; path=/; max-age=86400`;
+      // Добавляем лог входа
+      try {
+        await supabase
+          .from('activity_logs')
+          .insert({
+            user_id: data.user.id,
+            username: data.user.username,
+            action: 'Вход в систему (мобильная версия)',
+            action_type: 'login',
+            details: { email: data.user.email }
+          });
+      } catch (logError) {
+        console.warn('⚠️ Не удалось записать лог:', logError);
+        // Не блокируем вход если лог не записался
+      }
 
-      // Перенаправляем на дашборд
-      router.push('/m/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Произошла ошибка при входе');
+      console.log('🚀 Редирект на dashboard...');
+      // Перенаправляем на мобильный дашборд
+      window.location.href = '/m/dashboard';
+    } catch (err) {
+      console.error('❌ Критическая ошибка входа:', err);
+      setError('Произошла ошибка при входе');
+    } finally {
       setIsLoading(false);
     }
   };
