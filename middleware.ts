@@ -10,7 +10,10 @@ export function middleware(request: NextRequest) {
   // Получаем путь и User-Agent
   const path = request.nextUrl.pathname;
   const userAgent = request.headers.get('user-agent') || '';
-  const isMobile = isMobileDevice(userAgent);
+  
+  // Проверяем параметр forceMobile для разработки
+  const forceMobile = request.nextUrl.searchParams.get('mobile') === 'true';
+  const isMobile = forceMobile || isMobileDevice(userAgent);
 
   // Публичные пути (доступны без авторизации)
   const publicPaths = ['/login', '/m/login', '/test-env'];

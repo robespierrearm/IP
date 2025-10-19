@@ -267,12 +267,20 @@ export default function TendersPage() {
 
               {/* Кнопки действий */}
               <div className="mt-6 flex gap-3">
-                <button className="flex-1 bg-primary-500 text-white py-3 rounded-xl font-medium">
+                <button 
+                  onClick={() => {
+                    // Закрываем модальное окно
+                    setSelectedTender(null);
+                    // Переходим на страницу редактирования тендера
+                    router.push(`/m/tenders/edit/${selectedTender.id}`);
+                  }}
+                  className="flex-1 bg-primary-500 text-white py-3 rounded-xl font-medium active:bg-primary-600 transition-colors"
+                >
                   Редактировать
                 </button>
                 <button
                   onClick={() => setSelectedTender(null)}
-                  className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium"
+                  className="px-6 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors"
                 >
                   Закрыть
                 </button>
