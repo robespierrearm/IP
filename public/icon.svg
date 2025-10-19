@@ -1,19 +1,37 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Фон с градиентом -->
-  <rect width="512" height="512" rx="100" fill="url(#gradient)"/>
-  
-  <!-- Градиент -->
+  <!-- Градиентный фон -->
   <defs>
-    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f97316"/>
-      <stop offset="50%" stop-color="#fb923c"/>
-      <stop offset="100%" stop-color="#fbbf24"/>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366F1"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#34D399"/>
     </linearGradient>
   </defs>
   
-  <!-- Буква T -->
-  <text x="256" y="256" font-size="320" font-weight="900" fill="white" text-anchor="middle" dominant-baseline="central" font-family="system-ui, -apple-system, sans-serif">T</text>
+  <!-- Фон с закругленными углами -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGradient)"/>
   
-  <!-- Акцент - точка -->
-  <circle cx="380" cy="130" r="40" fill="#10B981"/>
+  <!-- Иконка документа с галочкой (тендер) -->
+  <g transform="translate(100, 80)">
+    <!-- Документ -->
+    <path d="M 50 0 L 262 0 L 312 50 L 312 352 L 50 352 Z" fill="white" opacity="0.95"/>
+    <path d="M 262 0 L 262 50 L 312 50" fill="#E0E7FF"/>
+    
+    <!-- Линии текста -->
+    <rect x="80" y="80" width="200" height="12" rx="6" fill="#C7D2FE"/>
+    <rect x="80" y="110" width="160" height="12" rx="6" fill="#C7D2FE"/>
+    <rect x="80" y="140" width="180" height="12" rx="6" fill="#C7D2FE"/>
+    
+    <!-- Большая галочка (успех) -->
+    <path d="M 120 220 L 160 270 L 250 170" stroke="url(#accentGradient)" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  
+  <!-- Акцент - значок стройки (кран) в углу -->
+  <g transform="translate(380, 60)">
+    <circle cx="0" cy="0" r="50" fill="url(#accentGradient)"/>
+    <path d="M -20 -10 L -20 10 L 20 10 L 20 -10 M 0 -10 L 0 -25 M -15 -25 L 15 -25" stroke="white" stroke-width="4" stroke-linecap="round"/>
+  </g>
 </svg>

@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
-import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 
@@ -197,17 +197,20 @@ export default function TendersPage() {
 
             <div className="px-6 pb-6">
               {/* Заголовок */}
-              <h2 className="text-xl font-bold text-gray-900 mb-2">
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
                 {selectedTender.name}
               </h2>
 
-              <span
-                className={`inline-block px-3 py-1 rounded-lg text-sm font-medium mb-4 ${getStatusColor(
-                  selectedTender.status
-                )}`}
-              >
-                {STATUS_LABELS[selectedTender.status]}
-              </span>
+              {/* Статус - НЕ показываем 'новый' */}
+              {selectedTender.status !== 'новый' && (
+                <span
+                  className={`inline-block px-3 py-1 rounded-lg text-sm font-medium mb-4 ${getStatusColor(
+                    selectedTender.status
+                  )}`}
+                >
+                  {STATUS_LABELS[selectedTender.status]}
+                </span>
+              )}
 
               {/* Детали */}
               <div className="space-y-4">
@@ -231,13 +234,16 @@ export default function TendersPage() {
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Публикация</div>
                     <div className="font-medium text-gray-900">
-                      {formatDate(selectedTender.publication_date)}
+                      {selectedTender.publication_date ? formatDate(selectedTender.publication_date) : '—'}
                     </div>
                   </div>
 
-                  {selectedTender.submission_date && (
+                  {/* Дата подачи показываем только со статуса 'на рассмотрении' */}
+                  {selectedTender.submission_date && 
+                   selectedTender.status !== 'новый' && 
+                   selectedTender.status !== 'подано' && (
                     <div>
-                      <div className="text-sm text-gray-600 mb-1">Подача</div>
+                      <div className="text-sm text-gray-600 mb-1">Дата подачи</div>
                       <div className="font-medium text-gray-900">
                         {formatDate(selectedTender.submission_date)}
                       </div>
@@ -254,21 +260,37 @@ export default function TendersPage() {
                   </div>
                 )}
 
-                {selectedTender.submitted_price && (
+                {/* Цену подачи показываем начиная со статуса 'подано' */}
+                {selectedTender.status !== 'новый' && (
                   <div>
-                    <div className="text-sm text-gray-600 mb-1">Цена по которой подали</div>
-                    <div className="text-lg font-bold text-blue-600">
-                      {formatPrice(selectedTender.submitted_price)}
-                    </div>
+                    <div className="text-sm text-gray-600 mb-1">Цена подачи</div>
+                    {selectedTender.submitted_price ? (
+                      <div className="text-lg font-bold text-blue-600">
+                        {formatPrice(selectedTender.submitted_price)}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                        ⚠️ Цена подачи не заполнена
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {selectedTender.win_price && (
+                {/* Цену победы показываем только начиная со статуса 'победа' */}
+                {(selectedTender.status === 'победа' || 
+                  selectedTender.status === 'в работе' || 
+                  selectedTender.status === 'завершён') && (
                   <div>
                     <div className="text-sm text-gray-600 mb-1">Цена победы</div>
-                    <div className="text-xl font-bold text-green-600">
-                      {formatPrice(selectedTender.win_price)}
-                    </div>
+                    {selectedTender.win_price ? (
+                      <div className="text-xl font-bold text-green-600">
+                        {formatPrice(selectedTender.win_price)}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
+                        ⚠️ Цена победы не заполнена
+                      </div>
+                    )}
                   </div>
                 )}
 

@@ -53,14 +53,14 @@ export default function AccountingPage() {
 
   // Общая статистика - доход считаем только по завершённым тендерам
   const totalIncome = tendersWithExpenses.reduce((sum, item) => {
-    if (item.tender.status === 'завершён') {
+    if (item?.tender?.status === 'завершён') {
       return sum + (item.tender.win_price || 0);
     }
     return sum;
   }, 0);
 
   const totalExpenses = tendersWithExpenses.reduce(
-    (sum, item) => sum + item.expenses.reduce((expSum, exp) => expSum + exp.amount, 0),
+    (sum, item) => sum + (item?.expenses || []).reduce((expSum, exp) => expSum + (exp?.amount || 0), 0),
     0
   );
 
