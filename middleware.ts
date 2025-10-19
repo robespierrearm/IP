@@ -25,36 +25,40 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Автоматический редирект на мобильную версию для мобильных устройств
-  if (isMobile && !path.startsWith('/m') && !isPublicPath && path !== '/' && token) {
-    const mobilePath = `/m${path}`;
-    return NextResponse.redirect(new URL(mobilePath, request.url));
+  // Если путь публичный - пропускаем
+  if (isPublicPath) {
+    // Если есть токен - редирект на dashboard
+    if (token) {
+      if (isMobile) {
+        return NextResponse.redirect(new URL('/m/dashboard', request.url));
+      }
+      return NextResponse.redirect(new URL('/dashboard', request.url));
+    }
+    return NextResponse.next();
   }
 
-  // Если пользователь на мобильном и зашёл на главную - редирект на /m
-  if (isMobile && path === '/' && token) {
-    return NextResponse.redirect(new URL('/m/dashboard', request.url));
+  // Если нет токена - редирект на логин
+  if (!token) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
+
+  // Есть токен - проверяем устройство и делаем редирект
   
-  // Если пользователь НЕ на мобильном, но зашёл на главную - редирект на десктоп
-  if (!isMobile && path === '/' && token) {
-    return NextResponse.redirect(new URL('/dashboard', request.url));
-  }
-
-  // Если путь публичный и пользователь авторизован
-  if (isPublicPath && token) {
+  // Если главная страница
+  if (path === '/') {
     if (isMobile) {
       return NextResponse.redirect(new URL('/m/dashboard', request.url));
     }
     return NextResponse.redirect(new URL('/dashboard', request.url));
   }
 
-  // Если путь приватный и нет токена - редирект на логин
-  if (!token) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  // Если мобильное устройство и не на /m - редирект на мобильную версию
+  if (isMobile && !path.startsWith('/m')) {
+    const mobilePath = `/m${path}`;
+    return NextResponse.redirect(new URL(mobilePath, request.url));
   }
 
-  // Есть токен - пропускаем
+  // Пропускаем
   return NextResponse.next();
 }
 
