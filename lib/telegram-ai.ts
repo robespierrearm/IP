@@ -1,9 +1,17 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Используем серверные переменные для API route
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || process.env.AI_API_KEY || '';
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+
+// Для серверных API routes используем обычные env переменные
+function getAIKey() {
+  return process.env.AI_API_KEY || process.env.NEXT_PUBLIC_AI_API_KEY || '';
+}
+
+function getGoogleKey() {
+  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+}
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -124,7 +132,8 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     
     if (modelConfig.provider === 'google') {
       // Google Gemini
-      if (!GOOGLE_API_KEY) {
+      const googleKey = getGoogleKey();
+      if (!googleKey) {
         console.error('Google API key is not set');
         return {
           text: '⚠️ Google AI временно недоступен. Переключитесь на другую модель командой /ai',
@@ -133,7 +142,7 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
       }
 
       response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${GOOGLE_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelConfig.model}:generateContent?key=${googleKey}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -146,7 +155,8 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
       );
     } else {
       // Intelligence.io
-      if (!AI_API_KEY) {
+      const aiKey = getAIKey();
+      if (!aiKey) {
         console.error('AI_API_KEY is not set');
         return {
           text: '⚠️ AI помощник временно недоступен.\n\nИспользуйте команды:\n/dashboard - Статистика\n/tenders - Тендеры\n/reminders - Напоминания',
@@ -158,7 +168,7 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${AI_API_KEY}`,
+          'Authorization': `Bearer ${aiKey}`,
         },
         body: JSON.stringify({
           model: modelConfig.model,

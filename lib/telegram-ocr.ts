@@ -1,6 +1,8 @@
 // Распознавание чеков через Google Gemini Vision
 
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+function getGoogleKey() {
+  return process.env.GOOGLE_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_API_KEY || '';
+}
 
 export interface ReceiptData {
   amount: number;
@@ -12,7 +14,8 @@ export interface ReceiptData {
 
 export async function recognizeReceipt(photoUrl: string): Promise<ReceiptData | null> {
   try {
-    if (!GOOGLE_API_KEY) {
+    const googleKey = getGoogleKey();
+    if (!googleKey) {
       console.error('Google API key not found');
       return null;
     }
@@ -41,7 +44,7 @@ export async function recognizeReceipt(photoUrl: string): Promise<ReceiptData | 
 
     // Запрос к Gemini Vision
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_API_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${googleKey}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
