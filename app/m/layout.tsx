@@ -15,6 +15,13 @@ export default function MobileLayout({
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    // Пропускаем проверку для страницы логина
+    if (pathname === '/m/login') {
+      setIsAuthenticated(true);
+      setIsLoading(false);
+      return;
+    }
+
     // Небольшая задержка для инициализации
     const timer = setTimeout(() => {
       try {
@@ -61,6 +68,11 @@ export default function MobileLayout({
         </div>
       </div>
     );
+  }
+
+  // Если это страница логина - показываем без BottomNav
+  if (pathname === '/m/login') {
+    return <>{children}</>;
   }
 
   return (
