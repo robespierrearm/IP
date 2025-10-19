@@ -283,14 +283,29 @@ async function handleTextMessage(message: any) {
     body: JSON.stringify({ chat_id: chatId, action: 'typing' }),
   });
 
-  // Здесь будет интеграция с AI (следующий шаг)
-  await sendMessage(chatId, 
-    '🤖 AI помощник скоро будет доступен!\n\n' +
-    'Пока используйте команды:\n' +
-    '/dashboard - Статистика\n' +
-    '/tenders - Тендеры\n' +
-    '/reminders - Напоминания'
-  );
+  // Импортируем AI функцию динамически
+  const { processAICommand } = await import('@/lib/telegram-ai');
+  
+  try {
+    const result = await processAICommand(text, auth.user_id);
+    
+    // Отправляем ответ
+    await sendMessage(chatId, result.text);
+    
+    // Если было выполнено действие, добавляем эмодзи
+    if (result.action) {
+      await sendMessage(chatId, '✨ Действие выполнено успешно!');
+    }
+  } catch (error) {
+    console.error('AI error:', error);
+    await sendMessage(chatId, 
+      '❌ Произошла ошибка при обработке запроса.\n\n' +
+      'Попробуйте использовать команды:\n' +
+      '/dashboard - Статистика\n' +
+      '/tenders - Тендеры\n' +
+      '/reminders - Напоминания'
+    );
+  }
 }
 
 // Вспомогательные функции
