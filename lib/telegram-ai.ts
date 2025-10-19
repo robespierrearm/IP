@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const AI_API_KEY = process.env.AI_API_KEY || '';
+const AI_API_KEY = process.env.NEXT_PUBLIC_AI_API_KEY || process.env.AI_API_KEY || '';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -86,6 +86,15 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
 
 Отвечай полезно и помогай пользователю управлять тендерами.`;
 
+    // Проверяем наличие API ключа
+    if (!AI_API_KEY) {
+      console.error('AI_API_KEY is not set');
+      return {
+        text: '⚠️ AI помощник временно недоступен.\n\nИспользуйте команды:\n/dashboard - Статистика\n/tenders - Тендеры\n/reminders - Напоминания',
+        action: null
+      };
+    }
+
     // Вызов AI API
     const response = await fetch('https://intelligence.io.solutions/v1/chat/completions', {
       method: 'POST',
@@ -105,10 +114,18 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     });
 
     if (!response.ok) {
-      throw new Error('AI API error');
+      const errorText = await response.text();
+      console.error('AI API error:', response.status, errorText);
+      throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      console.error('Invalid AI response:', data);
+      throw new Error('Invalid AI response');
+    }
+    
     const aiResponse = data.choices[0].message.content;
 
     // Проверяем есть ли команда для выполнения
