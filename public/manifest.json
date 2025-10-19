@@ -1,0 +1,42 @@
+{
+  "name": "TenderCRM Mobile",
+  "short_name": "TenderCRM",
+  "description": "Мобильная CRM-система для управления тендерами строительной компании",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#6366F1",
+  "theme_color": "#6366F1",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Тендеры",
+      "short_name": "Тендеры",
+      "description": "Просмотр тендеров",
+      "url": "/tenders",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Бухгалтерия",
+      "short_name": "Бухгалтерия",
+      "description": "Финансовый учёт",
+      "url": "/accounting",
+      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Analytics } from '@vercel/analytics/react';
+import { PWARegister } from "@/components/PWARegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,6 +22,15 @@ export const metadata: Metadata = {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },
     ],
+    apple: [
+      { url: "/icons/icon-192x192.png", sizes: "192x192" },
+    ],
+  },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "TenderCRM",
   },
 };
 
@@ -28,7 +38,9 @@ export const viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#f97316",
+  userScalable: false,
+  themeColor: "#6366F1",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({
@@ -45,6 +57,7 @@ export default function RootLayout({
           {children}
         </AuthProvider>
         <Analytics />
+        <PWARegister />
       </body>
     </html>
   );
