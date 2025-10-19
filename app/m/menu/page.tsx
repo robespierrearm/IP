@@ -2,22 +2,33 @@
 
 import { useRouter } from 'next/navigation';
 import { MessageSquare, FolderOpen, Shield, LogOut, User, Settings } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function MenuPage() {
   const router = useRouter();
+  const [username, setUsername] = useState('Пользователь');
+
+  useEffect(() => {
+    try {
+      const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      setUsername(user.username || 'Пользователь');
+    } catch (error) {
+      console.error('Error reading user from localStorage:', error);
+    }
+  }, []);
 
   const handleLogout = () => {
     if (confirm('Вы уверены, что хотите выйти?')) {
       localStorage.removeItem('currentUser');
-      router.push('/login');
+      router.push('/m/login');
     }
   };
 
   const menuItems = [
-    { icon: MessageSquare, label: 'Чат', href: '/chat', color: 'bg-blue-100 text-blue-600' },
-    { icon: FolderOpen, label: 'Файлы', href: '/files', color: 'bg-purple-100 text-purple-600' },
-    { icon: Shield, label: 'Админка', href: '/admin', color: 'bg-red-100 text-red-600' },
-    { icon: Settings, label: 'Настройки', href: '/settings', color: 'bg-gray-100 text-gray-600' },
+    { icon: MessageSquare, label: 'Чат', href: '/m/chat', color: 'bg-blue-100 text-blue-600' },
+    { icon: FolderOpen, label: 'Файлы', href: '/m/files', color: 'bg-purple-100 text-purple-600' },
+    { icon: Shield, label: 'Админка', href: '/m/admin', color: 'bg-red-100 text-red-600' },
+    { icon: Settings, label: 'Настройки', href: '/m/settings', color: 'bg-gray-100 text-gray-600' },
   ];
 
   return (
@@ -37,7 +48,7 @@ export default function MenuPage() {
             <div className="flex-1">
               <div className="text-sm opacity-80 mb-1">Вы вошли как</div>
               <div className="text-xl font-bold">
-                {JSON.parse(localStorage.getItem('currentUser') || '{}').username || 'Пользователь'}
+                {username}
               </div>
             </div>
           </div>

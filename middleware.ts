@@ -25,7 +25,7 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Если путь публичный - пропускаем
+  // Если путь публичный
   if (isPublicPath) {
     // Если есть токен - редирект на dashboard
     if (token) {
@@ -34,6 +34,12 @@ export function middleware(request: NextRequest) {
       }
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
+    
+    // Если нет токена и это мобильное устройство на /login - редирект на /m/login
+    if (isMobile && path === '/login') {
+      return NextResponse.redirect(new URL('/m/login', request.url));
+    }
+    
     return NextResponse.next();
   }
 
