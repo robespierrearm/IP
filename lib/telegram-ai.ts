@@ -262,11 +262,28 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
       // Выполняем действие
       const result = await executeAction(actionType, actionData, userId);
       
-      // Убираем команду из ответа и добавляем результат
+      // Убираем команду из ответа
       const cleanResponse = aiResponse.replace(/\[ACTION:[\s\S]*?\[\/ACTION\]/, '').trim();
       
+      // Формируем финальный ответ с РЕАЛЬНЫМ результатом
+      let finalResponse = '';
+      
+      if (result.success) {
+        // Успех - показываем что AI сказал + подтверждение
+        finalResponse = cleanResponse ? cleanResponse + '\n\n' + result.message : result.message;
+      } else {
+        // Ошибка - показываем ТОЛЬКО ошибку, убираем оптимистичный ответ AI
+        finalResponse = result.message;
+      }
+      
+      // Сохраняем в историю РЕАЛЬНЫЙ результат
+      await supabase.from('chat_history').insert([
+        { telegram_id: telegramId, role: 'user', content: userMessage },
+        { telegram_id: telegramId, role: 'assistant', content: finalResponse },
+      ]);
+      
       return {
-        text: cleanResponse + '\n\n' + result.message,
+        text: finalResponse,
         action: result.success ? actionType : null,
       };
     }
@@ -321,6 +338,26 @@ async function executeAction(actionType: string, data: any, userId: number) {
         return { success: false, message: '❌ Не указан ID тендера для расхода' };
       }
 
+      // Проверяем существует ли тендер
+      const { data: tender, error: tenderError } = await supabase
+        .from('tenders')
+        .select('id, name, status')
+        .eq('id', data.tender_id)
+        .single();
+
+      if (tenderError || !tender) {
+        return { success: false, message: `❌ Тендер с ID ${data.tender_id} не найден` };
+      }
+
+      // Проверяем можно ли добавлять расходы к этому тендеру
+      const allowedStatuses = ['победа', 'в работе', 'завершён'];
+      if (!allowedStatuses.includes(tender.status)) {
+        return { 
+          success: false, 
+          message: `❌ Нельзя добавить расход к тендеру "${tender.name}"\n\nПричина: Статус тендера "${tender.status}". Расходы можно добавлять только к выигранным тендерам (статусы: победа, в работе, завершён).` 
+        };
+      }
+
       const { error } = await supabase.from('expenses').insert([{
         tender_id: data.tender_id,
         category: data.category,
@@ -328,8 +365,11 @@ async function executeAction(actionType: string, data: any, userId: number) {
         description: data.description || null,
       }]);
 
-      if (error) throw error;
-      return { success: true, message: `✅ Расход на сумму ${data.amount} ₽ успешно добавлен!` };
+      if (error) {
+        return { success: false, message: `❌ Ошибка при добавлении расхода: ${error.message}` };
+      }
+      
+      return { success: true, message: `✅ Расход на сумму ${data.amount} ₽ успешно добавлен к тендеру "${tender.name}"!` };
     }
 
     if (actionType === 'add_supplier') {
