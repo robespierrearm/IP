@@ -72,3 +72,8 @@ URL: [https://robespierrearm.github.io/new/](https://robespierrearm.github.io/ne
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
+
+## Деплой
+
+Проект автоматически деплоится на Vercel при push в main ветку.
+Регионы: Европа (Париж, Амстердам, Франкфурт)
