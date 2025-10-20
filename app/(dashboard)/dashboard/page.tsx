@@ -169,9 +169,9 @@ export default function DashboardPage() {
   };
 
   // Функция перехода на страницу тендеров с фильтром
-  const navigateToTenders = (status?: string) => {
-    if (status) {
-      router.push(`/tenders?status=${encodeURIComponent(status)}`);
+  const navigateToTenders = (tab?: string) => {
+    if (tab) {
+      router.push(`/tenders?tab=${tab}`);
     } else {
       router.push('/tenders');
     }
@@ -192,7 +192,7 @@ export default function DashboardPage() {
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
       borderColor: 'border-blue-200',
-      status: 'в работе',
+      tab: 'inwork',
     },
     {
       title: 'На рассмотрении',
@@ -202,7 +202,7 @@ export default function DashboardPage() {
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
       borderColor: 'border-purple-200',
-      status: 'на рассмотрении',
+      tab: 'review',
     },
     {
       title: 'Напоминания',
@@ -218,7 +218,7 @@ export default function DashboardPage() {
       color: 'text-orange-600',
       bgColor: 'bg-orange-50',
       borderColor: 'border-orange-200',
-      status: undefined,
+      tab: undefined,
     },
   ];
 
@@ -252,7 +252,7 @@ export default function DashboardPage() {
               <Card
                 key={card.title}
                 className={`transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border ${card.borderColor} bg-white`}
-                onClick={() => card.status && navigateToTenders(card.status)}
+                onClick={() => card.tab && navigateToTenders(card.tab)}
               >
                 <CardContent className="p-3">
                   <div className="flex items-center justify-between mb-2">
