@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import { AI_SYSTEM_PROMPT } from './ai-system-prompt';
+import * as AIFunctions from './ai-functions';
 
 // Используем серверные переменные для API route
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -83,14 +85,14 @@ export async function processAICommand(userMessage: string, userId: number, tele
     
     console.log('Chat history loaded:', history?.length || 0, 'messages');
 
-    // Системный промпт для AI
-    const systemPrompt = `Ты полезный ИИ-помощник в CRM-системе для управления тендерами строительной компании. Отвечай кратко, по делу и на русском языке.
+    // Используем расширенный системный промпт
+    const systemPrompt = AI_SYSTEM_PROMPT + `
 
-ВАЖНО: Ты можешь выполнять действия в системе! Когда пользователь просит добавить тендер, расход или поставщика, ты должен вернуть специальный JSON с командой.
+ВАЖНО: Когда пользователь просит выполнить действие (добавить, обновить, удалить), ты должен вернуть специальный JSON с командой.
 
 Формат ответа для выполнения действий:
 
-1. Для добавления РАСХОДА (всегда требуется tender_id):
+1. Для добавления РАСХОДА:
 [ACTION:ADD_EXPENSE]
 {
   "tender_id": 123,
