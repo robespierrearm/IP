@@ -68,10 +68,20 @@ async function getContext() {
   return { tenders, stats };
 }
 
-// Обработка AI команды
-export async function processAICommand(userMessage: string, userId: number) {
+// Обработка AI команды с историей
+export async function processAICommand(userMessage: string, userId: number, telegramId: string) {
   try {
     const context = await getContext();
+    
+    // Получаем историю последних 20 сообщений
+    const { data: history } = await supabase
+      .from('chat_history')
+      .select('role, content')
+      .eq('telegram_id', telegramId)
+      .order('created_at', { ascending: true })
+      .limit(20);
+    
+    console.log('Chat history loaded:', history?.length || 0, 'messages');
 
     // Системный промпт для AI
     const systemPrompt = `Ты полезный ИИ-помощник в CRM-системе для управления тендерами строительной компании. Отвечай кратко, по делу и на русском языке.
@@ -143,9 +153,22 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         };
       }
 
+      // Формируем историю для Gemini
+      let conversationText = systemPrompt + '\n\n';
+      
+      if (history && history.length > 0) {
+        conversationText += 'История разговора:\n';
+        history.forEach(h => {
+          conversationText += `${h.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${h.content}\n`;
+        });
+        conversationText += '\n';
+      }
+      
+      conversationText += `Пользователь: ${userMessage}`;
+
       const requestBody = {
         contents: [{
-          parts: [{ text: `${systemPrompt}\n\nПользователь: ${userMessage}` }]
+          parts: [{ text: conversationText }]
         }],
         generationConfig: {
           temperature: 0.7,
@@ -176,6 +199,13 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         };
       }
 
+      // Формируем сообщения с историей
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        ...(history || []).map(h => ({ role: h.role, content: h.content })),
+        { role: 'user', content: userMessage },
+      ];
+
       response = await fetch('https://intelligence.io.solutions/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -184,10 +214,7 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         },
         body: JSON.stringify({
           model: modelConfig.model,
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userMessage },
-          ],
+          messages,
           temperature: 0.7,
           max_tokens: 1000,
         }),
@@ -243,6 +270,12 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         action: result.success ? actionType : null,
       };
     }
+
+    // Сохраняем сообщения в историю
+    await supabase.from('chat_history').insert([
+      { telegram_id: telegramId, role: 'user', content: userMessage },
+      { telegram_id: telegramId, role: 'assistant', content: aiResponse },
+    ]);
 
     return { text: aiResponse, action: null };
   } catch (error: any) {

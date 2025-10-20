@@ -508,7 +508,7 @@ async function handleTextMessage(message: any) {
     
     console.log('Processing AI command:', text);
     
-    const result = await processAICommand(text, auth.user_id);
+    const result = await processAICommand(text, auth.user_id, telegramId);
     
     console.log('AI result:', result);
     
