@@ -120,9 +120,26 @@ export async function processAICommand(userMessage: string, userId: number, tele
 }
 [/ACTION]
 
-КРИТИЧЕСКИ ВАЖНО для расходов: 
-- tender_id ОБЯЗАТЕЛЕН! Если пользователь не указал к какому тендеру относится расход, СПРОСИ у него номер или название тендера.
-- Не придумывай tender_id сам!
+4. Для УДАЛЕНИЯ РАСХОДА:
+[ACTION:DELETE_EXPENSE]
+{
+  "expense_id": 123
+}
+[/ACTION]
+
+5. Для ОБНОВЛЕНИЯ СТАТУСА ТЕНДЕРА:
+[ACTION:UPDATE_TENDER_STATUS]
+{
+  "tender_id": 123,
+  "status": "победа"
+}
+[/ACTION]
+
+КРИТИЧЕСКИ ВАЖНО: 
+- Для расходов tender_id ОБЯЗАТЕЛЕН! Если пользователь не указал к какому тендеру, СПРОСИ.
+- Не придумывай ID сам!
+- Перед удалением ВСЕГДА уточни у пользователя подтверждение.
+- При изменении статуса проверяй что новый статус корректный.
 
 Текущий контекст системы:
 - Всего тендеров: ${context.stats.total}
@@ -253,7 +270,7 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     }
 
     // Проверяем есть ли команда для выполнения
-    const actionMatch = aiResponse.match(/\[ACTION:(ADD_TENDER|ADD_EXPENSE|ADD_SUPPLIER)\]([\s\S]*?)\[\/ACTION\]/);
+    const actionMatch = aiResponse.match(/\[ACTION:(ADD_TENDER|ADD_EXPENSE|ADD_SUPPLIER|DELETE_EXPENSE|UPDATE_TENDER_STATUS)\]([\s\S]*?)\[\/ACTION\]/);
     
     if (actionMatch) {
       const actionType = actionMatch[1].toLowerCase();
@@ -322,15 +339,23 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
 async function executeAction(actionType: string, data: any, userId: number) {
   try {
     if (actionType === 'add_tender') {
+      // Проверяем обязательные поля
+      if (!data.name || !data.name.trim()) {
+        return { success: false, message: '❌ Не указано название тендера' };
+      }
+
       const { error } = await supabase.from('tenders').insert([{
-        name: data.name,
-        start_price: data.start_price,
-        publication_date: data.publication_date,
+        name: data.name.trim(),
+        start_price: data.start_price || null,
+        publication_date: data.publication_date || null,
         status: data.status || 'новый',
       }]);
 
-      if (error) throw error;
-      return { success: true, message: `✅ Тендер "${data.name}" успешно добавлен!` };
+      if (error) {
+        return { success: false, message: `❌ Ошибка при добавлении тендера: ${error.message}` };
+      }
+      
+      return { success: true, message: `✅ Тендер "${data.name}" успешно добавлен со статусом "${data.status || 'новый'}"!` };
     }
 
     if (actionType === 'add_expense') {
@@ -373,20 +398,114 @@ async function executeAction(actionType: string, data: any, userId: number) {
     }
 
     if (actionType === 'add_supplier') {
+      // Проверяем обязательные поля
+      if (!data.name || !data.name.trim()) {
+        return { success: false, message: '❌ Не указано название поставщика' };
+      }
+
+      // Проверяем есть ли хоть один контакт
+      if (!data.phone && !data.email) {
+        return { success: false, message: '❌ Укажите хотя бы один контакт поставщика (телефон или email)' };
+      }
+
       const { error } = await supabase.from('suppliers').insert([{
-        name: data.name,
-        phone: data.phone,
-        email: data.email,
-        category: data.category,
+        name: data.name.trim(),
+        phone: data.phone || null,
+        email: data.email || null,
+        category: data.category || 'Прочее',
       }]);
 
-      if (error) throw error;
-      return { success: true, message: `✅ Поставщик "${data.name}" успешно добавлен!` };
+      if (error) {
+        return { success: false, message: `❌ Ошибка при добавлении поставщика: ${error.message}` };
+      }
+      
+      let contactInfo = '';
+      if (data.phone) contactInfo += `Телефон: ${data.phone}`;
+      if (data.email) contactInfo += (contactInfo ? ', ' : '') + `Email: ${data.email}`;
+      
+      return { success: true, message: `✅ Поставщик "${data.name}" успешно добавлен!\n${contactInfo}` };
+    }
+
+    if (actionType === 'delete_expense') {
+      if (!data.expense_id) {
+        return { success: false, message: '❌ Не указан ID расхода для удаления' };
+      }
+
+      // Проверяем существует ли расход
+      const { data: expense, error: expenseError } = await supabase
+        .from('expenses')
+        .select('id, amount, category, tender_id, tenders(name)')
+        .eq('id', data.expense_id)
+        .single();
+
+      if (expenseError || !expense) {
+        return { success: false, message: `❌ Расход с ID ${data.expense_id} не найден` };
+      }
+
+      const { error } = await supabase
+        .from('expenses')
+        .delete()
+        .eq('id', data.expense_id);
+
+      if (error) {
+        return { success: false, message: `❌ Ошибка при удалении расхода: ${error.message}` };
+      }
+
+      return { 
+        success: true, 
+        message: `✅ Расход удалён!\n\nСумма: ${expense.amount} ₽\nКатегория: ${expense.category}\nТендер: ${(expense.tenders as any)?.name || 'Неизвестно'}` 
+      };
+    }
+
+    if (actionType === 'update_tender_status') {
+      if (!data.tender_id) {
+        return { success: false, message: '❌ Не указан ID тендера' };
+      }
+
+      if (!data.status) {
+        return { success: false, message: '❌ Не указан новый статус' };
+      }
+
+      // Проверяем валидность статуса
+      const validStatuses = ['новый', 'подано', 'на рассмотрении', 'победа', 'проигрыш', 'в работе', 'завершён'];
+      if (!validStatuses.includes(data.status)) {
+        return { 
+          success: false, 
+          message: `❌ Неверный статус "${data.status}"\n\nДоступные статусы: ${validStatuses.join(', ')}` 
+        };
+      }
+
+      // Проверяем существует ли тендер
+      const { data: tender, error: tenderError } = await supabase
+        .from('tenders')
+        .select('id, name, status')
+        .eq('id', data.tender_id)
+        .single();
+
+      if (tenderError || !tender) {
+        return { success: false, message: `❌ Тендер с ID ${data.tender_id} не найден` };
+      }
+
+      const oldStatus = tender.status;
+
+      const { error } = await supabase
+        .from('tenders')
+        .update({ status: data.status })
+        .eq('id', data.tender_id);
+
+      if (error) {
+        return { success: false, message: `❌ Ошибка при обновлении статуса: ${error.message}` };
+      }
+
+      return { 
+        success: true, 
+        message: `✅ Статус тендера "${tender.name}" изменён!\n\n${oldStatus} → ${data.status}` 
+      };
     }
 
     return { success: false, message: '❌ Неизвестное действие' };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Action execution error:', error);
-    return { success: false, message: '❌ Ошибка при выполнении действия' };
+    return { success: false, message: `❌ Ошибка при выполнении действия: ${error.message || 'Неизвестная ошибка'}` };
   }
 }
