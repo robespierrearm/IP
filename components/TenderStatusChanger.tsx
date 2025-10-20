@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Tender, STATUS_TRANSITIONS, STATUS_LABELS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
@@ -23,7 +22,6 @@ interface TenderStatusChangerProps {
 }
 
 export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChangerProps) {
-  const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<Tender['status'] | null>(null);
   const [submittedPrice, setSubmittedPrice] = useState<string>(''); // Цена подачи
@@ -113,9 +111,6 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
           setSubmittedPrice('');
           showNotification('на рассмотрении');
           setIsProcessing(false);
-          
-          // Переходим на вкладку "На рассмотрении"
-          router.push('/tenders?tab=review');
           return; // Выходим, чтобы не выполнять код ниже
 
         case 'победа':
