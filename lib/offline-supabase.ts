@@ -11,17 +11,50 @@ type TableName = 'tenders' | 'suppliers' | 'expenses';
 
 export class OfflineSupabase {
   private isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  private initialized = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
+      // Инициализируем IndexedDB сразу
+      this.initializeDB();
+      
       window.addEventListener('online', () => {
         this.isOnline = true;
         console.log('🟢 Онлайн режим');
+        
+        // Показываем уведомление
+        if (typeof window !== 'undefined' && (window as any).toast) {
+          (window as any).toast.success('Подключение восстановлено', {
+            description: 'Синхронизация данных...'
+          });
+        }
+        
+        // При подключении к интернету - синхронизируем
+        syncQueue.syncAll().catch(console.error);
       });
+      
       window.addEventListener('offline', () => {
         this.isOnline = false;
         console.log('🔴 Офлайн режим');
+        
+        // Показываем уведомление
+        if (typeof window !== 'undefined' && (window as any).toast) {
+          (window as any).toast.error('Нет подключения к интернету', {
+            description: 'Работаем в офлайн-режиме'
+          });
+        }
       });
+    }
+  }
+
+  private async initializeDB() {
+    try {
+      await offlineDB.init();
+      this.initialized = true;
+      console.log('✅ IndexedDB инициализирован');
+    } catch (error) {
+      console.error('❌ Ошибка инициализации IndexedDB:', error);
+      this.initialized = false;
     }
   }
 

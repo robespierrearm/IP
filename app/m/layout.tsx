@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/mobile/BottomNav';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { PWARegister } from '@/components/PWARegister';
 
 export default function MobileLayout({
   children,
@@ -72,6 +73,14 @@ export default function MobileLayout({
     );
   }
 
+  // Делаем toast доступным глобально для offlineSupabase
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const { toast } = require('sonner');
+      (window as any).toast = toast;
+    }
+  }, []);
+
   // Если это страница логина - показываем без BottomNav
   if (pathname === '/m/login') {
     return <>{children}</>;
@@ -79,6 +88,9 @@ export default function MobileLayout({
 
   return (
     <ErrorBoundary>
+      {/* Регистрация PWA и Service Worker */}
+      <PWARegister />
+      
       <div className="min-h-screen bg-gray-50 pb-20">
         {/* Безопасная зона сверху для iPhone */}
         <div className="safe-top" />
