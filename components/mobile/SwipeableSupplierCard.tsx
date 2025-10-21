@@ -8,18 +8,23 @@ interface SwipeableSupplierCardProps {
   supplier: Supplier;
   onDelete: (supplier: Supplier) => void;
   onClick: (supplier: Supplier) => void;
+  isOpen: boolean;
+  onOpen: (id: number) => void;
 }
 
-export function SwipeableSupplierCard({ supplier, onDelete, onClick }: SwipeableSupplierCardProps) {
-  const [translateX, setTranslateX] = useState(0);
+export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onOpen }: SwipeableSupplierCardProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const cardRef = useRef<HTMLDivElement>(null);
   const deleteButtonWidth = 80; // Ширина кнопки удаления
 
+  // Используем isOpen из пропсов вместо локального состояния
+  const translateX = isOpen ? -deleteButtonWidth : 0;
+
   const handleTouchStart = (e: React.TouchEvent) => {
     setIsDragging(true);
     setStartX(e.touches[0].clientX - translateX);
+    onOpen(supplier.id); // Открываем эту карточку (закрывая другие)
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -27,68 +32,37 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick }: Swipeable
 
     const currentX = e.touches[0].clientX - startX;
     
-    // Ограничиваем свайп только влево (отрицательные значения)
-    if (currentX <= 0 && currentX >= -deleteButtonWidth) {
-      setTranslateX(currentX);
+    // Временно показываем движение через transform
+    if (currentX <= 0 && currentX >= -deleteButtonWidth && cardRef.current) {
+      cardRef.current.style.transform = `translateX(${currentX}px)`;
     }
   };
 
   const handleTouchEnd = () => {
     setIsDragging(false);
 
-    // Если свайпнули больше половины ширины кнопки - показываем кнопку
-    if (translateX < -deleteButtonWidth / 2) {
-      setTranslateX(-deleteButtonWidth);
+    if (!cardRef.current) return;
+
+    const currentTransform = cardRef.current.style.transform;
+    const match = currentTransform.match(/translateX\((-?\d+(?:\.\d+)?)px\)/);
+    const currentX = match ? parseFloat(match[1]) : 0;
+
+    // Если свайпнули больше половины ширины кнопки - оставляем открытой
+    if (currentX < -deleteButtonWidth / 2) {
+      onOpen(supplier.id);
     } else {
-      // Иначе возвращаем на место
-      setTranslateX(0);
-    }
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setStartX(e.clientX - translateX);
-  };
-
-  const handleMouseMove = (e: MouseEvent) => {
-    if (!isDragging) return;
-
-    const currentX = e.clientX - startX;
-    
-    if (currentX <= 0 && currentX >= -deleteButtonWidth) {
-      setTranslateX(currentX);
-    }
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-
-    if (translateX < -deleteButtonWidth / 2) {
-      setTranslateX(-deleteButtonWidth);
-    } else {
-      setTranslateX(0);
-    }
-  };
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    } else {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+      // Иначе закрываем
+      onOpen(-1);
     }
 
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isDragging, translateX]);
+    // Убираем временный transform
+    cardRef.current.style.transform = '';
+  };
 
   const handleCardClick = () => {
     // Если кнопка удаления видна, закрываем её
-    if (translateX < 0) {
-      setTranslateX(0);
+    if (isOpen) {
+      onOpen(-1);
     } else {
       onClick(supplier);
     }
@@ -120,7 +94,6 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick }: Swipeable
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        onMouseDown={handleMouseDown}
         onClick={handleCardClick}
         className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none"
         style={{

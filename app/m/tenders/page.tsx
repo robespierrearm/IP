@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
-import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
+import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
+import { supabase } from '@/lib/supabase';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -21,6 +23,10 @@ export default function TendersPage() {
   const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
   const [tempSubmissionDate, setTempSubmissionDate] = useState('');
   const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
+  const [tenderToDelete, setTenderToDelete] = useState<Tender | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [openCardId, setOpenCardId] = useState<number>(-1);
 
   useEffect(() => {
     // Читаем параметр status из URL
@@ -92,6 +98,43 @@ export default function TendersPage() {
     { value: 'завершён', label: 'Завершённые' },
   ];
 
+  const handleDeleteRequest = (tender: Tender) => {
+    setTenderToDelete(tender);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!tenderToDelete) return;
+
+    setIsDeleting(true);
+    setDeletingId(tenderToDelete.id);
+
+    try {
+      const { error } = await supabase
+        .from('tenders')
+        .delete()
+        .eq('id', tenderToDelete.id);
+
+      if (error) throw error;
+
+      // Анимация исчезновения - ждём 300ms перед удалением из state
+      setTimeout(() => {
+        setTenders(prev => prev.filter(t => t.id !== tenderToDelete.id));
+        setDeletingId(null);
+        setTenderToDelete(null);
+        setIsDeleting(false);
+      }, 300);
+    } catch (error) {
+      console.error('Ошибка удаления тендера:', error);
+      setIsDeleting(false);
+      setDeletingId(null);
+      alert('Не удалось удалить тендер');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setTenderToDelete(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
@@ -143,48 +186,20 @@ export default function TendersPage() {
           filteredTenders.map((tender) => (
             <div
               key={tender.id}
-              onClick={() => setSelectedTender(tender)}
-              className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow"
+              className={`transition-all duration-300 ${
+                deletingId === tender.id
+                  ? 'opacity-0 scale-95 -translate-x-full'
+                  : 'opacity-100 scale-100 translate-x-0'
+              }`}
             >
-              {/* Заголовок и статус */}
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-semibold text-gray-900 text-base flex-1 line-clamp-2 pr-2">
-                  {tender.name}
-                </h3>
-                <span
-                  className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${getStatusColor(
-                    tender.status
-                  )}`}
-                >
-                  {STATUS_LABELS[tender.status]}
-                </span>
-              </div>
-
-              {/* Информация */}
-              <div className="space-y-2">
-                {tender.region && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <MapPin className="w-4 h-4 flex-shrink-0" />
-                    <span className="line-clamp-1">{tender.region}</span>
-                  </div>
-                )}
-
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Calendar className="w-4 h-4" />
-                    <span>{formatDate(tender.publication_date)}</span>
-                  </div>
-
-                  {tender.start_price && (
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-green-600" />
-                      <span className="font-semibold text-green-600">
-                        {formatPrice(tender.start_price)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <SwipeableTenderCard
+                tender={tender}
+                onDelete={handleDeleteRequest}
+                onClick={setSelectedTender}
+                isOpen={openCardId === tender.id}
+                onOpen={setOpenCardId}
+                getStatusColor={getStatusColor}
+              />
             </div>
           ))
         )}
@@ -433,6 +448,61 @@ export default function TendersPage() {
                   Закрыть
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Модальное окно подтверждения удаления */}
+      {tenderToDelete && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
+          onClick={handleDeleteCancel}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Иконка предупреждения */}
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
+            </div>
+
+            {/* Заголовок */}
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+              Удалить тендер?
+            </h3>
+
+            {/* Описание */}
+            <p className="text-gray-600 text-center mb-6">
+              Вы уверены, что хотите удалить <span className="font-semibold">{tenderToDelete.name}</span>?
+              <br />
+              <span className="text-sm text-red-600">Это действие нельзя отменить.</span>
+            </p>
+
+            {/* Кнопки */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 bg-red-500 text-white py-3 rounded-xl font-medium active:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Удаление...
+                  </>
+                ) : (
+                  'Удалить'
+                )}
+              </button>
             </div>
           </div>
         </div>

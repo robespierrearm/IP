@@ -16,6 +16,7 @@ export default function SuppliersPage() {
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [openCardId, setOpenCardId] = useState<number>(-1);
 
   useEffect(() => {
     loadSuppliers();
@@ -146,6 +147,8 @@ export default function SuppliersPage() {
                 supplier={supplier}
                 onDelete={handleDeleteRequest}
                 onClick={setSelectedSupplier}
+                isOpen={openCardId === supplier.id}
+                onOpen={setOpenCardId}
               />
             </div>
           ))
