@@ -21,10 +21,11 @@ export const metadata: Metadata = {
   description: "ИП Чолахян - Строительная компания",
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-static.svg", type: "image/svg+xml" },
+      { url: "/icon-static.svg", sizes: "any" },
     ],
     apple: [
-      { url: "/icons/icon-192x192.png", sizes: "192x192" },
+      { url: "/icon-static.svg", sizes: "180x180", type: "image/svg+xml" },
     ],
   },
   manifest: "/manifest.json",
