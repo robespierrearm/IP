@@ -1,0 +1,69 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Градиент фона -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#667EEA"/>
+      <stop offset="50%" stop-color="#764BA2"/>
+      <stop offset="100%" stop-color="#F093FB"/>
+    </linearGradient>
+    
+    <!-- Градиент для букв -->
+    <linearGradient id="letterGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
+    </linearGradient>
+    
+    <!-- Градиент для акцента -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#34D399"/>
+    </linearGradient>
+    
+    <!-- Тень -->
+    <filter id="shadow">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="8"/>
+      <feOffset dx="0" dy="4" result="offsetblur"/>
+      <feComponentTransfer>
+        <feFuncA type="linear" slope="0.3"/>
+      </feComponentTransfer>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Свечение -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Фон с закругленными углами -->
+  <rect width="512" height="512" rx="110" fill="url(#bgGradient)"/>
+  
+  <!-- Декоративные круги на фоне -->
+  <circle cx="100" cy="100" r="60" fill="white" opacity="0.05"/>
+  <circle cx="420" cy="400" r="80" fill="white" opacity="0.05"/>
+  <circle cx="400" cy="120" r="40" fill="white" opacity="0.08"/>
+  
+  <!-- Главная буква T с эффектами -->
+  <g filter="url(#shadow)">
+    <text x="256" y="320" font-size="280" font-weight="900" fill="url(#letterGradient)" text-anchor="middle" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" filter="url(#glow)">T</text>
+  </g>
+  
+  <!-- Декоративный элемент - галочка в круге -->
+  <g transform="translate(360, 140)">
+    <circle cx="0" cy="0" r="45" fill="url(#accentGradient)" filter="url(#shadow)"/>
+    <path d="M -15 -2 L -5 8 L 15 -12" stroke="white" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </g>
+  
+  <!-- Маленький акцент - точка -->
+  <circle cx="256" cy="400" r="12" fill="#10B981" opacity="0.9"/>
+  
+  <!-- Подпись снизу -->
+  <text x="256" y="440" font-size="32" font-weight="600" fill="white" fill-opacity="0.9" text-anchor="middle" font-family="system-ui, sans-serif" letter-spacing="2">CRM</text>
+</svg>
