@@ -549,4 +549,3 @@ async function executeAction(actionType: string, data: any, userId: number) {
     return { success: false, message: `❌ Ошибка при выполнении действия: ${error.message || 'Неизвестная ошибка'}` };
   }
 }
-https://github.com/robespierrearm/new
