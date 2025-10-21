@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight } from 'lucide-react';
@@ -10,6 +10,7 @@ import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChang
 
 export default function TendersPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,6 +23,11 @@ export default function TendersPage() {
   const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
 
   useEffect(() => {
+    // Читаем параметр status из URL
+    const statusFromUrl = searchParams.get('status');
+    if (statusFromUrl) {
+      setSelectedStatus(statusFromUrl);
+    }
     loadTenders();
   }, []);
 

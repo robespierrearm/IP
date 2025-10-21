@@ -120,7 +120,7 @@ export default function DashboardPage() {
         {/* Статистика */}
         <div className="grid grid-cols-3 gap-3">
           <div
-            onClick={() => router.push('/m/tenders')}
+            onClick={() => router.push('/m/tenders?status=в работе')}
             className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
           >
             <Briefcase className="w-6 h-6 text-white mb-2" />
@@ -129,7 +129,7 @@ export default function DashboardPage() {
           </div>
 
           <div
-            onClick={() => router.push('/m/tenders')}
+            onClick={() => router.push('/m/tenders?status=на рассмотрении')}
             className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
           >
             <Eye className="w-6 h-6 text-white mb-2" />
