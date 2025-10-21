@@ -82,23 +82,7 @@ export default function AddTenderPage() {
           />
         </div>
 
-        {/* Статус */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Статус
-          </label>
-          <select
-            value={formData.status}
-            onChange={(e) => setFormData({ ...formData, status: e.target.value as any })}
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            {Object.entries(STATUS_LABELS).map(([value, label]) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Статус скрыт - автоматически "новый" */}
 
         {/* Номер закупки */}
         <div>
@@ -142,32 +126,21 @@ export default function AddTenderPage() {
           />
         </div>
 
-        {/* Даты */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Дата публикации *
-            </label>
-            <input
-              type="date"
-              value={formData.publication_date}
-              onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
-              required
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Дата подачи
-            </label>
-            <input
-              type="date"
-              value={formData.submission_date || ''}
-              onChange={(e) => setFormData({ ...formData, submission_date: e.target.value })}
-              className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            />
-          </div>
+        {/* Дата публикации */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Дата публикации *
+          </label>
+          <input
+            type="date"
+            value={formData.publication_date}
+            onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
+            required
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          />
         </div>
+
+        {/* Дата подачи скрыта - устанавливается автоматически при смене статуса */}
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -181,7 +154,7 @@ export default function AddTenderPage() {
           />
         </div>
 
-        {/* Цены */}
+        {/* Начальная цена */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Начальная цена (₽)
@@ -195,31 +168,7 @@ export default function AddTenderPage() {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Цена по которой подали (₽)
-          </label>
-          <input
-            type="number"
-            value={formData.submitted_price || ''}
-            onChange={(e) => setFormData({ ...formData, submitted_price: e.target.value ? parseFloat(e.target.value) : null })}
-            placeholder="0"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Цена победы (₽)
-          </label>
-          <input
-            type="number"
-            value={formData.win_price || ''}
-            onChange={(e) => setFormData({ ...formData, win_price: e.target.value ? parseFloat(e.target.value) : null })}
-            placeholder="0"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
+        {/* Цена подачи и цена победы скрыты - появятся при смене статуса */}
 
         {/* Кнопки */}
         <div className="flex gap-3 pt-4">

@@ -65,6 +65,7 @@ export function MobileTenderStatusChanger({ tender, onStatusChanged }: MobileTen
       // Автоматические действия при смене статуса
       switch (selectedStatus) {
         case 'подано':
+          // Автоматически устанавливаем дату подачи
           additionalData.submission_date = new Date().toISOString().split('T')[0];
           if (submittedPrice) {
             additionalData.submitted_price = parseFloat(submittedPrice);
@@ -82,6 +83,13 @@ export function MobileTenderStatusChanger({ tender, onStatusChanged }: MobileTen
           onStatusChanged();
           setIsProcessing(false);
           return;
+
+        case 'на рассмотрении':
+          // Автоматически устанавливаем дату подачи, если её нет
+          if (!tender.submission_date) {
+            additionalData.submission_date = new Date().toISOString().split('T')[0];
+          }
+          break;
 
         case 'победа':
           if (winPrice) {
