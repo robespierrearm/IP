@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Modern Icon Generator - TenderCRM</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+        canvas {
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin: 20px 0;
+        }
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .preview-text {
+            text-align: center;
+            color: #666;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 TenderCRM - Modern Icon</h1>
+        <canvas id="canvas"></canvas>
+        <div class="preview-text">Превью 256x256</div>
+        <div class="buttons">
+            <button onclick="generate(180, 'apple-touch-icon.png')">📱 iPhone (180x180)</button>
+            <button onclick="generate(192, 'android-chrome-192x192.png')">🤖 Android (192x192)</button>
+            <button onclick="generate(512, 'android-chrome-512x512.png')">📦 Android Large (512x512)</button>
+            <button onclick="generate(1024, 'icon-1024.png')">🖼️ High-Res (1024x1024)</button>
+        </div>
+    </div>
+
+    <script>
+        function createModernIcon(size) {
+            const canvas = document.getElementById('canvas');
+            const scale = size / 512; // Базовый размер 512
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+
+            // Очистка
+            ctx.clearRect(0, 0, size, size);
+
+            // === ФОН С ПЕРЕЛИВАМИ ===
+            // Основной градиент
+            const bgGradient = ctx.createLinearGradient(0, 0, size, size);
+            bgGradient.addColorStop(0, '#667eea');
+            bgGradient.addColorStop(0.3, '#764ba2');
+            bgGradient.addColorStop(0.6, '#f093fb');
+            bgGradient.addColorStop(1, '#4facfe');
+            
+            // Закругленный квадрат
+            const radius = size * 0.22;
+            roundRect(ctx, 0, 0, size, size, radius);
+            ctx.fillStyle = bgGradient;
+            ctx.fill();
+
+            // === ДЕКОРАТИВНЫЕ ЭЛЕМЕНТЫ ===
+            // Светящиеся круги на фоне
+            const circles = [
+                { x: 0.15, y: 0.15, r: 0.25, opacity: 0.1 },
+                { x: 0.85, y: 0.85, r: 0.3, opacity: 0.08 },
+                { x: 0.8, y: 0.2, r: 0.15, opacity: 0.12 },
+                { x: 0.3, y: 0.75, r: 0.2, opacity: 0.09 },
+            ];
+
+            circles.forEach(c => {
+                const circleGradient = ctx.createRadialGradient(
+                    size * c.x, size * c.y, 0,
+                    size * c.x, size * c.y, size * c.r
+                );
+                circleGradient.addColorStop(0, `rgba(255, 255, 255, ${c.opacity})`);
+                circleGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.fillStyle = circleGradient;
+                ctx.beginPath();
+                ctx.arc(size * c.x, size * c.y, size * c.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // === ЦЕНТРАЛЬНЫЙ ЭЛЕМЕНТ - СТИЛИЗОВАННАЯ "T" ===
+            ctx.save();
+            
+            // Тень для буквы
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+            ctx.shadowBlur = size * 0.03;
+            ctx.shadowOffsetY = size * 0.015;
+
+            // Градиент для буквы
+            const letterGradient = ctx.createLinearGradient(0, size * 0.3, 0, size * 0.7);
+            letterGradient.addColorStop(0, '#ffffff');
+            letterGradient.addColorStop(0.5, '#f0f0ff');
+            letterGradient.addColorStop(1, '#e0e7ff');
+            
+            ctx.fillStyle = letterGradient;
+            ctx.font = `900 ${size * 0.55}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('T', size * 0.5, size * 0.52);
+            
+            ctx.restore();
+
+            // === АКЦЕНТНЫЙ ЭЛЕМЕНТ - ГАЛОЧКА В КРУГЕ ===
+            const checkX = size * 0.72;
+            const checkY = size * 0.25;
+            const checkR = size * 0.11;
+            
+            // Тень для круга
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.25)';
+            ctx.shadowBlur = size * 0.02;
+            ctx.shadowOffsetY = size * 0.01;
+            
+            // Градиент для круга
+            const checkCircleGradient = ctx.createLinearGradient(
+                checkX - checkR, checkY - checkR,
+                checkX + checkR, checkY + checkR
+            );
+            checkCircleGradient.addColorStop(0, '#10b981');
+            checkCircleGradient.addColorStop(1, '#34d399');
+            
+            ctx.fillStyle = checkCircleGradient;
+            ctx.beginPath();
+            ctx.arc(checkX, checkY, checkR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+            
+            // Галочка
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = size * 0.015;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.beginPath();
+            ctx.moveTo(checkX - checkR * 0.4, checkY);
+            ctx.lineTo(checkX - checkR * 0.1, checkY + checkR * 0.3);
+            ctx.lineTo(checkX + checkR * 0.4, checkY - checkR * 0.35);
+            ctx.stroke();
+
+            // === ДЕКОРАТИВНЫЕ ЛИНИИ (СОВРЕМЕННЫЙ СТИЛЬ) ===
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            ctx.lineWidth = size * 0.004;
+            
+            // Диагональные линии
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(size * (0.1 + i * 0.15), size * 0.9);
+                ctx.lineTo(size * (0.2 + i * 0.15), size * 0.75);
+                ctx.stroke();
+            }
+
+            // === ПУЛЬСИРУЮЩАЯ ТОЧКА ===
+            const dotGradient = ctx.createRadialGradient(
+                size * 0.5, size * 0.8, 0,
+                size * 0.5, size * 0.8, size * 0.04
+            );
+            dotGradient.addColorStop(0, '#10b981');
+            dotGradient.addColorStop(0.5, 'rgba(16, 185, 129, 0.6)');
+            dotGradient.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            
+            ctx.fillStyle = dotGradient;
+            ctx.beginPath();
+            ctx.arc(size * 0.5, size * 0.8, size * 0.04, 0, Math.PI * 2);
+            ctx.fill();
+
+            // === ТЕКСТ "CRM" ===
+            ctx.save();
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = size * 0.01;
+            
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+            ctx.font = `700 ${size * 0.065}px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif`;
+            ctx.letterSpacing = `${size * 0.006}px`;
+            ctx.textAlign = 'center';
+            ctx.fillText('CRM', size * 0.5, size * 0.88);
+            ctx.restore();
+
+            // === БЛИКИ (GLASS EFFECT) ===
+            const glareGradient = ctx.createLinearGradient(0, 0, size * 0.5, size * 0.5);
+            glareGradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            glareGradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            
+            ctx.fillStyle = glareGradient;
+            ctx.beginPath();
+            ctx.arc(size * 0.25, size * 0.25, size * 0.35, 0, Math.PI * 2);
+            ctx.fill();
+
+            return canvas;
+        }
+
+        function roundRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+        }
+
+        function download(canvas, filename) {
+            canvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Показываем уведомление
+                alert(`✅ Скачан файл: ${filename}\n\nПеремести его в папку:\n/Users/testovyj/CascadeProjects/IP/public/`);
+            }, 'image/png');
+        }
+
+        function generate(size, filename) {
+            const canvas = createModernIcon(size);
+            download(canvas, filename);
+        }
+
+        // Показываем превью при загрузке
+        window.onload = function() {
+            createModernIcon(256);
+        };
+    </script>
+</body>
+</html>
