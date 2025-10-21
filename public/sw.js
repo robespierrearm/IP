@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3-offline-fix';
 const CACHE_NAME = `tendercrm-${CACHE_VERSION}`;
 const API_CACHE_NAME = `tendercrm-api-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `tendercrm-images-${CACHE_VERSION}`;
@@ -85,15 +85,21 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Игнорируем запросы к другим доменам
+  // Игнорируем запросы к другим доменам (включая Supabase)
+  // Это важно для офлайн-режима - offlineSupabase сам решит что делать
   if (url.origin !== location.origin) {
     return;
   }
-
-  // API запросы - Network First с кэшем
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(handleApiRequest(request));
+  
+  // Также игнорируем запросы к Supabase (они могут быть с нашего домена через прокси)
+  if (url.hostname.includes('supabase')) {
     return;
+  }
+
+  // API запросы - НЕ перехватываем! Пусть offlineSupabase сам решает
+  // что делать (использовать IndexedDB в офлайн или API в онлайн)
+  if (url.pathname.startsWith('/api/')) {
+    return; // Пропускаем запрос без перехвата
   }
 
   // Изображения - Cache First
