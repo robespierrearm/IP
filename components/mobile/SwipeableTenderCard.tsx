@@ -85,7 +85,9 @@ export function SwipeableTenderCard({
           stiffness: 400, 
           damping: 35
         }}
-        className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none relative z-10"
+        className={`rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none relative z-10 ${
+          tender.status === 'подано' ? 'bg-green-50' : 'bg-white'
+        }`}
       >
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-semibold text-gray-900 text-sm flex-1 line-clamp-2">

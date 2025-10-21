@@ -251,10 +251,10 @@ export default function DashboardPage() {
             return (
               <Card
                 key={card.title}
-                className={`transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border ${card.borderColor} bg-white`}
+                className={`transition-all hover:shadow-lg hover:-translate-y-0.5 cursor-pointer border ${card.borderColor} bg-white h-[200px]`}
                 onClick={() => card.tab && navigateToTenders(card.tab)}
               >
-                <CardContent className="p-3">
+                <CardContent className="p-3 h-full flex flex-col">
                   <div className="flex items-center justify-between mb-2">
                     <div className={`p-1.5 rounded-lg ${card.bgColor}`}>
                       <Icon className={`h-4 w-4 ${card.color}`} />
@@ -271,9 +271,9 @@ export default function DashboardPage() {
           })}
           
           {/* Карточка напоминаний */}
-          <Card className="transition-all hover:shadow-lg border border-orange-200 bg-white">
-              <CardContent className="p-3">
-                <div className="flex items-center gap-2 mb-3">
+          <Card className="transition-all hover:shadow-lg border border-orange-200 bg-white h-[200px]">
+              <CardContent className="p-3 h-full flex flex-col">
+                <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                   <div className="p-1.5 rounded-lg bg-orange-50">
                     <Bell className="h-4 w-4 text-orange-600" />
                   </div>
@@ -284,7 +284,7 @@ export default function DashboardPage() {
                 </div>
               
               {reminderTenders.length > 0 ? (
-                <div className="space-y-2">
+                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                   {reminderTenders.map((tender) => {
                     const deadline = new Date(tender.deadline);
                     const daysLeft = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
@@ -336,7 +336,9 @@ export default function DashboardPage() {
                   {tenders.map((tender) => (
                     <div 
                       key={tender.id} 
-                      className="px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
+                      className={`px-4 py-3 transition-colors cursor-pointer ${
+                        tender.status === 'подано' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50'
+                      }`}
                       onClick={() => navigateToTender(tender.id)}
                     >
                       <div className="flex items-start justify-between gap-3">

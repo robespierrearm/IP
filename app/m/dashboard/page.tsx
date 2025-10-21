@@ -171,7 +171,9 @@ export default function DashboardPage() {
             <div
               key={tender.id}
               onClick={() => router.push(`/m/tenders?id=${tender.id}`)}
-              className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow"
+              className={`rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow ${
+                tender.status === 'подано' ? 'bg-green-50' : 'bg-white'
+              }`}
             >
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-semibold text-gray-900 text-sm flex-1 line-clamp-2">
@@ -255,7 +257,7 @@ export default function DashboardPage() {
                   <p className="text-gray-400 text-xs mt-1">Тендеры с дедлайном в ближайшие 3 дня появятся здесь</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                   {reminderTenders.map((tender) => {
                     const deadline = new Date(tender.submission_deadline!);
                     const now = new Date();

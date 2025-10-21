@@ -374,7 +374,9 @@ function TendersContent() {
           {filteredTenders.map((tender) => (
             <Card 
               key={tender.id} 
-              className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+              className={`p-4 hover:shadow-lg transition-shadow cursor-pointer ${
+                tender.status === 'подано' ? 'bg-green-50' : ''
+              }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
               <div className="flex flex-col gap-3">
