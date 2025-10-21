@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenderInsert, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { haptics } from '@/lib/haptics';
 
 export default function AddTenderPage() {
   const router = useRouter();
@@ -26,11 +28,15 @@ export default function AddTenderPage() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      alert('Введите название тендера');
+      haptics.warning();
+      toast.error('Заполните название', {
+        description: 'Введите название тендера для продолжения'
+      });
       return;
     }
 
     setIsSaving(true);
+    haptics.light();
     
     const payload = {
       ...formData,
@@ -45,9 +51,16 @@ export default function AddTenderPage() {
     setIsSaving(false);
 
     if (!result.error) {
+      haptics.success();
+      toast.success('Тендер добавлен!', {
+        description: 'Вы можете найти его во вкладке "Новые"'
+      });
       router.push('/m/tenders');
     } else {
-      alert(result.error || 'Ошибка при создании тендера');
+      haptics.error();
+      toast.error('Ошибка сохранения', {
+        description: result.error || 'Не удалось создать тендер. Попробуйте ещё раз.'
+      });
     }
   };
 
@@ -175,10 +188,19 @@ export default function AddTenderPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
+            className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
           >
-            <Save className="w-5 h-5" />
-            {isSaving ? 'Создание...' : 'Создать тендер'}
+            {isSaving ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Создание...
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5" />
+                Создать тендер
+              </>
+            )}
           </button>
           <button
             onClick={() => router.push('/m/tenders')}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/mobile/BottomNav';
+import { Toaster } from 'sonner';
 
 export default function MobileLayout({
   children,
@@ -87,6 +88,20 @@ export default function MobileLayout({
 
       {/* Нижняя навигация */}
       <BottomNav />
+      
+      {/* Toast уведомления */}
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: 'white',
+            border: '1px solid #e5e7eb',
+            borderRadius: '16px',
+            padding: '16px',
+          },
+          className: 'shadow-lg',
+        }}
+      />
     </div>
   );
 }

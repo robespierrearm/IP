@@ -8,7 +8,10 @@ import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, Arrow
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
+import { TenderCardSkeletonGroup } from '@/components/mobile/TenderCardSkeleton';
 import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
+import { haptics } from '@/lib/haptics';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -104,6 +107,7 @@ export default function TendersPage() {
   ];
 
   const handleDeleteRequest = (tender: Tender) => {
+    haptics.warning(); // Вибрация при открытии диалога удаления
     setTenderToDelete(tender);
   };
 
@@ -112,6 +116,7 @@ export default function TendersPage() {
 
     setIsDeleting(true);
     setDeletingId(tenderToDelete.id);
+    haptics.medium(); // Вибрация при подтверждении
 
     try {
       const { error } = await supabase
@@ -127,12 +132,21 @@ export default function TendersPage() {
         setDeletingId(null);
         setTenderToDelete(null);
         setIsDeleting(false);
+        
+        // Успешное удаление
+        haptics.success();
+        toast.success('Тендер удалён', {
+          description: 'Тендер успешно удалён из списка'
+        });
       }, 300);
     } catch (error) {
       console.error('Ошибка удаления тендера:', error);
       setIsDeleting(false);
       setDeletingId(null);
-      alert('Не удалось удалить тендер');
+      haptics.error();
+      toast.error('Ошибка удаления', {
+        description: 'Не удалось удалить тендер. Попробуйте ещё раз.'
+      });
     }
   };
 
@@ -179,9 +193,7 @@ export default function TendersPage() {
       {/* Список тендеров */}
       <div className="px-6 py-4 space-y-3">
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-600"></div>
-          </div>
+          <TenderCardSkeletonGroup count={5} />
         ) : filteredTenders.length === 0 ? (
           <div className="text-center py-12">
             <Filter className="w-12 h-12 text-gray-300 mx-auto mb-3" />
