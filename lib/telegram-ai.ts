@@ -75,22 +75,27 @@ export async function processAICommand(userMessage: string, userId: number, tele
   try {
     const context = await getContext();
     
-    // Получаем историю последних 20 сообщений
-    const { data: history, error: historyError } = await supabase
-      .from('chat_history')
-      .select('role, content')
-      .eq('telegram_id', telegramId)
-      .order('created_at', { ascending: true })
-      .limit(20);
+    // Получаем историю последних 10 сообщений (уменьшаем для стабильности)
+    let history: any[] = [];
     
-    if (historyError) {
-      console.error('❌ ERROR loading chat history:', historyError);
-      console.error('Table might not exist or RLS policy is blocking access');
-    } else {
-      console.log('✅ Chat history loaded:', history?.length || 0, 'messages for user:', telegramId);
-      if (history && history.length > 0) {
-        console.log('Last message:', history[history.length - 1]);
+    try {
+      const { data, error } = await supabase
+        .from('chat_history')
+        .select('role, content')
+        .eq('telegram_id', telegramId)
+        .order('created_at', { ascending: true })
+        .limit(10);
+      
+      if (error) {
+        console.error('❌ ERROR loading chat history:', error.message);
+        // Продолжаем работу без истории
+      } else {
+        history = data || [];
+        console.log('✅ Chat history loaded:', history.length, 'messages for user:', telegramId);
       }
+    } catch (e) {
+      console.error('❌ Exception loading history:', e);
+      // Продолжаем без истории
     }
 
     // Используем расширенный системный промпт
@@ -322,15 +327,14 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
       }
       
       // Сохраняем в историю РЕАЛЬНЫЙ результат
-      const { error: saveError } = await supabase.from('chat_history').insert([
-        { telegram_id: telegramId, role: 'user', content: userMessage },
-        { telegram_id: telegramId, role: 'assistant', content: finalResponse },
-      ]);
-      
-      if (saveError) {
-        console.error('❌ ERROR saving to chat_history:', saveError);
-      } else {
-        console.log('✅ Saved 2 messages to chat_history for user:', telegramId);
+      try {
+        await supabase.from('chat_history').insert([
+          { telegram_id: telegramId, role: 'user', content: userMessage },
+          { telegram_id: telegramId, role: 'assistant', content: finalResponse },
+        ]);
+        console.log('✅ Saved to history');
+      } catch (e) {
+        console.error('❌ Failed to save history:', e);
       }
       
       return {
@@ -340,15 +344,14 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     }
 
     // Сохраняем сообщения в историю
-    const { error: saveError2 } = await supabase.from('chat_history').insert([
-      { telegram_id: telegramId, role: 'user', content: userMessage },
-      { telegram_id: telegramId, role: 'assistant', content: aiResponse },
-    ]);
-    
-    if (saveError2) {
-      console.error('❌ ERROR saving to chat_history (normal flow):', saveError2);
-    } else {
-      console.log('✅ Saved 2 messages to chat_history (normal flow) for user:', telegramId);
+    try {
+      await supabase.from('chat_history').insert([
+        { telegram_id: telegramId, role: 'user', content: userMessage },
+        { telegram_id: telegramId, role: 'assistant', content: aiResponse },
+      ]);
+      console.log('✅ Saved to history');
+    } catch (e) {
+      console.error('❌ Failed to save history:', e);
     }
 
     return { text: aiResponse, action: null };
