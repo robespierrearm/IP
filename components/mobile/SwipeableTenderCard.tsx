@@ -25,20 +25,20 @@ export function SwipeableTenderCard({
   const deleteButtonWidth = 80;
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = deleteButtonWidth * 0.4; // 40% порог
+    const threshold = deleteButtonWidth * 0.5; // 50% порог для открытия
+    const closeThreshold = 20; // Минимальный порог для закрытия
 
     if (info.offset.x < -threshold) {
-      // Свайп влево - открываем кнопку удаления
+      // Свайп влево достаточно сильный - открываем кнопку удаления
       onOpen(tender.id);
-    } else if (info.offset.x > threshold && isOpen) {
+    } else if (info.offset.x > closeThreshold && isOpen) {
       // Свайп вправо - закрываем
       onOpen(-1);
-    } else {
-      // Недостаточный свайп - возвращаем в текущее состояние
-      if (!isOpen) {
-        onOpen(-1);
-      }
+    } else if (Math.abs(info.offset.x) < threshold && !isOpen) {
+      // Недостаточный свайп - закрываем (предотвращаем застревание)
+      onOpen(-1);
     }
+    // Если уже открыто и свайп недостаточный - оставляем открытым
   };
 
   const handleCardClick = () => {

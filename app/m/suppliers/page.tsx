@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase, Supplier } from '@/lib/supabase';
 import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
 import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function SuppliersPage() {
   const router = useRouter();
@@ -211,17 +212,35 @@ export default function SuppliersPage() {
       )}
 
       {/* Модальное окно детального просмотра */}
-      {selectedSupplier && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
-          onClick={() => setSelectedSupplier(null)}
-        >
-          <div
-            className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {selectedSupplier && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            onClick={() => setSelectedSupplier(null)}
           >
+            <motion.div
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(e, info) => {
+                // Если потянули вниз больше чем на 100px - закрываем
+                if (info.offset.y > 100) {
+                  setSelectedSupplier(null);
+                }
+              }}
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
             {/* Индикатор свайпа */}
-            <div className="flex justify-center py-3">
+            <div className="flex justify-center py-3 sticky top-0 bg-white z-10">
               <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
             </div>
 
@@ -318,9 +337,10 @@ export default function SuppliersPage() {
                 Закрыть
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Action Button */}
       <button

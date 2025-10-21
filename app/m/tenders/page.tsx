@@ -232,15 +232,24 @@ export default function TendersPage() {
             onClick={() => setSelectedTender(null)}
           >
             <motion.div
+              drag="y"
+              dragConstraints={{ top: 0, bottom: 0 }}
+              dragElastic={{ top: 0, bottom: 0.5 }}
+              onDragEnd={(e, info) => {
+                // Если потянули вниз больше чем на 100px - закрываем
+                if (info.offset.y > 100) {
+                  setSelectedTender(null);
+                }
+              }}
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
               className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
             {/* Индикатор свайпа */}
-            <div className="flex justify-center py-3">
+            <div className="flex justify-center py-3 sticky top-0 bg-white z-10">
               <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
             </div>
 
