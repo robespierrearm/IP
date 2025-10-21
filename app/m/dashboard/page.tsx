@@ -74,7 +74,7 @@ export default function DashboardPage() {
       case 'новый':
         return 'bg-blue-100 text-blue-700';
       case 'подано':
-        return 'bg-indigo-100 text-indigo-700';
+        return 'bg-green-100 text-green-700'; // Зелёный фон для поданных тендеров
       case 'на рассмотрении':
         return 'bg-purple-100 text-purple-700';
       case 'победа':

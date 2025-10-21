@@ -70,19 +70,8 @@ export function MobileTenderStatusChanger({ tender, onStatusChanged }: MobileTen
           if (submittedPrice) {
             additionalData.submitted_price = parseFloat(submittedPrice);
           }
-          // Сначала переводим в "Подано"
-          await apiClient.updateTender(tender.id, { status: selectedStatus, ...additionalData });
-          
-          // Затем автоматически переводим в "На рассмотрении"
-          await apiClient.updateTender(tender.id, { status: 'на рассмотрении' });
-          
-          setIsDialogOpen(false);
-          setSelectedStatus(null);
-          setSubmittedPrice('');
-          alert('👀 Тендер на рассмотрении');
-          onStatusChanged();
-          setIsProcessing(false);
-          return;
+          // Статус остается "подано" до дня дедлайна
+          break;
 
         case 'на рассмотрении':
           // Автоматически устанавливаем дату подачи, если её нет
