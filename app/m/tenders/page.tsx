@@ -351,11 +351,14 @@ export default function TendersPage() {
                     </div>
                   </div>
 
-                  {/* Дата подачи показываем только со статуса 'на рассмотрении' */}
+                  {/* Дата подачи */}
                   {selectedTender.status !== 'новый' && 
                    selectedTender.status !== 'подано' && (
-                    <div>
-                      <div className="text-sm text-gray-600 mb-1">Дата подачи</div>
+                    <div className="bg-blue-50 rounded-xl p-3">
+                      <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
+                        <Calendar className="w-3.5 h-3.5" />
+                        <span>Дата подачи</span>
+                      </div>
                       {selectedTender.status === 'на рассмотрении' ? (
                         editingSubmissionDate ? (
                           <div className="flex gap-2">
@@ -363,7 +366,7 @@ export default function TendersPage() {
                               type="date"
                               value={tempSubmissionDate}
                               onChange={(e) => setTempSubmissionDate(e.target.value)}
-                              className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                              className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-xs"
                             />
                             <button
                               onClick={async () => {
@@ -371,13 +374,13 @@ export default function TendersPage() {
                                 setEditingSubmissionDate(false);
                                 loadTenders();
                               }}
-                              className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm"
+                              className="px-2 py-1 bg-green-600 text-white rounded-lg text-xs"
                             >
                               ✓
                             </button>
                             <button
                               onClick={() => setEditingSubmissionDate(false)}
-                              className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"
+                              className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
                             >
                               ✕
                             </button>
@@ -388,13 +391,13 @@ export default function TendersPage() {
                               setTempSubmissionDate(selectedTender.submission_date || new Date().toISOString().split('T')[0]);
                               setEditingSubmissionDate(true);
                             }}
-                            className="font-medium text-gray-900 cursor-pointer hover:text-primary-600 transition-colors"
+                            className="font-semibold text-sm text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
                           >
-                            {selectedTender.submission_date ? formatDate(selectedTender.submission_date) : '— (нажмите для редактирования)'}
+                            {selectedTender.submission_date ? formatDate(selectedTender.submission_date) : '— (нажмите)'}
                           </div>
                         )
                       ) : (
-                        <div className="font-medium text-gray-900">
+                        <div className="font-semibold text-sm text-blue-900">
                           {selectedTender.submission_date ? formatDate(selectedTender.submission_date) : '—'}
                         </div>
                       )}
@@ -402,19 +405,26 @@ export default function TendersPage() {
                   )}
                 </div>
 
+                {/* Цены */}
                 {selectedTender.start_price && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Начальная цена</div>
-                    <div className="text-xl font-bold text-green-600">
+                  <div className="bg-green-50 rounded-xl p-3 border border-green-100">
+                    <div className="flex items-center gap-2 text-xs text-green-600 mb-1">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Начальная цена</span>
+                    </div>
+                    <div className="text-lg font-bold text-green-700">
                       {formatPrice(selectedTender.start_price)}
                     </div>
                   </div>
                 )}
 
-                {/* Цену подачи показываем начиная со статуса 'подано' */}
+                {/* Цена подачи */}
                 {selectedTender.status !== 'новый' && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Цена подачи</div>
+                  <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
+                    <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
+                      <DollarSign className="w-3.5 h-3.5" />
+                      <span>Цена подачи</span>
+                    </div>
                     {selectedTender.status === 'на рассмотрении' ? (
                       editingSubmittedPrice ? (
                         <div className="flex gap-2">
@@ -422,8 +432,8 @@ export default function TendersPage() {
                             type="number"
                             value={tempSubmittedPrice}
                             onChange={(e) => setTempSubmittedPrice(e.target.value)}
-                            placeholder="Введите цену"
-                            className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                            placeholder="Введите"
+                            className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-xs"
                           />
                           <button
                             onClick={async () => {
@@ -431,13 +441,13 @@ export default function TendersPage() {
                               setEditingSubmittedPrice(false);
                               loadTenders();
                             }}
-                            className="px-3 py-2 bg-green-600 text-white rounded-lg text-sm"
+                            className="px-2 py-1 bg-green-600 text-white rounded-lg text-xs"
                           >
                             ✓
                           </button>
                           <button
                             onClick={() => setEditingSubmittedPrice(false)}
-                            className="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"
+                            className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
                           >
                             ✕
                           </button>
@@ -448,20 +458,18 @@ export default function TendersPage() {
                             setTempSubmittedPrice(selectedTender.submitted_price?.toString() || '');
                             setEditingSubmittedPrice(true);
                           }}
-                          className="text-lg font-bold text-blue-600 cursor-pointer hover:text-blue-700 transition-colors"
+                          className="text-lg font-bold text-blue-700 cursor-pointer hover:text-blue-800 transition-colors"
                         >
-                          {selectedTender.submitted_price ? formatPrice(selectedTender.submitted_price) : '— (нажмите для редактирования)'}
+                          {selectedTender.submitted_price ? formatPrice(selectedTender.submitted_price) : '— (нажмите)'}
                         </div>
                       )
                     ) : (
                       selectedTender.submitted_price ? (
-                        <div className="text-lg font-bold text-blue-600">
+                        <div className="text-lg font-bold text-blue-700">
                           {formatPrice(selectedTender.submitted_price)}
                         </div>
                       ) : (
-                        <div className="text-sm text-amber-600 bg-amber-50 px-3 py-2 rounded-lg border border-amber-200">
-                          ⚠️ Цена подачи не заполнена
-                        </div>
+                        <div className="text-xs text-amber-600">⚠️ Не заполнена</div>
                       )
                     )}
                   </div>
