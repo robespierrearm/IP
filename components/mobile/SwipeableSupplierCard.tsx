@@ -15,21 +15,29 @@ interface SwipeableSupplierCardProps {
 export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onOpen }: SwipeableSupplierCardProps) {
   const deleteButtonWidth = 80;
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
-    const threshold = deleteButtonWidth * 0.5; // 50% порог для открытия
-    const closeThreshold = 20; // Минимальный порог для закрытия
+  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // Если начали свайпить эту карточку - закрываем все другие СРАЗУ
+    if (Math.abs(info.offset.x) > 5 && !isOpen) {
+      onOpen(-1); // Закрываем все открытые карточки
+    }
+  };
 
-    if (info.offset.x < -threshold) {
-      // Свайп влево достаточно сильный - открываем кнопку удаления
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const openThreshold = deleteButtonWidth * 0.5; // 50% для открытия
+    const closeThreshold = 20; // Минимум для закрытия
+
+    // Если свайп влево достаточно сильный - открываем
+    if (info.offset.x < -openThreshold) {
       onOpen(supplier.id);
-    } else if (info.offset.x > closeThreshold && isOpen) {
-      // Свайп вправо - закрываем
-      onOpen(-1);
-    } else if (Math.abs(info.offset.x) < threshold && !isOpen) {
-      // Недостаточный свайп - закрываем (предотвращаем застревание)
+    } 
+    // Если свайп вправо - всегда закрываем
+    else if (info.offset.x > closeThreshold) {
       onOpen(-1);
     }
-    // Если уже открыто и свайп недостаточный - оставляем открытым
+    // Любой другой случай - закрываем (предотвращаем застревание)
+    else {
+      onOpen(-1);
+    }
   };
 
   const handleCardClick = () => {
@@ -67,6 +75,7 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onO
         dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
         dragElastic={0.2}
         dragMomentum={false}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         onClick={handleCardClick}
         initial={{ x: 0 }}

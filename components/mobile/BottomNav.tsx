@@ -37,12 +37,14 @@ export function BottomNav() {
             // 2. Мгновенно показываем что кнопка нажата
             setPendingPath(item.href);
             
-            // 3. Потом переходим (в фоне)
-            startTransition(() => {
-              router.push(item.href);
-              // Сбрасываем pending после перехода
-              setTimeout(() => setPendingPath(null), 300);
-            });
+            // 3. Prefetch для быстрой загрузки
+            router.prefetch(item.href);
+            
+            // 4. Переходим сразу (не в transition)
+            router.push(item.href);
+            
+            // 5. Сбрасываем pending через 100ms
+            setTimeout(() => setPendingPath(null), 100);
           };
 
           return (

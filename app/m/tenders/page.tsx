@@ -48,6 +48,35 @@ export default function TendersPage() {
     filterTenders();
   }, [tenders, debouncedSearchQuery, selectedStatus]); // Используем debounced версию
 
+  // Автозакрытие открытой карточки через 3 секунды
+  useEffect(() => {
+    if (openCardId !== -1) {
+      const timer = setTimeout(() => {
+        setOpenCardId(-1);
+      }, 3000); // 3 секунды
+
+      return () => clearTimeout(timer);
+    }
+  }, [openCardId]);
+
+  // Закрытие при клике вне карточки
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openCardId !== -1) {
+        // Проверяем что клик не по открытой карточке
+        const target = e.target as HTMLElement;
+        const isClickOnCard = target.closest('[data-card-id]');
+        
+        if (!isClickOnCard) {
+          setOpenCardId(-1);
+        }
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openCardId]);
+
   const loadTenders = async () => {
     setIsLoading(true);
     const result = await apiClient.getTenders();

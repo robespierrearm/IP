@@ -24,6 +24,13 @@ export function SwipeableTenderCard({
 }: SwipeableTenderCardProps) {
   const deleteButtonWidth = 80;
 
+  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    // Если начали свайпить эту карточку - закрываем все другие СРАЗУ
+    if (Math.abs(info.offset.x) > 5 && !isOpen) {
+      onOpen(-1); // Закрываем все открытые карточки
+    }
+  };
+
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const openThreshold = deleteButtonWidth * 0.5; // 50% для открытия
     const closeThreshold = 20; // Минимум для закрытия
@@ -77,6 +84,7 @@ export function SwipeableTenderCard({
         dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
         dragElastic={0.2}
         dragMomentum={false}
+        onDrag={handleDrag}
         onDragEnd={handleDragEnd}
         onClick={handleCardClick}
         initial={{ x: 0 }}
