@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase, Supplier } from '@/lib/supabase';
-import { Search, Phone, Mail, Building2, User, Plus } from 'lucide-react';
+import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
+import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
 
 export default function SuppliersPage() {
   const router = useRouter();
@@ -12,6 +13,9 @@ export default function SuppliersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   useEffect(() => {
     loadSuppliers();
@@ -59,6 +63,43 @@ export default function SuppliersPage() {
     window.location.href = `mailto:${email}`;
   };
 
+  const handleDeleteRequest = (supplier: Supplier) => {
+    setSupplierToDelete(supplier);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!supplierToDelete) return;
+
+    setIsDeleting(true);
+    setDeletingId(supplierToDelete.id);
+
+    try {
+      const { error } = await supabase
+        .from('suppliers')
+        .delete()
+        .eq('id', supplierToDelete.id);
+
+      if (error) throw error;
+
+      // Анимация исчезновения - ждём 300ms перед удалением из state
+      setTimeout(() => {
+        setSuppliers(prev => prev.filter(s => s.id !== supplierToDelete.id));
+        setDeletingId(null);
+        setSupplierToDelete(null);
+        setIsDeleting(false);
+      }, 300);
+    } catch (error) {
+      console.error('Ошибка удаления поставщика:', error);
+      setIsDeleting(false);
+      setDeletingId(null);
+      alert('Не удалось удалить поставщика');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setSupplierToDelete(null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
@@ -95,61 +136,76 @@ export default function SuppliersPage() {
           filteredSuppliers.map((supplier) => (
             <div
               key={supplier.id}
-              onClick={() => setSelectedSupplier(supplier)}
-              className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow"
+              className={`transition-all duration-300 ${
+                deletingId === supplier.id
+                  ? 'opacity-0 scale-95 -translate-x-full'
+                  : 'opacity-100 scale-100 translate-x-0'
+              }`}
             >
-              {/* Название и категория */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900 text-base mb-1">{supplier.name}</h3>
-                  {supplier.category && (
-                    <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-medium">
-                      {supplier.category}
-                    </span>
-                  )}
-                </div>
-                <Building2 className="w-5 h-5 text-gray-400 flex-shrink-0 ml-2" />
-              </div>
-
-              {/* Контактная информация */}
-              <div className="space-y-2">
-                {supplier.contact_person && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <User className="w-4 h-4 flex-shrink-0" />
-                    <span>{supplier.contact_person}</span>
-                  </div>
-                )}
-
-                {supplier.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <a
-                      href={`tel:${supplier.phone.replace(/\D/g, '')}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-sm font-medium text-green-600"
-                    >
-                      {supplier.phone}
-                    </a>
-                  </div>
-                )}
-
-                {supplier.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                    <a
-                      href={`mailto:${supplier.email}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="text-sm font-medium text-blue-600 truncate"
-                    >
-                      {supplier.email}
-                    </a>
-                  </div>
-                )}
-              </div>
+              <SwipeableSupplierCard
+                supplier={supplier}
+                onDelete={handleDeleteRequest}
+                onClick={setSelectedSupplier}
+              />
             </div>
           ))
         )}
       </div>
+
+      {/* Модальное окно подтверждения удаления */}
+      {supplierToDelete && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
+          onClick={handleDeleteCancel}
+        >
+          <div
+            className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Иконка предупреждения */}
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <AlertTriangle className="w-8 h-8 text-red-600" />
+            </div>
+
+            {/* Заголовок */}
+            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">
+              Удалить поставщика?
+            </h3>
+
+            {/* Описание */}
+            <p className="text-gray-600 text-center mb-6">
+              Вы уверены, что хотите удалить <span className="font-semibold">{supplierToDelete.name}</span>?
+              <br />
+              <span className="text-sm text-red-600">Это действие нельзя отменить.</span>
+            </p>
+
+            {/* Кнопки */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors disabled:opacity-50"
+              >
+                Отмена
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 bg-red-500 text-white py-3 rounded-xl font-medium active:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {isDeleting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Удаление...
+                  </>
+                ) : (
+                  'Удалить'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Модальное окно детального просмотра */}
       {selectedSupplier && (
