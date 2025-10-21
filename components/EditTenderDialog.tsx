@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Tender } from '@/lib/supabase';
+import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -76,6 +76,24 @@ export function EditTenderDialog({
                 placeholder="Введите название тендера"
                 required
               />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="edit-status">Статус</Label>
+              <select
+                id="edit-status"
+                value={formData.status || 'новый'}
+                onChange={(e) =>
+                  setFormData({ ...formData, status: e.target.value as Tender['status'] })
+                }
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {Object.entries(STATUS_LABELS).map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="grid gap-2">
