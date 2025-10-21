@@ -180,28 +180,46 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
         };
       }
 
-      // Формируем историю для Gemini
-      let conversationText = systemPrompt + '\n\n';
+      // Формируем историю для Gemini в правильном формате
+      const contents = [];
       
+      // Добавляем системный промпт как первое сообщение пользователя
+      contents.push({
+        role: 'user',
+        parts: [{ text: systemPrompt }]
+      });
+      
+      // Добавляем фейковый ответ ассистента
+      contents.push({
+        role: 'model',
+        parts: [{ text: 'Понял! Я готов помогать с управлением тендерами.' }]
+      });
+      
+      // Добавляем историю диалога
       if (history && history.length > 0) {
-        conversationText += 'История разговора:\n';
         history.forEach(h => {
-          conversationText += `${h.role === 'user' ? 'Пользователь' : 'Ассистент'}: ${h.content}\n`;
+          contents.push({
+            role: h.role === 'user' ? 'user' : 'model',
+            parts: [{ text: h.content }]
+          });
         });
-        conversationText += '\n';
       }
       
-      conversationText += `Пользователь: ${userMessage}`;
+      // Добавляем текущее сообщение пользователя
+      contents.push({
+        role: 'user',
+        parts: [{ text: userMessage }]
+      });
 
       const requestBody = {
-        contents: [{
-          parts: [{ text: conversationText }]
-        }],
+        contents,
         generationConfig: {
           temperature: 0.7,
           maxOutputTokens: 1000,
         }
       };
+      
+      console.log('📝 Gemini request with', contents.length, 'messages (including', history?.length || 0, 'from history)');
       
       console.log('Gemini request:', JSON.stringify(requestBody, null, 2));
       
