@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
-import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle } from 'lucide-react';
+import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
@@ -267,7 +267,7 @@ export default function TendersPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-end pb-20"
+            className="fixed inset-0 bg-black/50 z-50 flex items-end"
             onClick={() => setSelectedTender(null)}
           >
             <motion.div
@@ -275,7 +275,6 @@ export default function TendersPage() {
               dragConstraints={{ top: 0, bottom: 0 }}
               dragElastic={{ top: 0, bottom: 0.5 }}
               onDragEnd={(e, info) => {
-                // Если потянули вниз больше чем на 100px - закрываем
                 if (info.offset.y > 100) {
                   setSelectedTender(null);
                 }
@@ -284,54 +283,70 @@ export default function TendersPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="bg-white rounded-t-3xl w-full overflow-y-auto"
-              style={{ maxHeight: 'calc(100vh - 80px)' }}
+              className="bg-white rounded-t-3xl w-full flex flex-col"
+              style={{ maxHeight: 'min(80vh, 700px)', marginBottom: '80px' }}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
-            {/* Индикатор свайпа */}
-            <div className="flex justify-center py-3 sticky top-0 bg-white z-10">
-              <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+            {/* Шапка - sticky */}
+            <div className="sticky top-0 bg-white z-10 px-6 pt-3 pb-4 border-b border-gray-100">
+              {/* Индикатор свайпа */}
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+              </div>
+
+              {/* Заголовок + Статус */}
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-xl font-bold text-gray-900 flex-1">
+                  {selectedTender.name}
+                </h2>
+                {selectedTender.status !== 'новый' && (
+                  <span
+                    className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${getStatusColor(
+                      selectedTender.status
+                    )}`}
+                  >
+                    {STATUS_LABELS[selectedTender.status]}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div className="px-6 pb-6">
-              {/* Заголовок */}
-              <h2 className="text-xl font-bold text-gray-900 mb-4">
-                {selectedTender.name}
-              </h2>
-
-              {/* Статус - НЕ показываем 'новый' */}
-              {selectedTender.status !== 'новый' && (
-                <span
-                  className={`inline-block px-3 py-1 rounded-lg text-sm font-medium mb-4 ${getStatusColor(
-                    selectedTender.status
-                  )}`}
-                >
-                  {STATUS_LABELS[selectedTender.status]}
-                </span>
-              )}
-
-              {/* Детали */}
-              <div className="space-y-4">
+            {/* Контент - скроллится */}
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {/* Компактные карточки с данными */}
+              <div className="space-y-3">
+                {/* Номер закупки */}
                 {selectedTender.purchase_number && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Номер закупки</div>
-                    <div className="font-medium text-gray-900">
+                  <div className="bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>Номер закупки</span>
+                    </div>
+                    <div className="font-mono text-sm font-medium text-gray-900">
                       {selectedTender.purchase_number}
                     </div>
                   </div>
                 )}
 
+                {/* Регион */}
                 {selectedTender.region && (
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Регион</div>
+                  <div className="bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>Регион</span>
+                    </div>
                     <div className="font-medium text-gray-900">{selectedTender.region}</div>
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="text-sm text-gray-600 mb-1">Публикация</div>
-                    <div className="font-medium text-gray-900">
+                {/* Даты */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-gray-50 rounded-xl p-3">
+                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>Публикация</span>
+                    </div>
+                    <div className="font-semibold text-sm text-gray-900">
                       {selectedTender.publication_date ? formatDate(selectedTender.publication_date) : '—'}
                     </div>
                   </div>
