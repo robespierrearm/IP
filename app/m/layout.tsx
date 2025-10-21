@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/mobile/BottomNav';
-import { Toaster } from 'sonner';
+import { Toaster, toast } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PWARegister } from '@/components/PWARegister';
 
@@ -16,6 +16,13 @@ export default function MobileLayout({
   const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Делаем toast доступным глобально для offlineSupabase
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).toast = toast;
+    }
+  }, []);
 
   useEffect(() => {
     // Пропускаем проверку для страницы логина
@@ -73,17 +80,14 @@ export default function MobileLayout({
     );
   }
 
-  // Делаем toast доступным глобально для offlineSupabase
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const { toast } = require('sonner');
-      (window as any).toast = toast;
-    }
-  }, []);
-
   // Если это страница логина - показываем без BottomNav
   if (pathname === '/m/login') {
-    return <>{children}</>;
+    return (
+      <>
+        <PWARegister />
+        {children}
+      </>
+    );
   }
 
   return (
