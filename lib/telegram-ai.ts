@@ -76,14 +76,22 @@ export async function processAICommand(userMessage: string, userId: number, tele
     const context = await getContext();
     
     // Получаем историю последних 20 сообщений
-    const { data: history } = await supabase
+    const { data: history, error: historyError } = await supabase
       .from('chat_history')
       .select('role, content')
       .eq('telegram_id', telegramId)
       .order('created_at', { ascending: true })
       .limit(20);
     
-    console.log('Chat history loaded:', history?.length || 0, 'messages');
+    if (historyError) {
+      console.error('❌ ERROR loading chat history:', historyError);
+      console.error('Table might not exist or RLS policy is blocking access');
+    } else {
+      console.log('✅ Chat history loaded:', history?.length || 0, 'messages for user:', telegramId);
+      if (history && history.length > 0) {
+        console.log('Last message:', history[history.length - 1]);
+      }
+    }
 
     // Используем расширенный системный промпт
     const systemPrompt = AI_SYSTEM_PROMPT + `
@@ -296,10 +304,16 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
       }
       
       // Сохраняем в историю РЕАЛЬНЫЙ результат
-      await supabase.from('chat_history').insert([
+      const { error: saveError } = await supabase.from('chat_history').insert([
         { telegram_id: telegramId, role: 'user', content: userMessage },
         { telegram_id: telegramId, role: 'assistant', content: finalResponse },
       ]);
+      
+      if (saveError) {
+        console.error('❌ ERROR saving to chat_history:', saveError);
+      } else {
+        console.log('✅ Saved 2 messages to chat_history for user:', telegramId);
+      }
       
       return {
         text: finalResponse,
@@ -308,10 +322,16 @@ ${context.tenders?.map(t => `- ID: ${t.id}, Название: "${t.name}", Ст�
     }
 
     // Сохраняем сообщения в историю
-    await supabase.from('chat_history').insert([
+    const { error: saveError2 } = await supabase.from('chat_history').insert([
       { telegram_id: telegramId, role: 'user', content: userMessage },
       { telegram_id: telegramId, role: 'assistant', content: aiResponse },
     ]);
+    
+    if (saveError2) {
+      console.error('❌ ERROR saving to chat_history (normal flow):', saveError2);
+    } else {
+      console.log('✅ Saved 2 messages to chat_history (normal flow) for user:', telegramId);
+    }
 
     return { text: aiResponse, action: null };
   } catch (error: any) {
@@ -511,3 +531,4 @@ async function executeAction(actionType: string, data: any, userId: number) {
     return { success: false, message: `❌ Ошибка при выполнении действия: ${error.message || 'Неизвестная ошибка'}` };
   }
 }
+https://github.com/robespierrearm/new
