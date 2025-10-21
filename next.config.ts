@@ -33,7 +33,59 @@ const nextConfig: NextConfig = {
   
   // Оптимизация бандла
   experimental: {
-    optimizePackageImports: ['lucide-react', '@supabase/supabase-js', '@radix-ui/react-dialog', '@radix-ui/react-select'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@supabase/supabase-js',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      'framer-motion',
+      'sonner',
+      'date-fns'
+    ],
+  },
+  
+  // Webpack оптимизации
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Оптимизация bundle splitting
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            // Vendor chunk для больших библиотек
+            vendor: {
+              name: 'vendor',
+              chunks: 'all',
+              test: /node_modules/,
+              priority: 20
+            },
+            // Отдельный chunk для framer-motion
+            framerMotion: {
+              name: 'framer-motion',
+              test: /[\\/]node_modules[\\/]framer-motion[\\/]/,
+              priority: 30
+            },
+            // Отдельный chunk для supabase
+            supabase: {
+              name: 'supabase',
+              test: /[\\/]node_modules[\\/]@supabase[\\/]/,
+              priority: 30
+            },
+            // Общий chunk для компонентов
+            common: {
+              name: 'common',
+              minChunks: 2,
+              priority: 10,
+              reuseExistingChunk: true
+            }
+          }
+        }
+      };
+    }
+    return config;
   },
   
   // Отключаем генерацию source maps в production
