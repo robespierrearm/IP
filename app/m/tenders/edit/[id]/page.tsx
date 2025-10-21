@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase, Tender, STATUS_LABELS } from '@/lib/supabase';
+import { Tender, STATUS_LABELS } from '@/lib/supabase';
+import { offlineSupabase } from '@/lib/offline-supabase';
 import { ArrowLeft, Save } from 'lucide-react';
+import { toast } from 'sonner';
+import { haptics } from '@/lib/haptics';
 
 export default function EditTenderPage() {
   const router = useRouter();
@@ -20,14 +23,14 @@ export default function EditTenderPage() {
 
   const loadTender = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('tenders')
-      .select('*')
-      .eq('id', tenderId)
-      .single();
-
-    if (!error && data) {
-      setTender(data);
+    try {
+      const tenders = await offlineSupabase.getTenders();
+      const data = tenders.find(t => t.id === parseInt(tenderId));
+      if (data) {
+        setTender(data);
+      }
+    } catch (error) {
+      console.error('Error loading tender:', error);
     }
     setIsLoading(false);
   };
@@ -36,24 +39,32 @@ export default function EditTenderPage() {
     if (!tender) return;
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from('tenders')
-      .update({
+    haptics.light();
+    
+    try {
+      await offlineSupabase.updateTender(tender.id, {
         name: tender.name,
         status: tender.status,
         start_price: tender.start_price,
         win_price: tender.win_price,
         region: tender.region,
         purchase_number: tender.purchase_number,
-      })
-      .eq('id', tenderId);
-
-    setIsSaving(false);
-
-    if (!error) {
+      });
+      
+      setIsSaving(false);
+      haptics.success();
+      toast.success('Тендер обновлён!', {
+        description: offlineSupabase.getOnlineStatus() 
+          ? 'Изменения сохранены' 
+          : 'Изменения будут синхронизированы при подключении к сети'
+      });
       router.push('/m/tenders');
-    } else {
-      alert('Ошибка при сохранении');
+    } catch (error) {
+      setIsSaving(false);
+      haptics.error();
+      toast.error('Ошибка сохранения', {
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка'
+      });
     }
   };
 
@@ -184,6 +195,7 @@ export default function EditTenderPage() {
         {/* Кнопки */}
         <div className="flex gap-3 pt-4">
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"

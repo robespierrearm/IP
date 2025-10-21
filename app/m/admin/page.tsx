@@ -22,20 +22,28 @@ export default function AdminPage() {
   const loadData = async () => {
     setIsLoading(true);
 
-    // Загружаем пользователей
-    const { data: usersData, error } = await supabase
-      .from('users')
-      .select('*')
-      .order('created_at', { ascending: false });
+    try {
+      // Загружаем пользователей
+      const { data: usersData, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    if (!error && usersData) {
-      setUsers(usersData);
+      if (!error && usersData) {
+        setUsers(usersData);
+      }
+    } catch (error) {
+      console.log(' Админка недоступна офлайн');
+    }
 
-      // Подсчёт статистики
+    setIsLoading(false);
+
+    // Подсчёт статистики
+    if (users.length > 0) {
       setStats({
-        totalUsers: usersData.length,
-        onlineUsers: usersData.filter((u) => u.is_online).length,
-        activeUsers: usersData.filter((u) => u.is_active).length,
+        totalUsers: users.length,
+        onlineUsers: users.filter((u) => u.is_online).length,
+        activeUsers: users.filter((u) => u.is_active).length,
       });
     }
 

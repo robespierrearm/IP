@@ -7,42 +7,8 @@
   "background_color": "#6366F1",
   "theme_color": "#6366F1",
   "orientation": "portrait",
-  "icons": [
-    {
-      "src": "/android-chrome-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
-  ],
+  "icons": [],
   "categories": ["business", "productivity"],
   "screenshots": [],
-  "shortcuts": [
-    {
-      "name": "Тендеры",
-      "short_name": "Тендеры",
-      "description": "Просмотр тендеров",
-      "url": "/tenders",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Бухгалтерия",
-      "short_name": "Бухгалтерия",
-      "description": "Финансовый учёт",
-      "url": "/accounting",
-      "icons": [{ "src": "/icons/icon-192x192.png", "sizes": "192x192" }]
-    }
-  ]
+  "shortcuts": []
 }

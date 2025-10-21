@@ -36,14 +36,18 @@ export default function ChatPage() {
 
   const loadMessages = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .order('created_at', { ascending: true })
-      .limit(100);
+    try {
+      const { data, error } = await supabase
+        .from('messages')
+        .select('*')
+        .order('created_at', { ascending: true })
+        .limit(100);
 
-    if (!error && data) {
-      setMessages(data);
+      if (!error && data) {
+        setMessages(data);
+      }
+    } catch (error) {
+      console.log('📦 Чат недоступен офлайн');
     }
     setIsLoading(false);
   };

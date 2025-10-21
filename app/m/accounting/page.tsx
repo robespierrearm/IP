@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase, Tender, Expense } from '@/lib/supabase';
+import { Tender, Expense } from '@/lib/supabase';
+import { offlineSupabase } from '@/lib/offline-supabase';
 import { TrendingUp, TrendingDown, DollarSign, FileText, ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
@@ -26,28 +27,31 @@ export default function AccountingPage() {
     setIsLoading(true);
 
     // Загружаем тендеры со статусами "победа", "в работе", "завершён"
-    const { data: tenders, error: tendersError } = await supabase
-      .from('tenders')
-      .select('*')
-      .in('status', ['победа', 'в работе', 'завершён'])
-      .order('created_at', { ascending: false });
+    const tenders = await offlineSupabase.getTenders();
+    const filteredTenders = tenders.filter(t => 
+      ['победа', 'в работе', 'завершён'].includes(t.status)
+    ).sort((a, b) => {
+      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return dateB - dateA;
+    });
+    const tendersError = null;
 
-    if (tendersError || !tenders || tenders.length === 0) {
+    if (tendersError || !filteredTenders || filteredTenders.length === 0) {
       setTendersWithExpenses([]);
       setIsLoading(false);
       return;
     }
 
     // Загружаем расходы для всех тендеров
-    const { data: expenses } = await supabase
-      .from('expenses')
-      .select('*')
-      .in('tender_id', tenders.map((t) => t.id));
+    const allExpenses = await offlineSupabase.getExpenses();
+    const tenderIds = filteredTenders.map((t: Tender) => t.id);
+    const expenses = allExpenses.filter((exp: Expense) => tenderIds.includes(exp.tender_id));
 
     // Группируем расходы по тендерам
-    const result: TenderWithExpenses[] = tenders.map((tender) => ({
+    const result: TenderWithExpenses[] = filteredTenders.map((tender: Tender) => ({
       tender,
-      expenses: (expenses || []).filter((exp) => exp.tender_id === tender.id),
+      expenses: (expenses || []).filter((exp: Expense) => exp.tender_id === tender.id),
     }));
 
     setTendersWithExpenses(result);
@@ -81,14 +85,18 @@ export default function AccountingPage() {
       return;
     }
 
-    const { error } = await supabase.from('expenses').insert([{
+    const expense = {
       tender_id: selectedTenderId,
       category: newExpense.category,
       amount: parseFloat(newExpense.amount),
       description: newExpense.description || null,
-    }]);
+      created_at: new Date().toISOString(),
+    };
 
-    if (error) {
+    try {
+      await offlineSupabase.createExpense(expense);
+
+    } catch (error) {
       alert('Ошибка при добавлении расхода');
       return;
     }
@@ -101,9 +109,9 @@ export default function AccountingPage() {
   const handleDeleteExpense = async (expenseId: number) => {
     if (!confirm('Удалить этот расход?')) return;
 
-    const { error } = await supabase.from('expenses').delete().eq('id', expenseId);
-
-    if (error) {
+    try {
+      await offlineSupabase.deleteExpense(expenseId);
+    } catch (error) {
       alert('Ошибка при удалении расхода');
       return;
     }

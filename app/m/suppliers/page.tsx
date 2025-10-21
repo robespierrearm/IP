@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase, Supplier } from '@/lib/supabase';
+import { Supplier } from '@/lib/supabase';
+import { offlineSupabase } from '@/lib/offline-supabase';
 import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
 import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
 import { toast } from 'sonner';
@@ -61,13 +62,16 @@ export default function SuppliersPage() {
 
   const loadSuppliers = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('suppliers')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (!error && data) {
-      setSuppliers(data);
+    try {
+      const data = await offlineSupabase.getSuppliers();
+      const sorted = data.sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA;
+      });
+      setSuppliers(sorted);
+    } catch (error) {
+      console.error('Error loading suppliers:', error);
     }
     setIsLoading(false);
   };
@@ -108,12 +112,7 @@ export default function SuppliersPage() {
     setDeletingId(supplierToDelete.id);
 
     try {
-      const { error } = await supabase
-        .from('suppliers')
-        .delete()
-        .eq('id', supplierToDelete.id);
-
-      if (error) throw error;
+      await offlineSupabase.deleteSupplier(supplierToDelete.id);
 
       // Анимация исчезновения - ждём 300ms перед удалением из state
       setTimeout(() => {

@@ -22,13 +22,17 @@ export default function FilesPage() {
 
   const loadFiles = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('files')
-      .select('*')
-      .order('uploaded_at', { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from('files')
+        .select('*')
+        .order('uploaded_at', { ascending: false });
 
-    if (!error && data) {
-      setFiles(data);
+      if (!error && data) {
+        setFiles(data);
+      }
+    } catch (error) {
+      console.log('📦 Файлы недоступны офлайн');
     }
     setIsLoading(false);
   };

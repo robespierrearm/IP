@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenderInsert, STATUS_LABELS } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
+import { offlineSupabase } from '@/lib/offline-supabase';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
@@ -46,20 +46,22 @@ export default function AddTenderPage() {
       submission_deadline: formData.submission_deadline || null,
     };
     
-    const result = await apiClient.createTender(payload);
-
-    setIsSaving(false);
-
-    if (!result.error) {
+    try {
+      await offlineSupabase.createTender(payload);
+      setIsSaving(false);
+      
       haptics.success();
       toast.success('Тендер добавлен!', {
-        description: 'Вы можете найти его во вкладке "Новые"'
+        description: offlineSupabase.getOnlineStatus() 
+          ? 'Тендер сохранён' 
+          : 'Тендер будет синхронизирован при подключении к сети'
       });
       router.push('/m/tenders');
-    } else {
+    } catch (error) {
+      setIsSaving(false);
       haptics.error();
       toast.error('Ошибка сохранения', {
-        description: result.error || 'Не удалось создать тендер. Попробуйте ещё раз.'
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка'
       });
     }
   };
@@ -186,6 +188,7 @@ export default function AddTenderPage() {
         {/* Кнопки */}
         <div className="flex gap-3 pt-4">
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"

@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { offlineSupabase } from '@/lib/offline-supabase';
 import { ArrowLeft, Save } from 'lucide-react';
+import { toast } from 'sonner';
+import { haptics } from '@/lib/haptics';
 
 export default function AddSupplierPage() {
   const router = useRouter();
@@ -20,14 +22,16 @@ export default function AddSupplierPage() {
 
   const handleSave = async () => {
     if (!formData.name.trim()) {
-      alert('Введите название поставщика');
+      haptics.warning();
+      toast.error('Введите название поставщика');
       return;
     }
 
     setIsSaving(true);
-    const { error } = await supabase
-      .from('suppliers')
-      .insert({
+    haptics.light();
+    
+    try {
+      await offlineSupabase.createSupplier({
         name: formData.name,
         phone: formData.phone || null,
         email: formData.email || null,
@@ -35,13 +39,21 @@ export default function AddSupplierPage() {
         category: formData.category || null,
         notes: formData.notes || null,
       });
-
-    setIsSaving(false);
-
-    if (!error) {
+      
+      setIsSaving(false);
+      haptics.success();
+      toast.success('Поставщик добавлен!', {
+        description: offlineSupabase.getOnlineStatus() 
+          ? 'Поставщик сохранён' 
+          : 'Поставщик будет синхронизирован при подключении к сети'
+      });
       router.push('/m/suppliers');
-    } else {
-      alert('Ошибка при создании поставщика');
+    } catch (error) {
+      setIsSaving(false);
+      haptics.error();
+      toast.error('Ошибка сохранения', {
+        description: error instanceof Error ? error.message : 'Неизвестная ошибка'
+      });
     }
   };
 
@@ -149,6 +161,7 @@ export default function AddSupplierPage() {
         {/* Кнопки */}
         <div className="flex gap-3 pt-4">
           <button
+            type="button"
             onClick={handleSave}
             disabled={isSaving}
             className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
