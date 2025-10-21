@@ -5,6 +5,8 @@ import { supabase, Tender } from '@/lib/supabase';
 import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
+import { motion } from 'framer-motion';
+import { haptics } from '@/lib/haptics';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -119,37 +121,63 @@ export default function DashboardPage() {
 
         {/* Статистика */}
         <div className="grid grid-cols-3 gap-3">
-          <div
-            onClick={() => router.push('/m/tenders?status=в работе')}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              haptics.light();
+              router.push('/m/tenders?status=в работе');
+            }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors"
           >
             <Briefcase className="w-6 h-6 text-white mb-2" />
             <div className="text-2xl font-bold text-white mb-1">{stats.inWork}</div>
             <div className="text-white/80 text-xs">В работе</div>
-          </div>
+          </motion.div>
 
-          <div
-            onClick={() => router.push('/m/tenders?status=на рассмотрении')}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              haptics.light();
+              router.push('/m/tenders?status=на рассмотрении');
+            }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors"
           >
             <Eye className="w-6 h-6 text-white mb-2" />
             <div className="text-2xl font-bold text-white mb-1">{stats.underReview}</div>
             <div className="text-white/80 text-xs">Рассмотрение</div>
-          </div>
+          </motion.div>
 
-          <div
-            onClick={() => setShowRemindersModal(true)}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 active:bg-white/20 transition-colors relative"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => {
+              haptics.light();
+              setShowRemindersModal(true);
+            }}
+            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors relative"
           >
             <Bell className="w-6 h-6 text-white mb-2" />
             <div className="text-2xl font-bold text-white mb-1">{stats.reminders}</div>
             <div className="text-white/80 text-xs">Напоминания</div>
             {stats.reminders > 0 && (
-              <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: 'spring', delay: 0.5 }}
+                className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center text-white text-xs font-bold"
+              >
                 {stats.reminders}
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         </div>
       </div>
 

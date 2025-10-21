@@ -8,10 +8,12 @@ import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, Arrow
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
+import { AnimatedTenderCard } from '@/components/mobile/AnimatedTenderCard';
 import { TenderCardSkeletonGroup } from '@/components/mobile/TenderCardSkeleton';
 import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -200,38 +202,43 @@ export default function TendersPage() {
             <p className="text-gray-500 text-sm">Тендеров не найдено</p>
           </div>
         ) : (
-          filteredTenders.map((tender) => (
-            <div
-              key={tender.id}
-              className={`transition-all duration-300 ${
-                deletingId === tender.id
-                  ? 'opacity-0 scale-95 -translate-x-full'
-                  : 'opacity-100 scale-100 translate-x-0'
-              }`}
-            >
-              <SwipeableTenderCard
+          <AnimatePresence mode="popLayout">
+            {filteredTenders.map((tender, index) => (
+              <AnimatedTenderCard
+                key={tender.id}
                 tender={tender}
+                index={index}
                 onDelete={handleDeleteRequest}
                 onClick={setSelectedTender}
                 isOpen={openCardId === tender.id}
                 onOpen={setOpenCardId}
                 getStatusColor={getStatusColor}
+                isDeleting={deletingId === tender.id}
               />
-            </div>
-          ))
+            ))}
+          </AnimatePresence>
         )}
       </div>
 
       {/* Модальное окно детального просмотра */}
-      {selectedTender && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end"
-          onClick={() => setSelectedTender(null)}
-        >
-          <div
-            className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto animate-slide-up"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {selectedTender && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            onClick={() => setSelectedTender(null)}
           >
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
             {/* Индикатор свайпа */}
             <div className="flex justify-center py-3">
               <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
@@ -466,20 +473,30 @@ export default function TendersPage() {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Модальное окно подтверждения удаления */}
-      {tenderToDelete && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
-          onClick={handleDeleteCancel}
-        >
-          <div
-            className="bg-white rounded-3xl w-full max-w-sm p-6 animate-scale-in"
-            onClick={(e) => e.stopPropagation()}
+      <AnimatePresence>
+        {tenderToDelete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-6"
+            onClick={handleDeleteCancel}
           >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              className="bg-white rounded-3xl w-full max-w-sm p-6"
+              onClick={(e: React.MouseEvent) => e.stopPropagation()}
+            >
             {/* Иконка предупреждения */}
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-8 h-8 text-red-600" />
@@ -521,17 +538,23 @@ export default function TendersPage() {
                 )}
               </button>
             </div>
-          </div>
-        </div>
-      )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Action Button */}
-      <button
-        onClick={() => router.push('/m/tenders/add')}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        onClick={() => {
+          haptics.light();
+          router.push('/m/tenders/add');
+        }}
+        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center z-30"
       >
         <Plus className="w-6 h-6" />
-      </button>
+      </motion.button>
     </div>
   );
 }
