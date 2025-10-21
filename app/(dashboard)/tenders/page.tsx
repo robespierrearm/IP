@@ -250,7 +250,8 @@ function TendersContent() {
 
     switch (activeTab) {
       case 'new':
-        filtered = tenders.filter(t => t.status === 'новый');
+        // Показываем тендеры со статусом "новый" И "подано"
+        filtered = tenders.filter(t => t.status === 'новый' || t.status === 'подано');
         break;
       case 'review':
         filtered = tenders.filter(t => t.status === 'на рассмотрении');
@@ -283,7 +284,7 @@ function TendersContent() {
   const getCounts = () => {
     return {
       all: tenders.length,
-      new: tenders.filter(t => t.status === 'новый').length,
+      new: tenders.filter(t => t.status === 'новый' || t.status === 'подано').length,
       review: tenders.filter(t => t.status === 'на рассмотрении').length,
       inwork: tenders.filter(t => t.status === 'в работе').length,
       archive: tenders.filter(t => t.status === 'завершён' || t.status === 'проигрыш').length,

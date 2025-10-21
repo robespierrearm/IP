@@ -63,7 +63,12 @@ export default function TendersPage() {
 
     // Фильтр по статусу
     if (selectedStatus !== 'all') {
-      filtered = filtered.filter((t) => t.status === selectedStatus);
+      if (selectedStatus === 'новый') {
+        // Вкладка "Новые" показывает тендеры со статусом "новый" И "подано"
+        filtered = filtered.filter((t) => t.status === 'новый' || t.status === 'подано');
+      } else {
+        filtered = filtered.filter((t) => t.status === selectedStatus);
+      }
     }
 
     setFilteredTenders(filtered);

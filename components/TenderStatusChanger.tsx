@@ -100,18 +100,8 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
           if (submittedPrice) {
             additionalData.submitted_price = parseFloat(submittedPrice);
           }
-          // Сначала переводим в "Подано"
-          await onStatusChange(tender.id, selectedStatus, additionalData);
-          
-          // Затем автоматически переводим в "На рассмотрении"
-          await onStatusChange(tender.id, 'на рассмотрении', {});
-          
-          setIsDialogOpen(false);
-          setSelectedStatus(null);
-          setSubmittedPrice('');
-          showNotification('на рассмотрении');
-          setIsProcessing(false);
-          return; // Выходим, чтобы не выполнять код ниже
+          // Статус остается "подано" до дня дедлайна
+          break;
 
         case 'победа':
           // Сохранение цены победы
