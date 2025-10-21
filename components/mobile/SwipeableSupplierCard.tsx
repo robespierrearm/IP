@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
+import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Supplier } from '@/lib/supabase';
 import { Phone, Mail, Building2, User, Trash2 } from 'lucide-react';
 
@@ -13,50 +14,24 @@ interface SwipeableSupplierCardProps {
 }
 
 export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onOpen }: SwipeableSupplierCardProps) {
-  const [isDragging, setIsDragging] = useState(false);
-  const [startX, setStartX] = useState(0);
-  const cardRef = useRef<HTMLDivElement>(null);
-  const deleteButtonWidth = 80; // Ширина кнопки удаления
+  const deleteButtonWidth = 80;
+  const x = useMotionValue(0);
 
-  // Используем isOpen из пропсов вместо локального состояния
-  const translateX = isOpen ? -deleteButtonWidth : 0;
+  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+    const threshold = deleteButtonWidth * 0.4; // 40% порог
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setIsDragging(true);
-    setStartX(e.touches[0].clientX - translateX);
-    onOpen(supplier.id); // Открываем эту карточку (закрывая другие)
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging) return;
-
-    const currentX = e.touches[0].clientX - startX;
-    
-    // Временно показываем движение через transform
-    if (currentX <= 0 && currentX >= -deleteButtonWidth && cardRef.current) {
-      cardRef.current.style.transform = `translateX(${currentX}px)`;
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-
-    if (!cardRef.current) return;
-
-    const currentTransform = cardRef.current.style.transform;
-    const match = currentTransform.match(/translateX\((-?\d+(?:\.\d+)?)px\)/);
-    const currentX = match ? parseFloat(match[1]) : 0;
-
-    // Если свайпнули больше половины ширины кнопки - оставляем открытой
-    if (currentX < -deleteButtonWidth / 2) {
+    if (info.offset.x < -threshold) {
+      // Свайп влево - открываем кнопку удаления
       onOpen(supplier.id);
-    } else {
-      // Иначе закрываем
+    } else if (info.offset.x > threshold && isOpen) {
+      // Свайп вправо - закрываем
       onOpen(-1);
+    } else {
+      // Недостаточный свайп - возвращаем в текущее состояние
+      if (!isOpen) {
+        onOpen(-1);
+      }
     }
-
-    // Убираем временный transform
-    cardRef.current.style.transform = '';
   };
 
   const handleCardClick = () => {
@@ -89,17 +64,21 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onO
       </div>
 
       {/* Карточка поставщика */}
-      <div
-        ref={cardRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
         onClick={handleCardClick}
-        className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none"
-        style={{
-          transform: `translateX(${translateX}px)`,
-          transition: isDragging ? 'none' : 'transform 0.3s ease-out',
+        animate={{ x: isOpen ? -deleteButtonWidth : 0 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 30,
+          mass: 0.8
         }}
+        style={{ x }}
+        className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none"
       >
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
@@ -148,7 +127,7 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onO
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
