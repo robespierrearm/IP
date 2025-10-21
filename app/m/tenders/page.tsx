@@ -14,6 +14,7 @@ import { supabase } from '@/lib/supabase';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { AnimatePresence, motion } from 'framer-motion';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function TendersPage() {
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce 300ms
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
@@ -44,7 +46,7 @@ export default function TendersPage() {
 
   useEffect(() => {
     filterTenders();
-  }, [tenders, searchQuery, selectedStatus]);
+  }, [tenders, debouncedSearchQuery, selectedStatus]); // Используем debounced версию
 
   const loadTenders = async () => {
     setIsLoading(true);
@@ -59,10 +61,10 @@ export default function TendersPage() {
   const filterTenders = () => {
     let filtered = [...tenders];
 
-    // Фильтр по поиску
-    if (searchQuery) {
+    // Фильтр по поиску (используем debounced версию)
+    if (debouncedSearchQuery) {
       filtered = filtered.filter((t) =>
-        t.name.toLowerCase().includes(searchQuery.toLowerCase())
+        t.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
       );
     }
 
@@ -116,38 +118,46 @@ export default function TendersPage() {
   const handleDeleteConfirm = async () => {
     if (!tenderToDelete) return;
 
-    setIsDeleting(true);
-    setDeletingId(tenderToDelete.id);
-    haptics.medium(); // Вибрация при подтверждении
+    const deletedTender = tenderToDelete;
+    
+    // ОПТИМИСТИЧНОЕ ОБНОВЛЕНИЕ: сразу удаляем из UI
+    setDeletingId(deletedTender.id);
+    haptics.medium();
+    
+    // Анимация исчезновения
+    setTimeout(() => {
+      setTenders(prev => prev.filter(t => t.id !== deletedTender.id));
+      setTenderToDelete(null);
+      setDeletingId(null);
+    }, 300);
 
+    // Показываем toast сразу
+    haptics.success();
+    toast.success('Тендер удалён', {
+      description: 'Тендер успешно удалён из списка'
+    });
+
+    // В фоне отправляем на сервер
     try {
       const { error } = await supabase
         .from('tenders')
         .delete()
-        .eq('id', tenderToDelete.id);
+        .eq('id', deletedTender.id);
 
       if (error) throw error;
-
-      // Анимация исчезновения - ждём 300ms перед удалением из state
-      setTimeout(() => {
-        setTenders(prev => prev.filter(t => t.id !== tenderToDelete.id));
-        setDeletingId(null);
-        setTenderToDelete(null);
-        setIsDeleting(false);
-        
-        // Успешное удаление
-        haptics.success();
-        toast.success('Тендер удалён', {
-          description: 'Тендер успешно удалён из списка'
-        });
-      }, 300);
     } catch (error) {
       console.error('Ошибка удаления тендера:', error);
-      setIsDeleting(false);
-      setDeletingId(null);
+      
+      // Если ошибка - возвращаем тендер обратно
+      setTenders(prev => [...prev, deletedTender].sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA;
+      }));
+      
       haptics.error();
       toast.error('Ошибка удаления', {
-        description: 'Не удалось удалить тендер. Попробуйте ещё раз.'
+        description: 'Не удалось удалить тендер. Он был восстановлен.'
       });
     }
   };
@@ -228,7 +238,7 @@ export default function TendersPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            className="fixed inset-0 bg-black/50 z-50 flex items-end pb-20"
             onClick={() => setSelectedTender(null)}
           >
             <motion.div
@@ -245,7 +255,8 @@ export default function TendersPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
+              className="bg-white rounded-t-3xl w-full overflow-y-auto"
+              style={{ maxHeight: 'calc(100vh - 80px)' }}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
             {/* Индикатор свайпа */}

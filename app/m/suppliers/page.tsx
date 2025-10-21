@@ -5,13 +5,17 @@ import { useRouter } from 'next/navigation';
 import { supabase, Supplier } from '@/lib/supabase';
 import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
 import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
+import { toast } from 'sonner';
+import { haptics } from '@/lib/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useDebounce } from '@/hooks/useDebounce';
 
 export default function SuppliersPage() {
   const router = useRouter();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
@@ -25,7 +29,7 @@ export default function SuppliersPage() {
 
   useEffect(() => {
     filterSuppliers();
-  }, [suppliers, searchQuery]);
+  }, [suppliers, debouncedSearchQuery]);
 
   const loadSuppliers = async () => {
     setIsLoading(true);
@@ -41,12 +45,12 @@ export default function SuppliersPage() {
   };
 
   const filterSuppliers = () => {
-    if (!searchQuery) {
+    if (!debouncedSearchQuery) {
       setFilteredSuppliers(suppliers);
       return;
     }
 
-    const query = searchQuery.toLowerCase();
+    const query = debouncedSearchQuery.toLowerCase();
     const filtered = suppliers.filter(
       (s) =>
         s.name.toLowerCase().includes(query) ||
@@ -219,7 +223,7 @@ export default function SuppliersPage() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black/50 z-50 flex items-end"
+            className="fixed inset-0 bg-black/50 z-50 flex items-end pb-20"
             onClick={() => setSelectedSupplier(null)}
           >
             <motion.div
@@ -236,7 +240,8 @@ export default function SuppliersPage() {
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
+              className="bg-white rounded-t-3xl w-full overflow-y-auto"
+              style={{ maxHeight: 'calc(100vh - 80px)' }}
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
             >
             {/* Индикатор свайпа */}
