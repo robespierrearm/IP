@@ -2,7 +2,8 @@
 
 import { motion, PanInfo } from 'framer-motion';
 import { Supplier } from '@/lib/supabase';
-import { Phone, Mail, Building2, User, Trash2 } from 'lucide-react';
+import { Building2, Phone, Mail, User, Trash2 } from 'lucide-react';
+import { memo } from 'react';
 
 interface SwipeableSupplierCardProps {
   supplier: Supplier;
@@ -12,17 +13,17 @@ interface SwipeableSupplierCardProps {
   onOpen: (id: number) => void;
 }
 
-export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onOpen }: SwipeableSupplierCardProps) {
+const SwipeableSupplierCardComponent = ({ supplier, onDelete, onClick, isOpen, onOpen }: SwipeableSupplierCardProps) => {
   const deleteButtonWidth = 80;
 
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDrag = (_event: any, info: PanInfo) => {
     // Если начали свайпить эту карточку - закрываем все другие СРАЗУ
     if (Math.abs(info.offset.x) > 5 && !isOpen) {
       onOpen(-1); // Закрываем все открытые карточки
     }
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: any, info: PanInfo) => {
     const openThreshold = deleteButtonWidth * 0.5; // 50% для открытия
     const closeThreshold = 20; // Минимум для закрытия
 
@@ -137,4 +138,6 @@ export function SwipeableSupplierCard({ supplier, onDelete, onClick, isOpen, onO
       </motion.div>
     </div>
   );
-}
+};
+
+export const SwipeableSupplierCard = memo(SwipeableSupplierCardComponent);

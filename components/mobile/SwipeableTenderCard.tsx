@@ -4,6 +4,7 @@ import { motion, PanInfo } from 'framer-motion';
 import { Tender } from '@/lib/supabase';
 import { Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { memo, MouseEvent, TouchEvent, PointerEvent } from 'react';
 
 interface SwipeableTenderCardProps {
   tender: Tender;
@@ -14,24 +15,24 @@ interface SwipeableTenderCardProps {
   getStatusColor: (status: Tender['status']) => string;
 }
 
-export function SwipeableTenderCard({ 
+const SwipeableTenderCardComponent = ({ 
   tender, 
   onDelete, 
   onClick, 
   isOpen, 
   onOpen,
   getStatusColor 
-}: SwipeableTenderCardProps) {
+}: SwipeableTenderCardProps) => {
   const deleteButtonWidth = 80;
 
-  const handleDrag = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDrag = (_event: any, info: PanInfo) => {
     // Если начали свайпить эту карточку - закрываем все другие СРАЗУ
     if (Math.abs(info.offset.x) > 5 && !isOpen) {
       onOpen(-1); // Закрываем все открытые карточки
     }
   };
 
-  const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
+  const handleDragEnd = (_event: any, info: PanInfo) => {
     const openThreshold = deleteButtonWidth * 0.5; // 50% для открытия
     const closeThreshold = 20; // Минимум для закрытия
 
@@ -128,4 +129,7 @@ export function SwipeableTenderCard({
       </motion.div>
     </div>
   );
-}
+};
+
+// Экспортируем мемоизированную версию
+export const SwipeableTenderCard = memo(SwipeableTenderCardComponent);
