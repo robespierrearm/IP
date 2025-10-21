@@ -1,7 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { motion, useMotionValue, useTransform, PanInfo } from 'framer-motion';
+import { motion, PanInfo } from 'framer-motion';
 import { Tender } from '@/lib/supabase';
 import { Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
@@ -24,7 +23,6 @@ export function SwipeableTenderCard({
   getStatusColor 
 }: SwipeableTenderCardProps) {
   const deleteButtonWidth = 80;
-  const x = useMotionValue(0);
 
   const handleDragEnd = (event: MouseEvent | TouchEvent | PointerEvent, info: PanInfo) => {
     const threshold = deleteButtonWidth * 0.4; // 40% порог
@@ -76,18 +74,18 @@ export function SwipeableTenderCard({
       <motion.div
         drag="x"
         dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
-        dragElastic={0.1}
+        dragElastic={0.2}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         onClick={handleCardClick}
+        initial={{ x: 0 }}
         animate={{ x: isOpen ? -deleteButtonWidth : 0 }}
         transition={{ 
           type: "spring", 
-          stiffness: 300, 
-          damping: 30,
-          mass: 0.8
+          stiffness: 400, 
+          damping: 35
         }}
-        style={{ x }}
-        className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none"
+        className="bg-white rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none relative z-10"
       >
         <div className="flex items-start justify-between mb-2">
           <h3 className="font-semibold text-gray-900 text-sm flex-1 line-clamp-2">
