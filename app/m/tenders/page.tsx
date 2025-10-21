@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
@@ -20,7 +20,6 @@ export default function TendersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [tenders, setTenders] = useState<Tender[]>([]);
-  const [filteredTenders, setFilteredTenders] = useState<Tender[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce 300ms
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
@@ -44,9 +43,28 @@ export default function TendersPage() {
     loadTenders();
   }, []);
 
-  useEffect(() => {
-    filterTenders();
-  }, [tenders, debouncedSearchQuery, selectedStatus]); // Используем debounced версию
+  // Мемоизированная фильтрация тендеров
+  const filteredTenders = useMemo(() => {
+    let filtered = [...tenders];
+
+    // Фильтр по поиску
+    if (debouncedSearchQuery) {
+      filtered = filtered.filter((t) =>
+        t.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
+      );
+    }
+
+    // Фильтр по статусу
+    if (selectedStatus !== 'all') {
+      if (selectedStatus === 'новый') {
+        filtered = filtered.filter((t) => t.status === 'новый' || t.status === 'подано');
+      } else {
+        filtered = filtered.filter((t) => t.status === selectedStatus);
+      }
+    }
+
+    return filtered;
+  }, [tenders, debouncedSearchQuery, selectedStatus]);
 
   // Автозакрытие открытой карточки через 3 секунды
   useEffect(() => {
@@ -77,7 +95,7 @@ export default function TendersPage() {
     return () => document.removeEventListener('click', handleClickOutside);
   }, [openCardId]);
 
-  const loadTenders = async () => {
+  const loadTenders = useCallback(async () => {
     setIsLoading(true);
     const result = await apiClient.getTenders();
 
@@ -85,32 +103,9 @@ export default function TendersPage() {
       setTenders(result.data as Tender[]);
     }
     setIsLoading(false);
-  };
+  }, []);
 
-  const filterTenders = () => {
-    let filtered = [...tenders];
-
-    // Фильтр по поиску (используем debounced версию)
-    if (debouncedSearchQuery) {
-      filtered = filtered.filter((t) =>
-        t.name.toLowerCase().includes(debouncedSearchQuery.toLowerCase())
-      );
-    }
-
-    // Фильтр по статусу
-    if (selectedStatus !== 'all') {
-      if (selectedStatus === 'новый') {
-        // Вкладка "Новые" показывает тендеры со статусом "новый" И "подано"
-        filtered = filtered.filter((t) => t.status === 'новый' || t.status === 'подано');
-      } else {
-        filtered = filtered.filter((t) => t.status === selectedStatus);
-      }
-    }
-
-    setFilteredTenders(filtered);
-  };
-
-  const getStatusColor = (status: Tender['status']) => {
+  const getStatusColor = useCallback((status: Tender['status']) => {
     switch (status) {
       case 'новый':
         return 'bg-blue-100 text-blue-700';
@@ -129,7 +124,7 @@ export default function TendersPage() {
       default:
         return 'bg-gray-100 text-gray-700';
     }
-  };
+  }, []);
 
   const statusFilters = [
     { value: 'all', label: 'Все' },

@@ -1,8 +1,10 @@
 /**
  * Анимированная обёртка для карточки тендера
  * Использует Framer Motion для плавных появлений/удалений
+ * Оптимизировано с React.memo для предотвращения лишних ре-рендеров
  */
 
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { SwipeableTenderCard } from './SwipeableTenderCard';
 import { Tender } from '@/lib/supabase';
@@ -18,7 +20,7 @@ interface AnimatedTenderCardProps {
   isDeleting?: boolean;
 }
 
-export function AnimatedTenderCard({
+export const AnimatedTenderCard = memo(function AnimatedTenderCard({
   tender,
   index,
   onDelete,
@@ -61,4 +63,4 @@ export function AnimatedTenderCard({
       />
     </motion.div>
   );
-}
+});
