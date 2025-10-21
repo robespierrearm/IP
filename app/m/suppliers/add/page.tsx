@@ -14,8 +14,8 @@ export default function AddSupplierPage() {
     phone: '',
     email: '',
     contact_person: '',
-    address: '',
-    inn: '',
+    category: '',
+    notes: '',
   });
 
   const handleSave = async () => {
@@ -32,8 +32,8 @@ export default function AddSupplierPage() {
         phone: formData.phone || null,
         email: formData.email || null,
         contact_person: formData.contact_person || null,
-        address: formData.address || null,
-        inn: formData.inn || null,
+        category: formData.category || null,
+        notes: formData.notes || null,
       });
 
     setIsSaving(false);
@@ -118,29 +118,29 @@ export default function AddSupplierPage() {
           />
         </div>
 
-        {/* ИНН */}
+        {/* Категория */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            ИНН
+            Категория
           </label>
           <input
             type="text"
-            value={formData.inn}
-            onChange={(e) => setFormData({ ...formData, inn: e.target.value })}
-            placeholder="1234567890"
+            value={formData.category}
+            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            placeholder="Например: Стройматериалы, Инструменты"
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Адрес */}
+        {/* Примечания */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Адрес
+            Примечания
           </label>
           <textarea
-            value={formData.address}
-            onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-            placeholder="Москва, ул. Примерная, д. 1"
+            value={formData.notes}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            placeholder="Дополнительная информация о поставщике"
             rows={3}
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
           />

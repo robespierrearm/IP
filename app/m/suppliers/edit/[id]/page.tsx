@@ -43,8 +43,8 @@ export default function EditSupplierPage() {
         phone: supplier.phone,
         email: supplier.email,
         contact_person: supplier.contact_person,
-        address: supplier.address,
-        inn: supplier.inn,
+        category: supplier.category,
+        notes: supplier.notes,
       })
       .eq('id', supplierId);
 
@@ -150,27 +150,29 @@ export default function EditSupplierPage() {
           />
         </div>
 
-        {/* ИНН */}
+        {/* Категория */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            ИНН
+            Категория
           </label>
           <input
             type="text"
-            value={supplier.inn || ''}
-            onChange={(e) => setSupplier({ ...supplier, inn: e.target.value })}
+            value={supplier.category || ''}
+            onChange={(e) => setSupplier({ ...supplier, category: e.target.value })}
+            placeholder="Например: Стройматериалы, Инструменты"
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Адрес */}
+        {/* Примечания */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Адрес
+            Примечания
           </label>
           <textarea
-            value={supplier.address || ''}
-            onChange={(e) => setSupplier({ ...supplier, address: e.target.value })}
+            value={supplier.notes || ''}
+            onChange={(e) => setSupplier({ ...supplier, notes: e.target.value })}
+            placeholder="Дополнительная информация о поставщике"
             rows={3}
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
           />
