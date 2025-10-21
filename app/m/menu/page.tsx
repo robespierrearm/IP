@@ -32,6 +32,9 @@ export default function MenuPage() {
       // Удаляем данные из localStorage
       localStorage.removeItem('currentUser');
       
+      // Уведомляем AuthProvider об изменении
+      window.dispatchEvent(new Event('auth-change'));
+      
       // Редиректим на логин
       window.location.href = '/m/login';
     }
