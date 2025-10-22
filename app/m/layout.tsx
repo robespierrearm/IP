@@ -32,32 +32,33 @@ export default function MobileLayout({
       return;
     }
 
-    // Небольшая задержка для инициализации
-    const timer = setTimeout(() => {
-      try {
-        // Проверяем авторизацию
-        const currentUser = localStorage.getItem('currentUser');
-        
-        console.log('MobileLayout: Checking auth...', { currentUser: !!currentUser, pathname });
-        
-        if (!currentUser) {
-          console.log('MobileLayout: No user, redirecting to /m/login');
-          router.replace('/m/login');
-          setIsLoading(false);
-        } else {
-          console.log('MobileLayout: User found, authenticated');
-          setIsAuthenticated(true);
-          setIsLoading(false);
+    // Проверяем авторизацию БЕЗ задержки (для офлайн-режима)
+    try {
+      const currentUser = localStorage.getItem('currentUser');
+      
+      console.log('MobileLayout: Checking auth...', { currentUser: !!currentUser, pathname });
+      
+      if (!currentUser) {
+        console.log('MobileLayout: No user, redirecting to /m/login');
+        // Используем window.location вместо router для офлайн-режима
+        if (typeof window !== 'undefined') {
+          window.location.href = '/m/login';
         }
-      } catch (error) {
-        console.error('MobileLayout: Error checking auth', error);
         setIsLoading(false);
-        router.replace('/m/login');
+      } else {
+        console.log('MobileLayout: User found, authenticated');
+        setIsAuthenticated(true);
+        setIsLoading(false);
       }
-    }, 100);
-
-    return () => clearTimeout(timer);
-  }, [router, pathname]);
+    } catch (error) {
+      console.error('MobileLayout: Error checking auth', error);
+      setIsLoading(false);
+      // Используем window.location вместо router для офлайн-режима
+      if (typeof window !== 'undefined') {
+        window.location.href = '/m/login';
+      }
+    }
+  }, [pathname]);
 
   if (isLoading) {
     return (
