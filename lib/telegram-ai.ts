@@ -75,7 +75,7 @@ export async function processAICommand(userMessage: string, userId: number, tele
   try {
     const context = await getContext();
     
-    // Получаем историю последних 10 сообщений (уменьшаем для стабильности)
+    // Получаем историю последних 20 сообщений
     let history: any[] = [];
     
     try {
@@ -83,14 +83,15 @@ export async function processAICommand(userMessage: string, userId: number, tele
         .from('chat_history')
         .select('role, content')
         .eq('telegram_id', telegramId)
-        .order('created_at', { ascending: true })
-        .limit(10);
+        .order('created_at', { ascending: false })
+        .limit(20);
       
       if (error) {
         console.error('❌ ERROR loading chat history:', error.message);
         // Продолжаем работу без истории
       } else {
-        history = data || [];
+        // ВАЖНО: Реверсируем массив чтобы история шла от старых к новым
+        history = (data || []).reverse();
         console.log('✅ Chat history loaded:', history.length, 'messages for user:', telegramId);
       }
     } catch (e) {
