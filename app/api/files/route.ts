@@ -28,10 +28,10 @@ export async function GET(request: NextRequest) {
 
     if (error) {
       console.error('Ошибка получения файлов:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data, error: null });
+    return NextResponse.json({ success: true, data, error: null });
   } catch (error) {
     console.error('Критическая ошибка:', error);
     return NextResponse.json(
@@ -54,10 +54,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Ошибка создания файла:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data, error: null });
+    return NextResponse.json({ success: true, data, error: null });
   } catch (error) {
     console.error('Критическая ошибка:', error);
     return NextResponse.json(
@@ -86,10 +86,10 @@ export async function PUT(request: NextRequest) {
 
     if (error) {
       console.error('Ошибка обновления файла:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data, error: null });
+    return NextResponse.json({ success: true, data, error: null });
   } catch (error) {
     console.error('Критическая ошибка:', error);
     return NextResponse.json(
@@ -115,10 +115,10 @@ export async function DELETE(request: NextRequest) {
 
     if (error) {
       console.error('Ошибка удаления файла:', error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ data: null, error: null });
+    return NextResponse.json({ success: true, data: null, error: null });
   } catch (error) {
     console.error('Критическая ошибка:', error);
     return NextResponse.json(
