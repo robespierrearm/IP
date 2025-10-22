@@ -63,15 +63,21 @@ export default function SuppliersPage() {
   const loadSuppliers = async () => {
     setIsLoading(true);
     try {
-      const data = await apiClient.getSuppliers();
-      const sorted = data.sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateB - dateA;
-      });
-      setSuppliers(sorted);
+      const response = await apiClient.getSuppliers();
+      if (response.success && response.data) {
+        const data = response.data as Supplier[];
+        const sorted = data.sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        });
+        setSuppliers(sorted);
+      } else {
+        setSuppliers([]);
+      }
     } catch (error) {
       console.error('Error loading suppliers:', error);
+      setSuppliers([]);
     }
     setIsLoading(false);
   };

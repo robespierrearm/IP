@@ -26,27 +26,35 @@ export default function AccountingPage() {
   const loadData = async () => {
     setIsLoading(true);
 
-    // Загружаем тендеры со статусами "победа", "в работе", "завершён"
-    const tenders = await apiClient.getTenders();
-    const filteredTenders = tenders.filter(t => 
-      ['победа', 'в работе', 'завершён'].includes(t.status)
-    ).sort((a, b) => {
-      const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-      const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-      return dateB - dateA;
-    });
-    const tendersError = null;
+    try {
+      // Загружаем тендеры со статусами "победа", "в работе", "завершён"
+      const tendersResponse = await apiClient.getTenders();
+      if (!tendersResponse.success || !tendersResponse.data) {
+        setTendersWithExpenses([]);
+        setIsLoading(false);
+        return;
+      }
 
-    if (tendersError || !filteredTenders || filteredTenders.length === 0) {
-      setTendersWithExpenses([]);
-      setIsLoading(false);
-      return;
-    }
+      const tenders = tendersResponse.data as Tender[];
+      const filteredTenders = tenders.filter(t => 
+        ['победа', 'в работе', 'завершён'].includes(t.status)
+      ).sort((a, b) => {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return dateB - dateA;
+      });
 
-    // Загружаем расходы для всех тендеров
-    const allExpenses = await apiClient.getExpenses();
-    const tenderIds = filteredTenders.map((t: Tender) => t.id);
-    const expenses = allExpenses.filter((exp: Expense) => tenderIds.includes(exp.tender_id));
+      if (filteredTenders.length === 0) {
+        setTendersWithExpenses([]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Загружаем расходы для всех тендеров
+      const expensesResponse = await apiClient.getExpenses();
+      const allExpenses = expensesResponse.success && expensesResponse.data ? expensesResponse.data as Expense[] : [];
+      const tenderIds = filteredTenders.map((t: Tender) => t.id);
+      const expenses = allExpenses.filter((exp: Expense) => tenderIds.includes(exp.tender_id));
 
     // Группируем расходы по тендерам
     const result: TenderWithExpenses[] = filteredTenders.map((tender: Tender) => ({
@@ -54,8 +62,13 @@ export default function AccountingPage() {
       expenses: (expenses || []).filter((exp: Expense) => exp.tender_id === tender.id),
     }));
 
-    setTendersWithExpenses(result);
-    setIsLoading(false);
+      setTendersWithExpenses(result);
+    } catch (error) {
+      console.error('Error loading accounting data:', error);
+      setTendersWithExpenses([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Общая статистика - доход считаем только по завершённым тендерам

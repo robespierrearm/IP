@@ -109,6 +109,34 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Расходы
+  async getExpenses(params?: {
+    tender_id?: number;
+    limit?: number;
+    offset?: number;
+  }) {
+    const searchParams = new URLSearchParams();
+    if (params?.tender_id) searchParams.set('tender_id', params.tender_id.toString());
+    if (params?.limit) searchParams.set('limit', params.limit.toString());
+    if (params?.offset) searchParams.set('offset', params.offset.toString());
+
+    const query = searchParams.toString();
+    return this.request(`/expenses${query ? `?${query}` : ''}`);
+  }
+
+  async createExpense(expense: any) {
+    return this.request('/expenses', {
+      method: 'POST',
+      body: JSON.stringify(expense),
+    });
+  }
+
+  async deleteExpense(id: number) {
+    return this.request(`/expenses?id=${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const apiClient = new ApiClient();
