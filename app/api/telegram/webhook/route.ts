@@ -603,12 +603,55 @@ function getStatusEmoji(status: string): string {
   return emojis[status] || '📋';
 }
 
+// Обработка нажатий на inline кнопки
+async function handleCallbackQuery(callbackQuery: any) {
+  const chatId = callbackQuery.message.chat.id;
+  const messageId = callbackQuery.message.message_id;
+  const data = callbackQuery.data;
+  const telegramId = callbackQuery.from.id.toString();
+
+  // Отправляем ответ на callback (убирает "часики" на кнопке)
+  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ callback_query_id: callbackQuery.id }),
+  });
+
+  // Создаём фейковое сообщение для обработчиков
+  const fakeMessage = {
+    chat: { id: chatId },
+    from: { id: parseInt(telegramId) },
+    text: '',
+  };
+
+  // Обрабатываем команды из кнопок
+  if (data === 'cmd_dashboard') {
+    await handleDashboard(fakeMessage);
+  } else if (data === 'cmd_tenders') {
+    await handleTenders(fakeMessage);
+  } else if (data === 'cmd_reminders') {
+    await handleReminders(fakeMessage);
+  } else if (data === 'cmd_ai') {
+    await handleAI(fakeMessage);
+  } else if (data === 'cmd_clear') {
+    await handleClear(fakeMessage);
+  } else if (data === 'cmd_help') {
+    await handleHelp(fakeMessage);
+  }
+}
+
 // Главный обработчик
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
     console.log('Telegram webhook received');
+    
+    // Обработка нажатий на кнопки
+    if (body.callback_query) {
+      await handleCallbackQuery(body.callback_query);
+      return NextResponse.json({ ok: true });
+    }
     
     // Telegram отправляет обновления в поле "message"
     const message = body.message;
@@ -663,6 +706,8 @@ export async function POST(request: NextRequest) {
           await handleModelChange(message, modelKey);
         } else if (text === '/help') {
           await handleHelp(message);
+        } else if (text === '/menu') {
+          await handleMenu(message);
         } else if (text === '/clear') {
           await handleClear(message);
         } else {
