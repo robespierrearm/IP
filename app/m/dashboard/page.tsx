@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Tender } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
@@ -8,19 +8,13 @@ import { formatPrice, formatDate } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
+import { LiveClock } from '@/components/mobile/LiveClock';
 
 export default function DashboardPage() {
   const router = useRouter();
   const [tenders, setTenders] = useState<Tender[]>([]);
-  const [stats, setStats] = useState({
-    inWork: 0,
-    underReview: 0,
-    reminders: 0,
-  });
   const [currentUser, setCurrentUser] = useState<any>(null);
-  const [currentTime, setCurrentTime] = useState(new Date());
   const [showRemindersModal, setShowRemindersModal] = useState(false);
-  const [reminderTenders, setReminderTenders] = useState<Tender[]>([]);
 
   useEffect(() => {
     // Получаем текущего пользователя
@@ -29,13 +23,6 @@ export default function DashboardPage() {
 
     // Загружаем данные
     loadData();
-
-    // Обновляем время каждую секунду
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
   }, []);
 
   const loadData = async () => {
@@ -45,39 +32,41 @@ export default function DashboardPage() {
       const allTenders = response.data as Tender[];
       const data = allTenders.slice(0, 10);
       setTenders(data);
-
-      // Подсчёт статистики
-      const inWorkCount = data.filter((t) => t.status === 'в работе').length;
-      const underReviewCount = data.filter((t) => t.status === 'на рассмотрении').length;
-
-      // Напоминания: тендеры с дедлайном в ближайшие 3 дня
-      const threeDaysFromNow = new Date();
-      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-      const reminders = data.filter((t) => {
-        if (!t.submission_deadline) return false;
-        const deadline = new Date(t.submission_deadline);
-        const now = new Date();
-        return deadline >= now && deadline <= threeDaysFromNow;
-      });
-      setReminderTenders(reminders);
-      const remindersCount = reminders.length;
-
-      setStats({
-        inWork: inWorkCount,
-        underReview: underReviewCount,
-        reminders: remindersCount,
-      });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
   };
 
-  const getStatusColor = (status: Tender['status']) => {
+  // Мемоизированная статистика - пересчитывается только при изменении tenders
+  const stats = useMemo(() => {
+    const inWorkCount = tenders.filter((t) => t.status === 'в работе').length;
+    const underReviewCount = tenders.filter((t) => t.status === 'на рассмотрении').length;
+
+    // Напоминания: тендеры с дедлайном в ближайшие 3 дня
+    const threeDaysFromNow = new Date();
+    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
+    const reminders = tenders.filter((t) => {
+      if (!t.submission_deadline) return false;
+      const deadline = new Date(t.submission_deadline);
+      const now = new Date();
+      return deadline >= now && deadline <= threeDaysFromNow;
+    });
+
+    return {
+      inWork: inWorkCount,
+      underReview: underReviewCount,
+      reminders: reminders.length,
+      reminderTenders: reminders,
+    };
+  }, [tenders]);
+
+  // Мемоизированная функция - не пересоздаётся при каждом рендере
+  const getStatusColor = useCallback((status: Tender['status']) => {
     switch (status) {
       case 'новый':
         return 'bg-blue-100 text-blue-700';
       case 'подано':
-        return 'bg-green-100 text-green-700'; // Зелёный фон для поданных тендеров
+        return 'bg-green-100 text-green-700';
       case 'на рассмотрении':
         return 'bg-purple-100 text-purple-700';
       case 'победа':
@@ -91,7 +80,7 @@ export default function DashboardPage() {
       default:
         return 'bg-gray-100 text-gray-700';
     }
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -105,16 +94,11 @@ export default function DashboardPage() {
             </h1>
           </div>
           <div className="text-right">
-            <div className="text-white font-bold text-lg">
-              {currentTime.toLocaleTimeString('ru-RU', {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </div>
-            <div className="text-white/80 text-xs">
-              {currentTime.toLocaleDateString('ru-RU', {
+            <LiveClock />
+            <div className="text-white/70 text-xs">
+              {new Date().toLocaleDateString('ru-RU', {
                 day: 'numeric',
-                month: 'short',
+                month: 'long',
               })}
             </div>
           </div>
@@ -279,7 +263,7 @@ export default function DashboardPage() {
               </div>
 
               {/* Список напоминаний */}
-              {reminderTenders.length === 0 ? (
+              {stats.reminderTenders.length === 0 ? (
                 <div className="text-center py-12">
                   <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">Нет напоминаний</p>
@@ -287,7 +271,7 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
-                  {reminderTenders.map((tender) => {
+                  {stats.reminderTenders.map((tender: Tender) => {
                     const deadline = new Date(tender.submission_deadline!);
                     const now = new Date();
                     const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
