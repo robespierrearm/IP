@@ -83,18 +83,13 @@ export default function MobileLayout({
 
   // Если это страница логина - показываем без BottomNav
   if (pathname === '/m/login') {
-    return (
-      <>
-        <PWARegister />
-        {children}
-      </>
-    );
+    return <>{children}</>;
   }
 
   return (
     <ErrorBoundary>
-      {/* Регистрация PWA и Service Worker */}
-      <PWARegister />
+      {/* Регистрация PWA и Service Worker - ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТА */}
+      {/* <PWARegister /> */}
       
       <div className="min-h-screen bg-gray-50 pb-20">
         {/* Безопасная зона сверху для iPhone */}
