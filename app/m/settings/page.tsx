@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { User, Bell, Moon, Sun, LogOut, ChevronRight, Shield, RefreshCw, Wifi, WifiOff } from 'lucide-react';
+import { User, Bell, Moon, Sun, LogOut, ChevronRight, Shield, Lock, Mail, Phone, Briefcase, Download, Trash2, Info, MessageSquare } from 'lucide-react';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
 import { apiClient } from '@/lib/api-client';
@@ -12,9 +12,9 @@ export default function SettingsPage() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [isOnline, setIsOnline] = useState(true);
-  const [pendingCount, setPendingCount] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
+  const [deadlineNotifications, setDeadlineNotifications] = useState(true);
+  const [emailNotifications, setEmailNotifications] = useState(false);
+  const [notificationDays, setNotificationDays] = useState(3);
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
@@ -24,6 +24,21 @@ export default function SettingsPage() {
     const savedNotifications = localStorage.getItem('notifications');
     if (savedNotifications !== null) {
       setNotifications(savedNotifications === 'true');
+    }
+
+    const savedDeadlineNotifications = localStorage.getItem('deadlineNotifications');
+    if (savedDeadlineNotifications !== null) {
+      setDeadlineNotifications(savedDeadlineNotifications === 'true');
+    }
+
+    const savedEmailNotifications = localStorage.getItem('emailNotifications');
+    if (savedEmailNotifications !== null) {
+      setEmailNotifications(savedEmailNotifications === 'true');
+    }
+
+    const savedNotificationDays = localStorage.getItem('notificationDays');
+    if (savedNotificationDays !== null) {
+      setNotificationDays(parseInt(savedNotificationDays));
     }
 
     const savedDarkMode = localStorage.getItem('darkMode');
@@ -37,26 +52,6 @@ export default function SettingsPage() {
         document.documentElement.classList.remove('dark');
       }
     }
-
-    // Отслеживаем онлайн/офлайн
-    const updateOnlineStatus = () => setIsOnline(navigator.onLine);
-    updateOnlineStatus();
-    window.addEventListener('online', updateOnlineStatus);
-    window.addEventListener('offline', updateOnlineStatus);
-
-    // Отслеживаем pending изменения
-    const updatePendingCount = async () => {
-      const count = await apiClient.getPendingChangesCount();
-      setPendingCount(count);
-    };
-    updatePendingCount();
-    const interval = setInterval(updatePendingCount, 3000);
-
-    return () => {
-      window.removeEventListener('online', updateOnlineStatus);
-      window.removeEventListener('offline', updateOnlineStatus);
-      clearInterval(interval);
-    };
   }, []);
 
   const handleNotificationsToggle = async () => {
@@ -93,53 +88,79 @@ export default function SettingsPage() {
 
   const handleDarkModeToggle = () => {
     haptics.light();
-    const newValue = !darkMode;
-    setDarkMode(newValue);
-    localStorage.setItem('darkMode', String(newValue));
-    
-    // Применяем тёмную тему
-    if (newValue) {
-      document.documentElement.classList.add('dark');
-      document.body.style.backgroundColor = '#1a1a1a';
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.body.style.backgroundColor = '#f9fafb';
-    }
-    
-    toast.success(newValue ? 'Тёмная тема включена' : 'Тёмная тема выключена');
+    toast.info('Тёмная тема', {
+      description: 'Функция в разработке. Будет доступна в следующей версии.'
+    });
+    // Временно отключено
+    // const newValue = !darkMode;
+    // setDarkMode(newValue);
+    // localStorage.setItem('darkMode', String(newValue));
   };
 
-  const handleManualSync = async () => {
-    if (!isOnline) {
-      haptics.warning();
-      toast.error('Нет подключения к интернету');
-      return;
-    }
-
-    if (pendingCount === 0) {
-      haptics.light();
-      toast.info('Нет несинхронизированных изменений');
-      return;
-    }
-
-    setIsSyncing(true);
+  const handleDeadlineNotificationsToggle = () => {
     haptics.light();
-    
-    try {
-      await apiClient.syncNow();
+    const newValue = !deadlineNotifications;
+    setDeadlineNotifications(newValue);
+    localStorage.setItem('deadlineNotifications', String(newValue));
+    toast.success(newValue ? 'Уведомления о дедлайнах включены' : 'Уведомления о дедлайнах выключены');
+  };
+
+  const handleEmailNotificationsToggle = () => {
+    haptics.light();
+    const newValue = !emailNotifications;
+    setEmailNotifications(newValue);
+    localStorage.setItem('emailNotifications', String(newValue));
+    toast.success(newValue ? 'Email уведомления включены' : 'Email уведомления выключены');
+  };
+
+  const handleNotificationDaysChange = (days: number) => {
+    haptics.light();
+    setNotificationDays(days);
+    localStorage.setItem('notificationDays', String(days));
+    toast.success(`Уведомления за ${days} ${days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'} до дедлайна`);
+  };
+
+  const handleChangePassword = () => {
+    haptics.medium();
+    router.push('/m/settings/change-password');
+  };
+
+  const handleEditProfile = () => {
+    haptics.medium();
+    router.push('/m/settings/edit-profile');
+  };
+
+  const handleClearCache = () => {
+    haptics.medium();
+    if (confirm('Очистить кэш приложения? Это может помочь решить проблемы с производительностью.')) {
+      // Очищаем localStorage (кроме currentUser)
+      const user = localStorage.getItem('currentUser');
+      localStorage.clear();
+      if (user) localStorage.setItem('currentUser', user);
+      
       haptics.success();
-      toast.success('Синхронизация завершена!', {
-        description: `Синхронизировано изменений: ${pendingCount}`
+      toast.success('Кэш очищен', {
+        description: 'Приложение будет перезагружено'
       });
-      setPendingCount(0);
-    } catch (error) {
-      haptics.error();
-      toast.error('Ошибка синхронизации', {
-        description: error instanceof Error ? error.message : 'Неизвестная ошибка'
-      });
-    } finally {
-      setIsSyncing(false);
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     }
+  };
+
+  const handleExportData = async () => {
+    haptics.medium();
+    toast.info('Экспорт данных', {
+      description: 'Функция в разработке. Будет доступна в следующей версии.'
+    });
+  };
+
+  const handleFeedback = () => {
+    haptics.medium();
+    toast.info('Обратная связь', {
+      description: 'Напишите нам в Telegram: @your_support_bot'
+    });
   };
 
   const handleLogout = async () => {
@@ -194,29 +215,135 @@ export default function SettingsPage() {
           )}
         </div>
 
+        {/* Действия с профилем */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Управление профилем</h2>
+          
+          <div className="space-y-2">
+            <button
+              onClick={handleEditProfile}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <User className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Редактировать профиль</div>
+                  <div className="text-sm text-gray-500">Имя, email, телефон</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
+
+            <button
+              onClick={handleChangePassword}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
+                  <Lock className="w-5 h-5 text-red-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Изменить пароль</div>
+                  <div className="text-sm text-gray-500">Безопасность аккаунта</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
+          </div>
+        </div>
+
         {/* Уведомления */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Уведомления</h2>
           
-          <button
-            onClick={handleNotificationsToggle}
-            className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
-                <Bell className="w-5 h-5 text-blue-600" />
-              </div>
-              <div className="text-left">
-                <div className="font-medium text-gray-900">Push-уведомления</div>
-                <div className="text-sm text-gray-500">
-                  {notifications ? 'Включены' : 'Выключены'}
+          <div className="space-y-3">
+            {/* Push уведомления */}
+            <button
+              onClick={handleNotificationsToggle}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Push-уведомления</div>
+                  <div className="text-sm text-gray-500">
+                    {notifications ? 'Включены' : 'Выключены'}
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className={`relative w-12 h-7 rounded-full transition-all duration-300 ${notifications ? 'bg-primary-500' : 'bg-gray-300'}`}>
-              <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-300 ${notifications ? 'left-6' : 'left-1'}`} />
-            </div>
-          </button>
+              <div className={`relative w-12 h-7 rounded-full transition-all duration-300 ${notifications ? 'bg-primary-500' : 'bg-gray-300'}`}>
+                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-300 ${notifications ? 'left-6' : 'left-1'}`} />
+              </div>
+            </button>
+
+            {/* Уведомления о дедлайнах */}
+            <button
+              onClick={handleDeadlineNotificationsToggle}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <Bell className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Дедлайны тендеров</div>
+                  <div className="text-sm text-gray-500">
+                    {deadlineNotifications ? 'Включены' : 'Выключены'}
+                  </div>
+                </div>
+              </div>
+              <div className={`relative w-12 h-7 rounded-full transition-all duration-300 ${deadlineNotifications ? 'bg-primary-500' : 'bg-gray-300'}`}>
+                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-300 ${deadlineNotifications ? 'left-6' : 'left-1'}`} />
+              </div>
+            </button>
+
+            {/* Период уведомлений */}
+            {deadlineNotifications && (
+              <div className="p-3 bg-gray-50 rounded-xl">
+                <div className="text-sm font-medium text-gray-900 mb-3">Уведомлять за:</div>
+                <div className="flex gap-2">
+                  {[1, 3, 7].map(days => (
+                    <button
+                      key={days}
+                      onClick={() => handleNotificationDaysChange(days)}
+                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-colors ${
+                        notificationDays === days
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      {days} {days === 1 ? 'день' : days < 5 ? 'дня' : 'дней'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Email уведомления */}
+            <button
+              onClick={handleEmailNotificationsToggle}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <Mail className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Email уведомления</div>
+                  <div className="text-sm text-gray-500">
+                    {emailNotifications ? 'Включены' : 'Выключены'}
+                  </div>
+                </div>
+              </div>
+              <div className={`relative w-12 h-7 rounded-full transition-all duration-300 ${emailNotifications ? 'bg-primary-500' : 'bg-gray-300'}`}>
+                <div className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-sm transition-all duration-300 ${emailNotifications ? 'left-6' : 'left-1'}`} />
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* Внешний вид */}
@@ -248,56 +375,41 @@ export default function SettingsPage() {
           </button>
         </div>
 
-        {/* Синхронизация */}
+        {/* Данные и хранилище */}
         <div className="bg-white rounded-2xl p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Синхронизация</h2>
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">Данные и хранилище</h2>
           
-          <div className="space-y-3">
-            {/* Статус подключения */}
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                {isOnline ? (
-                  <Wifi className="w-5 h-5 text-green-600" />
-                ) : (
-                  <WifiOff className="w-5 h-5 text-red-600" />
-                )}
-                <div>
-                  <div className="font-medium text-gray-900">Подключение</div>
-                  <div className="text-sm text-gray-500">
-                    {isOnline ? 'Онлайн' : 'Офлайн'}
-                  </div>
-                </div>
-              </div>
-              <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'}`} />
-            </div>
-
-            {/* Несинхронизированные изменения */}
-            {pendingCount > 0 && (
-              <div className="flex items-center justify-between p-3 bg-orange-50 rounded-xl">
-                <div className="flex items-center gap-3">
-                  <RefreshCw className="w-5 h-5 text-orange-600" />
-                  <div>
-                    <div className="font-medium text-gray-900">Ожидают синхронизации</div>
-                    <div className="text-sm text-orange-600">
-                      {pendingCount} {pendingCount === 1 ? 'изменение' : 'изменений'}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Кнопка синхронизации */}
+          <div className="space-y-2">
             <button
-              onClick={handleManualSync}
-              disabled={!isOnline || pendingCount === 0 || isSyncing}
-              className={`w-full flex items-center justify-center gap-2 p-4 rounded-xl font-medium transition-colors ${
-                !isOnline || pendingCount === 0 || isSyncing
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-primary-500 text-white active:bg-primary-600'
-              }`}
+              onClick={handleClearCache}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
             >
-              <RefreshCw className={`w-5 h-5 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Синхронизация...' : 'Синхронизировать сейчас'}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                  <Trash2 className="w-5 h-5 text-orange-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Очистить кэш</div>
+                  <div className="text-sm text-gray-500">Освободить место</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
+
+            <button
+              onClick={handleExportData}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                  <Download className="w-5 h-5 text-green-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Экспорт данных</div>
+                  <div className="text-sm text-gray-500">Скачать в Excel</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
             </button>
           </div>
         </div>
@@ -312,13 +424,25 @@ export default function SettingsPage() {
               <span className="font-medium text-gray-900">1.0.0</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-600">Режим</span>
-              <span className="font-medium text-gray-900">PWA</span>
+              <span className="text-gray-600">Платформа</span>
+              <span className="font-medium text-gray-900">Web App</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Офлайн режим</span>
-              <span className="font-medium text-green-600">Доступен</span>
-            </div>
+            
+            <button
+              onClick={handleFeedback}
+              className="w-full flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition-colors mt-3"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">Обратная связь</div>
+                  <div className="text-sm text-gray-500">Сообщить о проблеме</div>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400" />
+            </button>
           </div>
         </div>
 
