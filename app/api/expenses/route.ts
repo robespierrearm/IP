@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
       query = query.eq('tender_id', parseInt(tenderId));
     }
     
-    const { data, error } = await query.order('date', { ascending: false });
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
       console.error('Ошибка получения расходов:', error);

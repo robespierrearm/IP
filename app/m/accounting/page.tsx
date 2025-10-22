@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Tender, Expense } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { TrendingUp, TrendingDown, DollarSign, FileText, ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react';
@@ -27,8 +27,12 @@ export default function AccountingPage() {
     setIsLoading(true);
 
     try {
-      // Загружаем тендеры со статусами "победа", "в работе", "завершён"
-      const tendersResponse = await apiClient.getTenders();
+      // ОПТИМИЗАЦИЯ: Параллельная загрузка тендеров и расходов (1 запрос вместо 2 последовательных)
+      const [tendersResponse, expensesResponse] = await Promise.all([
+        apiClient.getTenders(),
+        apiClient.getExpenses()
+      ]);
+
       if (!tendersResponse.success || !tendersResponse.data) {
         setTendersWithExpenses([]);
         setIsLoading(false);
@@ -36,6 +40,8 @@ export default function AccountingPage() {
       }
 
       const tenders = tendersResponse.data as Tender[];
+      
+      // Фильтруем только нужные статусы
       const filteredTenders = tenders.filter(t => 
         ['победа', 'в работе', 'завершён'].includes(t.status)
       ).sort((a, b) => {
@@ -50,17 +56,26 @@ export default function AccountingPage() {
         return;
       }
 
-      // Загружаем расходы для всех тендеров
-      const expensesResponse = await apiClient.getExpenses();
-      const allExpenses = expensesResponse.success && expensesResponse.data ? expensesResponse.data as Expense[] : [];
-      const tenderIds = filteredTenders.map((t: Tender) => t.id);
-      const expenses = allExpenses.filter((exp: Expense) => tenderIds.includes(exp.tender_id));
+      // Получаем расходы
+      const allExpenses = expensesResponse.success && expensesResponse.data 
+        ? expensesResponse.data as Expense[] 
+        : [];
 
-    // Группируем расходы по тендерам
-    const result: TenderWithExpenses[] = filteredTenders.map((tender: Tender) => ({
-      tender,
-      expenses: (expenses || []).filter((exp: Expense) => exp.tender_id === tender.id),
-    }));
+      // ОПТИМИЗАЦИЯ: Создаём Map для O(1) lookup вместо filter O(n)
+      const expensesByTenderId = new Map<number, Expense[]>();
+      allExpenses.forEach(expense => {
+        const tenderId = expense.tender_id;
+        if (!expensesByTenderId.has(tenderId)) {
+          expensesByTenderId.set(tenderId, []);
+        }
+        expensesByTenderId.get(tenderId)!.push(expense);
+      });
+
+      // Группируем расходы по тендерам используя Map
+      const result: TenderWithExpenses[] = filteredTenders.map((tender: Tender) => ({
+        tender,
+        expenses: expensesByTenderId.get(tender.id) || [],
+      }));
 
       setTendersWithExpenses(result);
     } catch (error) {
@@ -71,22 +86,34 @@ export default function AccountingPage() {
     }
   };
 
-  // Общая статистика - доход считаем только по завершённым тендерам
-  const totalIncome = tendersWithExpenses.reduce((sum, item) => {
-    if (item?.tender?.status === 'завершён') {
-      return sum + (item.tender.win_price || 0);
-    }
-    return sum;
-  }, 0);
+  // ОПТИМИЗАЦИЯ: Мемоизированные вычисления - пересчёт только при изменении данных
+  const { totalIncome, totalExpenses, grossProfit, totalTax, netProfit } = useMemo(() => {
+    // Доход считаем только по завершённым тендерам
+    const income = tendersWithExpenses.reduce((sum, item) => {
+      if (item?.tender?.status === 'завершён') {
+        return sum + (item.tender.win_price || 0);
+      }
+      return sum;
+    }, 0);
 
-  const totalExpenses = tendersWithExpenses.reduce(
-    (sum, item) => sum + (item?.expenses || []).reduce((expSum, exp) => expSum + (exp?.amount || 0), 0),
-    0
-  );
+    // Сумма всех расходов
+    const expenses = tendersWithExpenses.reduce(
+      (sum, item) => sum + (item?.expenses || []).reduce((expSum, exp) => expSum + (exp?.amount || 0), 0),
+      0
+    );
 
-  const grossProfit = totalIncome - totalExpenses;
-  const totalTax = grossProfit > 0 ? grossProfit * 0.07 : 0;
-  const netProfit = grossProfit - totalTax;
+    const profit = income - expenses;
+    const tax = profit > 0 ? profit * 0.07 : 0; // УСН 7%
+    const net = profit - tax;
+
+    return {
+      totalIncome: income,
+      totalExpenses: expenses,
+      grossProfit: profit,
+      totalTax: tax,
+      netProfit: net,
+    };
+  }, [tendersWithExpenses]);
 
   const toggleTender = (tenderId: number) => {
     setExpandedTenderId(expandedTenderId === tenderId ? null : tenderId);
