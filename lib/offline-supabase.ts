@@ -12,6 +12,7 @@ type TableName = 'tenders' | 'suppliers' | 'expenses';
 export class OfflineSupabase {
   private isOnline = typeof navigator !== 'undefined' ? navigator.onLine : true;
   private initialized = false;
+  private preloadAttempted = false;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -47,20 +48,72 @@ export class OfflineSupabase {
     }
   }
 
+  /**
+   * Инициализация IndexedDB
+   * Вызывается автоматически при создании экземпляра
+   */
   private async initializeDB() {
     try {
       await offlineDB.init();
       this.initialized = true;
       console.log('✅ IndexedDB инициализирован');
+      
+      // Предзагрузка данных при первом запуске
+      if (this.isOnline && !this.preloadAttempted) {
+        this.preloadData();
+      }
     } catch (error) {
       console.error('❌ Ошибка инициализации IndexedDB:', error);
       this.initialized = false;
     }
   }
 
+  /**
+   * Предзагрузка данных в фоне
+   * Загружает все данные с сервера и сохраняет в IndexedDB
+   */
+  private async preloadData() {
+    if (this.preloadAttempted) return;
+    this.preloadAttempted = true;
+
+    try {
+      console.log('📥 Предзагрузка данных для офлайн-режима...');
+      
+      // Загружаем все данные параллельно
+      await Promise.allSettled([
+        this.getTenders(),
+        this.getSuppliers(),
+        this.getExpenses(),
+      ]);
+      
+      console.log('✅ Предзагрузка завершена');
+    } catch (error) {
+      console.error('❌ Ошибка предзагрузки:', error);
+    }
+  }
+
+  /**
+   * Проверка инициализации IndexedDB
+   * Если не инициализирован - пытаемся инициализировать
+   */
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.initializeDB();
+    }
+    if (!this.initialized) {
+      throw new Error('IndexedDB не доступен');
+    }
+  }
+
   // === SELECT (чтение) ===
 
+  /**
+   * Получение всех тендеров
+   * Стратегия: Network First с fallback на IndexedDB
+   */
   async getTenders(): Promise<Tender[]> {
+    await this.ensureInitialized();
+
     try {
       const { data, error } = await supabase
         .from('tenders')
@@ -78,6 +131,7 @@ export class OfflineSupabase {
             synced: true,
           }))
         );
+        console.log(`✅ Загружено ${data.length} тендеров с сервера`);
         return data;
       }
     } catch (error) {
@@ -86,7 +140,9 @@ export class OfflineSupabase {
 
     // Офлайн или ошибка - берём из IndexedDB
     const cached = await offlineDB.getAll<Tender>('tenders');
-    return cached.map((item: any) => item.data).filter((t: any) => !(t as any).deleted);
+    const tenders = cached.map((item: any) => item.data).filter((t: any) => !(t as any).deleted);
+    console.log(`📦 Загружено ${tenders.length} тендеров из кэша`);
+    return tenders;
   }
 
   async getSuppliers(): Promise<Supplier[]> {
@@ -502,18 +558,70 @@ export class OfflineSupabase {
     return true;
   }
 
-  // === Утилиты ===
+  // === ДОПОЛНИТЕЛЬНЫЕ МЕТОДЫ ===
 
-  getOnlineStatus(): boolean {
-    return this.isOnline;
-  }
-
+  /**
+   * Получение количества несинхронизированных изменений
+   */
   async getPendingChangesCount(): Promise<number> {
     return await syncQueue.getPendingCount();
   }
 
+  /**
+   * Принудительная синхронизация
+   */
   async syncNow(): Promise<void> {
+    if (!this.isOnline) {
+      throw new Error('Нет подключения к интернету');
+    }
     await syncQueue.syncAll();
+  }
+
+  /**
+   * Проверка статуса онлайн/офлайн
+   */
+  getOnlineStatus(): boolean {
+    return this.isOnline;
+  }
+
+  /**
+   * Очистка всех данных (для отладки)
+   */
+  async clearAllData(): Promise<void> {
+    await this.ensureInitialized();
+    await Promise.all([
+      offlineDB.clear('tenders'),
+      offlineDB.clear('suppliers'),
+      offlineDB.clear('expenses'),
+      offlineDB.clear('pending_changes'),
+    ]);
+    console.log('🗑️ Все данные очищены');
+  }
+
+  /**
+   * Получение статистики кэша
+   */
+  async getCacheStats(): Promise<{
+    tenders: number;
+    suppliers: number;
+    expenses: number;
+    pendingChanges: number;
+  }> {
+    await this.ensureInitialized();
+    
+    const [tenders, suppliers, expenses, pending] = await Promise.all([
+      offlineDB.getAll('tenders'),
+      offlineDB.getAll('suppliers'),
+      offlineDB.getAll('expenses'),
+      offlineDB.getPendingChanges(),
+    ]);
+
+    return {
+      tenders: tenders.length,
+      suppliers: suppliers.length,
+      expenses: expenses.length,
+      pendingChanges: pending.length,
+    };
   }
 }
 

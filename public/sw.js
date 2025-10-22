@@ -1,26 +1,40 @@
-const CACHE_VERSION = 'v3-offline-fix';
+/**
+ * Service Worker для TenderCRM
+ * Версия: v4-optimized
+ * 
+ * Стратегии кэширования:
+ * - Навигация: Network First с fallback на кэш
+ * - Статика (_next/static): Cache First с долгим TTL
+ * - Изображения: Cache First с очисткой старых
+ * - API: НЕ кэшируется (обрабатывает offlineSupabase)
+ * 
+ * Оптимизации:
+ * - Предзагрузка критических ресурсов
+ * - Умная очистка старых кэшей
+ * - Graceful degradation при ошибках
+ * - Поддержка офлайн-страницы
+ */
+
+const CACHE_VERSION = 'v4-optimized';
 const CACHE_NAME = `tendercrm-${CACHE_VERSION}`;
-const API_CACHE_NAME = `tendercrm-api-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `tendercrm-runtime-${CACHE_VERSION}`;
 const IMAGE_CACHE_NAME = `tendercrm-images-${CACHE_VERSION}`;
 
-// Статические файлы для кэширования
-const STATIC_CACHE = [
+// Критические файлы для предзагрузки (минимум для работы офлайн)
+const CRITICAL_CACHE = [
   '/',
-  '/login',
   '/m/login',
   '/m/dashboard',
-  '/m/tenders',
-  '/m/tenders/add',
-  '/m/accounting',
-  '/m/suppliers',
-  '/m/suppliers/add',
-  '/m/chat',
-  '/m/files',
-  '/m/menu',
-  '/m/ai',
-  '/m/admin',
-  '/m/settings',
   '/manifest.json',
+  '/offline.html', // Fallback страница
+];
+
+// Дополнительные страницы для кэширования (загружаются в фоне)
+const EXTENDED_CACHE = [
+  '/m/tenders',
+  '/m/suppliers',
+  '/m/accounting',
+  '/m/settings',
 ];
 
 // API эндпоинты для кэширования
@@ -37,90 +51,137 @@ const CACHE_EXPIRATION = {
   static: 30 * 24 * 60 * 60 * 1000, // 30 дней для статики
 };
 
-// Установка Service Worker
+// === УСТАНОВКА SERVICE WORKER ===
 self.addEventListener('install', (event) => {
-  console.log('🔧 Service Worker: Установка...');
+  console.log('🔧 SW: Установка v4-optimized...');
+  
   event.waitUntil(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      console.log('📦 Кэшируем статические файлы');
-      // Кэшируем файлы по одному, чтобы один сбой не ломал всё
-      for (const url of STATIC_CACHE) {
-        try {
-          await cache.add(url);
-        } catch (err) {
-          console.warn(`⚠️ Не удалось закэшировать ${url}:`, err.message);
-        }
+    (async () => {
+      try {
+        const cache = await caches.open(CACHE_NAME);
+        
+        // 1. Кэшируем критические ресурсы (блокирующая операция)
+        console.log('📦 Кэшируем критические ресурсы...');
+        await Promise.allSettled(
+          CRITICAL_CACHE.map(url => 
+            cache.add(url).catch(err => 
+              console.warn(`⚠️ Не удалось закэшировать ${url}:`, err.message)
+            )
+          )
+        );
+        
+        // 2. Создаем офлайн-страницу если её нет
+        await cache.put('/offline.html', new Response(
+          createOfflinePage(),
+          { headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+        ));
+        
+        console.log('✅ Критические ресурсы закэшированы');
+        
+        // 3. Кэшируем дополнительные страницы в фоне (не блокирует установку)
+        setTimeout(() => {
+          console.log('📦 Кэшируем дополнительные страницы...');
+          Promise.allSettled(
+            EXTENDED_CACHE.map(url => cache.add(url).catch(() => {}))
+          );
+        }, 1000);
+        
+      } catch (error) {
+        console.error('❌ Ошибка установки SW:', error);
       }
-      console.log('✅ Кэширование завершено');
-    })
+    })()
   );
+  
+  // Активируем новый SW сразу
   self.skipWaiting();
 });
 
-// Активация Service Worker
+// === АКТИВАЦИЯ SERVICE WORKER ===
 self.addEventListener('activate', (event) => {
-  console.log('✅ Service Worker: Активация');
+  console.log('✅ SW: Активация v4-optimized');
+  
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          // Удаляем старые версии кэша
-          if (
-            cacheName !== CACHE_NAME &&
-            cacheName !== API_CACHE_NAME &&
-            cacheName !== IMAGE_CACHE_NAME
-          ) {
-            console.log('🗑️ Удаляем старый кэш:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    (async () => {
+      try {
+        // 1. Удаляем старые версии кэша
+        const cacheNames = await caches.keys();
+        const validCaches = [CACHE_NAME, RUNTIME_CACHE, IMAGE_CACHE_NAME];
+        
+        await Promise.all(
+          cacheNames.map(cacheName => {
+            if (!validCaches.includes(cacheName)) {
+              console.log('🗑️ Удаляем старый кэш:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+        
+        // 2. Очищаем старые изображения (старше 7 дней)
+        await cleanOldImages();
+        
+        console.log('✅ Активация завершена');
+      } catch (error) {
+        console.error('❌ Ошибка активации SW:', error);
+      }
+    })()
   );
+  
+  // Берем контроль над всеми клиентами
   self.clients.claim();
 });
 
-// Перехват запросов
+// === ПЕРЕХВАТ ЗАПРОСОВ ===
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Игнорируем запросы к другим доменам (включая Supabase)
-  // Это важно для офлайн-режима - offlineSupabase сам решит что делать
+  // Игнорируем запросы к другим доменам
   if (url.origin !== location.origin) {
     return;
   }
   
-  // Также игнорируем запросы к Supabase (они могут быть с нашего домена через прокси)
+  // Игнорируем Supabase (обрабатывает offlineSupabase через IndexedDB)
   if (url.hostname.includes('supabase')) {
     return;
   }
 
-  // API запросы - НЕ перехватываем! Пусть offlineSupabase сам решает
-  // что делать (использовать IndexedDB в офлайн или API в онлайн)
+  // Игнорируем API запросы (обрабатывает offlineSupabase)
   if (url.pathname.startsWith('/api/')) {
-    return; // Пропускаем запрос без перехвата
+    return;
   }
 
-  // Изображения - Cache First
+  // Игнорируем WebSocket и EventSource
+  if (request.mode === 'websocket' || request.destination === 'eventsource') {
+    return;
+  }
+
+  // === СТРАТЕГИИ КЭШИРОВАНИЯ ===
+
+  // 1. Изображения: Cache First с долгим TTL
   if (request.destination === 'image') {
     event.respondWith(handleImageRequest(request));
     return;
   }
 
-  // Навигационные запросы (переходы между страницами) - Network First с fallback
+  // 2. Навигация: Network First с fallback на кэш
   if (request.mode === 'navigate') {
     event.respondWith(handleNavigationRequest(request));
     return;
   }
 
-  // Next.js статические ресурсы (_next/static/*) - Cache First
+  // 3. Next.js статика: Cache First (долгий TTL, immutable)
   if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(handleNextStaticRequest(request));
     return;
   }
 
-  // Статические файлы - Stale While Revalidate
+  // 4. Next.js chunks и другие ресурсы: Stale While Revalidate
+  if (url.pathname.startsWith('/_next/')) {
+    event.respondWith(handleNextDynamicRequest(request));
+    return;
+  }
+
+  // 5. Остальные статические файлы: Stale While Revalidate
   event.respondWith(handleStaticRequest(request));
 });
 
@@ -275,6 +336,30 @@ async function handleImageRequest(request) {
   }
 }
 
+// Stale While Revalidate для Next.js динамических ресурсов
+async function handleNextDynamicRequest(request) {
+  const cached = await caches.match(request);
+  
+  // Обновляем кэш в фоне
+  const fetchPromise = fetch(request).then(async (response) => {
+    if (response && response.ok) {
+      try {
+        const cache = await caches.open(RUNTIME_CACHE);
+        await cache.put(request, response.clone());
+      } catch (err) {
+        console.warn('⚠️ Ошибка кэширования:', err);
+      }
+    }
+    return response;
+  }).catch(() => {
+    // Офлайн - возвращаем кэш
+    return cached || new Response('Not found', { status: 404 });
+  });
+
+  // Возвращаем кэш сразу если есть, иначе ждём сеть
+  return cached || fetchPromise;
+}
+
 // Stale While Revalidate для статики
 async function handleStaticRequest(request) {
   const cached = await caches.match(request);
@@ -384,3 +469,113 @@ self.addEventListener('message', (event) => {
     self.skipWaiting();
   }
 });
+
+// === Утилиты ===
+
+// Создание офлайн-страницы
+function createOfflinePage() {
+  return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Офлайн режим | TenderCRM</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .container {
+      max-width: 400px;
+      animation: fadeIn 0.5s ease-in;
+    }
+    .icon {
+      font-size: 4em;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite;
+    }
+    h1 {
+      font-size: 2em;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+    p {
+      font-size: 1.1em;
+      opacity: 0.9;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 30px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid white;
+      border-radius: 25px;
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="icon">🔴</div>
+    <h1>Офлайн режим</h1>
+    <p>Нет подключения к интернету. Пожалуйста, проверьте соединение и попробуйте снова.</p>
+    <button class="button" onclick="window.location.reload()">Попробовать снова</button>
+  </div>
+</body>
+</html>`;
+}
+
+// Очистка старых изображений
+async function cleanOldImages() {
+  try {
+    const cache = await caches.open(IMAGE_CACHE_NAME);
+    const requests = await cache.keys();
+    const now = Date.now();
+    
+    for (const request of requests) {
+      const response = await cache.match(request);
+      if (response) {
+        const dateHeader = response.headers.get('date');
+        if (dateHeader) {
+          const age = now - new Date(dateHeader).getTime();
+          // Удаляем изображения старше 7 дней
+          if (age > CACHE_EXPIRATION.images) {
+            await cache.delete(request);
+            console.log('🗑️ Удалено старое изображение:', request.url);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Ошибка очистки изображений:', error);
+  }
+}
