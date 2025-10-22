@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { User, Bell, Moon, Sun, LogOut, ChevronRight, Shield, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function SettingsPage() {
 
     // Отслеживаем pending изменения
     const updatePendingCount = async () => {
-      const count = await offlineSupabase.getPendingChangesCount();
+      const count = await apiClient.getPendingChangesCount();
       setPendingCount(count);
     };
     updatePendingCount();
@@ -126,7 +126,7 @@ export default function SettingsPage() {
     haptics.light();
     
     try {
-      await offlineSupabase.syncNow();
+      await apiClient.syncNow();
       haptics.success();
       toast.success('Синхронизация завершена!', {
         description: `Синхронизировано изменений: ${pendingCount}`

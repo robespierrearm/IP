@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
@@ -24,7 +24,7 @@ export default function EditTenderPage() {
   const loadTender = async () => {
     setIsLoading(true);
     try {
-      const tenders = await offlineSupabase.getTenders();
+      const tenders = await apiClient.getTenders();
       const data = tenders.find(t => t.id === parseInt(tenderId));
       if (data) {
         setTender(data);
@@ -42,7 +42,7 @@ export default function EditTenderPage() {
     haptics.light();
     
     try {
-      await offlineSupabase.updateTender(tender.id, {
+      await apiClient.updateTender(tender.id, {
         name: tender.name,
         status: tender.status,
         start_price: tender.start_price,
@@ -54,7 +54,7 @@ export default function EditTenderPage() {
       setIsSaving(false);
       haptics.success();
       toast.success('Тендер обновлён!', {
-        description: offlineSupabase.getOnlineStatus() 
+        description: apiClient.getOnlineStatus() 
           ? 'Изменения сохранены' 
           : 'Изменения будут синхронизированы при подключении к сети'
       });

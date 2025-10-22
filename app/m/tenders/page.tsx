@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
@@ -97,12 +97,16 @@ export default function TendersPage() {
   const loadTenders = useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await offlineSupabase.getTenders();
-      setTenders(data);
+      const response = await apiClient.getTenders();
+      if (response.success && response.data) {
+        setTenders(response.data as Tender[]);
+      } else {
+        throw new Error(response.error || 'Не удалось загрузить тендеры');
+      }
     } catch (error) {
       console.error('Ошибка загрузки тендеров:', error);
       toast.error('Ошибка загрузки', {
-        description: 'Не удалось загрузить тендеры'
+        description: error instanceof Error ? error.message : 'Не удалось загрузить тендеры'
       });
     }
     setIsLoading(false);
@@ -166,7 +170,7 @@ export default function TendersPage() {
 
     // В фоне отправляем на сервер
     try {
-      await offlineSupabase.deleteTender(deletedTender.id);
+      await apiClient.deleteTender(deletedTender.id);
     } catch (error) {
       console.error('Ошибка удаления тендера:', error);
       
@@ -363,7 +367,7 @@ export default function TendersPage() {
                             />
                             <button
                               onClick={async () => {
-                                await offlineSupabase.updateTender(selectedTender.id, { submission_date: tempSubmissionDate });
+                                await apiClient.updateTender(selectedTender.id, { submission_date: tempSubmissionDate });
                                 setEditingSubmissionDate(false);
                                 loadTenders();
                               }}
@@ -430,7 +434,7 @@ export default function TendersPage() {
                           />
                           <button
                             onClick={async () => {
-                              await offlineSupabase.updateTender(selectedTender.id, { submitted_price: parseFloat(tempSubmittedPrice) });
+                              await apiClient.updateTender(selectedTender.id, { submitted_price: parseFloat(tempSubmittedPrice) });
                               setEditingSubmittedPrice(false);
                               loadTenders();
                             }}

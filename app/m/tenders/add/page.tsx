@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { TenderInsert, STATUS_LABELS } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
@@ -47,12 +47,12 @@ export default function AddTenderPage() {
     };
     
     try {
-      await offlineSupabase.createTender(payload);
+      await apiClient.createTender(payload);
       setIsSaving(false);
       
       haptics.success();
       toast.success('Тендер добавлен!', {
-        description: offlineSupabase.getOnlineStatus() 
+        description: apiClient.getOnlineStatus() 
           ? 'Тендер сохранён' 
           : 'Тендер будет синхронизирован при подключении к сети'
       });

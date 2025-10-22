@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Tender } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
-import { OnlineStatusBorder } from '@/components/OnlineStatusBorder';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -41,7 +40,9 @@ export default function DashboardPage() {
 
   const loadData = async () => {
     try {
-      const allTenders = await offlineSupabase.getTenders();
+      const response = await apiClient.getTenders();
+      if (!response.success || !response.data) return;
+      const allTenders = response.data as Tender[];
       const data = allTenders.slice(0, 10);
       setTenders(data);
 
@@ -94,9 +95,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Шапка с градиентом и обводкой онлайн/офлайн */}
-      <OnlineStatusBorder>
-        <div className="bg-gradient-to-br from-primary-500 to-secondary-600 px-6 pt-6 pb-8 rounded-b-3xl">
+      {/* Шапка с градиентом */}
+      <div className="bg-gradient-to-br from-primary-500 to-secondary-600 px-6 pt-6 pb-8 rounded-b-3xl">
         <div className="flex items-center justify-between mb-6">
           <div>
             <p className="text-white/80 text-sm mb-1">Добро пожаловать,</p>
@@ -181,7 +181,6 @@ export default function DashboardPage() {
           </motion.div>
         </div>
       </div>
-      </OnlineStatusBorder>
 
       {/* Последние тендеры */}
       <div className="px-6 py-6">

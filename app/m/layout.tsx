@@ -3,9 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/mobile/BottomNav';
-import { Toaster, toast } from 'sonner';
+import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-import { PWARegister } from '@/components/PWARegister';
 
 export default function MobileLayout({
   children,
@@ -17,13 +16,6 @@ export default function MobileLayout({
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Делаем toast доступным глобально для offlineSupabase
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      (window as any).toast = toast;
-    }
-  }, []);
-
   useEffect(() => {
     // Пропускаем проверку для страницы логина
     if (pathname === '/m/login') {
@@ -32,33 +24,32 @@ export default function MobileLayout({
       return;
     }
 
-    // Проверяем авторизацию БЕЗ задержки (для офлайн-режима)
-    try {
-      const currentUser = localStorage.getItem('currentUser');
-      
-      console.log('MobileLayout: Checking auth...', { currentUser: !!currentUser, pathname });
-      
-      if (!currentUser) {
-        console.log('MobileLayout: No user, redirecting to /m/login');
-        // Используем window.location вместо router для офлайн-режима
-        if (typeof window !== 'undefined') {
-          window.location.href = '/m/login';
+    // Небольшая задержка для инициализации
+    const timer = setTimeout(() => {
+      try {
+        // Проверяем авторизацию
+        const currentUser = localStorage.getItem('currentUser');
+        
+        console.log('MobileLayout: Checking auth...', { currentUser: !!currentUser, pathname });
+        
+        if (!currentUser) {
+          console.log('MobileLayout: No user, redirecting to /m/login');
+          router.replace('/m/login');
+          setIsLoading(false);
+        } else {
+          console.log('MobileLayout: User found, authenticated');
+          setIsAuthenticated(true);
+          setIsLoading(false);
         }
+      } catch (error) {
+        console.error('MobileLayout: Error checking auth', error);
         setIsLoading(false);
-      } else {
-        console.log('MobileLayout: User found, authenticated');
-        setIsAuthenticated(true);
-        setIsLoading(false);
+        router.replace('/m/login');
       }
-    } catch (error) {
-      console.error('MobileLayout: Error checking auth', error);
-      setIsLoading(false);
-      // Используем window.location вместо router для офлайн-режима
-      if (typeof window !== 'undefined') {
-        window.location.href = '/m/login';
-      }
-    }
-  }, [pathname]);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [router, pathname]);
 
   if (isLoading) {
     return (
@@ -88,9 +79,6 @@ export default function MobileLayout({
 
   return (
     <ErrorBoundary>
-      {/* Регистрация PWA и Service Worker - ВРЕМЕННО ОТКЛЮЧЕНО ДЛЯ ТЕСТА */}
-      {/* <PWARegister /> */}
-      
       <div className="min-h-screen bg-gray-50 pb-20">
         {/* Безопасная зона сверху для iPhone */}
         <div className="safe-top" />

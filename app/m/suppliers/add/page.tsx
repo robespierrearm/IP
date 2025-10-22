@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
@@ -31,7 +31,7 @@ export default function AddSupplierPage() {
     haptics.light();
     
     try {
-      await offlineSupabase.createSupplier({
+      await apiClient.createSupplier({
         name: formData.name,
         phone: formData.phone || null,
         email: formData.email || null,
@@ -43,7 +43,7 @@ export default function AddSupplierPage() {
       setIsSaving(false);
       haptics.success();
       toast.success('Поставщик добавлен!', {
-        description: offlineSupabase.getOnlineStatus() 
+        description: apiClient.getOnlineStatus() 
           ? 'Поставщик сохранён' 
           : 'Поставщик будет синхронизирован при подключении к сети'
       });

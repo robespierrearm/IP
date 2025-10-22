@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Tender, Expense } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { TrendingUp, TrendingDown, DollarSign, FileText, ChevronDown, ChevronUp, Plus, Trash2, X } from 'lucide-react';
 import { formatPrice } from '@/lib/utils';
 
@@ -27,7 +27,7 @@ export default function AccountingPage() {
     setIsLoading(true);
 
     // Загружаем тендеры со статусами "победа", "в работе", "завершён"
-    const tenders = await offlineSupabase.getTenders();
+    const tenders = await apiClient.getTenders();
     const filteredTenders = tenders.filter(t => 
       ['победа', 'в работе', 'завершён'].includes(t.status)
     ).sort((a, b) => {
@@ -44,7 +44,7 @@ export default function AccountingPage() {
     }
 
     // Загружаем расходы для всех тендеров
-    const allExpenses = await offlineSupabase.getExpenses();
+    const allExpenses = await apiClient.getExpenses();
     const tenderIds = filteredTenders.map((t: Tender) => t.id);
     const expenses = allExpenses.filter((exp: Expense) => tenderIds.includes(exp.tender_id));
 
@@ -94,7 +94,7 @@ export default function AccountingPage() {
     };
 
     try {
-      await offlineSupabase.createExpense(expense);
+      await apiClient.createExpense(expense);
 
     } catch (error) {
       alert('Ошибка при добавлении расхода');
@@ -110,7 +110,7 @@ export default function AccountingPage() {
     if (!confirm('Удалить этот расход?')) return;
 
     try {
-      await offlineSupabase.deleteExpense(expenseId);
+      await apiClient.deleteExpense(expenseId);
     } catch (error) {
       alert('Ошибка при удалении расхода');
       return;

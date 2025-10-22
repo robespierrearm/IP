@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Supplier } from '@/lib/supabase';
-import { offlineSupabase } from '@/lib/offline-supabase';
+import { apiClient } from '@/lib/api-client';
 import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
 import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
 import { toast } from 'sonner';
@@ -63,7 +63,7 @@ export default function SuppliersPage() {
   const loadSuppliers = async () => {
     setIsLoading(true);
     try {
-      const data = await offlineSupabase.getSuppliers();
+      const data = await apiClient.getSuppliers();
       const sorted = data.sort((a, b) => {
         const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
         const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
@@ -112,7 +112,7 @@ export default function SuppliersPage() {
     setDeletingId(supplierToDelete.id);
 
     try {
-      await offlineSupabase.deleteSupplier(supplierToDelete.id);
+      await apiClient.deleteSupplier(supplierToDelete.id);
 
       // Анимация исчезновения - ждём 300ms перед удалением из state
       setTimeout(() => {
