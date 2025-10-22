@@ -124,7 +124,8 @@ async function handleStart(message: any) {
           [{ text: '📋 Меню' }, { text: '❓ Справка' }]
         ],
         resize_keyboard: true,
-        persistent: true
+        one_time_keyboard: false,
+        is_persistent: true
       }
     }
   );
