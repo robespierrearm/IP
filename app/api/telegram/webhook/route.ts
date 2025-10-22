@@ -317,6 +317,7 @@ async function handleHelp(message: any) {
     `/tenders - Список активных тендеров\n` +
     `/reminders - Напоминания о дедлайнах\n` +
     `/ai - Выбор AI модели\n` +
+    `/clear - Очистить историю чата\n` +
     `/help - Эта справка\n\n` +
     `<b>AI Помощник:</b>\n` +
     `Просто напишите мне:\n` +
@@ -328,8 +329,45 @@ async function handleHelp(message: any) {
     `• Распознаю сумму\n` +
     `• Определю категорию\n` +
     `• Предложу добавить расход\n\n` +
-    `Я понимаю естественный язык! 🧠`
+    `Я понимаю естественный язык! 🧠\n\n` +
+    `━━━━━━━━━━━━━━━━━━━━\n` +
+    `🌐 <b>Веб-версия CRM:</b>\n` +
+    `<a href="https://ip-mauve-pi.vercel.app">ip-mauve-pi.vercel.app</a>`
   );
+}
+
+// Обработка команды /clear - очистка истории
+async function handleClear(message: any) {
+  const chatId = message.chat.id;
+  const telegramId = message.from.id.toString();
+
+  const auth = await checkAuth(telegramId);
+  if (!auth) {
+    await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
+    return;
+  }
+
+  try {
+    // Удаляем всю историю пользователя
+    const { error, count } = await supabase
+      .from('chat_history')
+      .delete()
+      .eq('telegram_id', telegramId);
+
+    if (error) {
+      await sendMessage(chatId, `❌ Ошибка при очистке истории: ${error.message}`);
+      return;
+    }
+
+    await sendMessage(chatId, 
+      `🗑️ <b>История очищена!</b>\n\n` +
+      `Удалено сообщений: ${count || 0}\n\n` +
+      `Теперь я начну запоминать наш разговор заново.`
+    );
+  } catch (error: any) {
+    console.error('Clear history error:', error);
+    await sendMessage(chatId, `❌ Ошибка: ${error.message}`);
+  }
 }
 
 // Обработка фото (распознавание чеков)
@@ -625,6 +663,8 @@ export async function POST(request: NextRequest) {
           await handleModelChange(message, modelKey);
         } else if (text === '/help') {
           await handleHelp(message);
+        } else if (text === '/clear') {
+          await handleClear(message);
         } else {
           await handleTextMessage(message);
         }
