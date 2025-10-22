@@ -4,7 +4,6 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/components/QueryProvider";
 import { Analytics } from '@vercel/analytics/react';
-import { PWARegister } from "@/components/PWARegister";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -62,7 +61,6 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
         <Analytics />
-        <PWARegister />
       </body>
     </html>
   );
