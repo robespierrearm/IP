@@ -98,32 +98,35 @@ async function handleStart(message: any) {
       telegram_id: telegramId,
       telegram_username: message.from.username || null,
       telegram_first_name: message.from.first_name || null,
-      telegram_last_name: message.from.last_name || null,
       is_active: true,
-      connected_at: new Date().toISOString(),
-      last_activity: new Date().toISOString(),
     })
     .eq('id', connection.id);
 
   if (updateError) {
-    await sendMessage(chatId, '❌ Ошибка подключения. Попробуйте позже.');
+    await sendMessage(chatId, '❌ Ошибка при активации подключения.');
     return;
   }
 
-  // Успешное подключение
-  await sendMessage(chatId, 
+  // Отправляем приветствие с постоянным меню
+  await sendMessage(chatId,
     `✅ <b>Подключение успешно!</b>\n\n` +
-    `Привет, ${message.from.first_name}! 👋\n\n` +
+    `Добро пожаловать, ${connection.users.name}!\n\n` +
     `Теперь вы можете:\n` +
-    `• Получать уведомления о дедлайнах\n` +
-    `• Управлять тендерами через AI\n` +
-    `• Просматривать статистику\n\n` +
-    `<b>Доступные команды:</b>\n` +
-    `/dashboard - Статистика\n` +
-    `/tenders - Список тендеров\n` +
-    `/reminders - Напоминания\n` +
-    `/help - Справка\n\n` +
-    `Или просто напишите мне что-нибудь, и AI помощник вам поможет! 🤖`
+    `• Получать уведомления о тендерах\n` +
+    `• Использовать AI помощника\n` +
+    `• Распознавать чеки\n\n` +
+    `Используйте кнопки меню внизу ⬇️`,
+    {
+      reply_markup: {
+        keyboard: [
+          [{ text: '📊 Статистика' }, { text: '📁 Тендеры' }],
+          [{ text: '⏰ Напоминания' }, { text: '🤖 AI' }],
+          [{ text: '📋 Меню' }, { text: '❓ Справка' }]
+        ],
+        resize_keyboard: true,
+        persistent: true
+      }
+    }
   );
 }
 
@@ -333,6 +336,44 @@ async function handleHelp(message: any) {
     `━━━━━━━━━━━━━━━━━━━━\n` +
     `🌐 <b>Веб-версия CRM:</b>\n` +
     `<a href="https://ip-mauve-pi.vercel.app">ip-mauve-pi.vercel.app</a>`
+  );
+}
+
+// Обработка команды /menu - главное меню с кнопками
+async function handleMenu(message: any) {
+  const chatId = message.chat.id;
+  const telegramId = message.from.id.toString();
+
+  const auth = await checkAuth(telegramId);
+  if (!auth) {
+    await sendMessage(chatId, '❌ Вы не авторизованы. Используйте /start КОД');
+    return;
+  }
+
+  await sendMessage(chatId, 
+    `📋 <b>Главное меню TenderCRM</b>\n\n` +
+    `Выберите действие:`,
+    {
+      reply_markup: {
+        inline_keyboard: [
+          [
+            { text: '📊 Статистика', callback_data: 'cmd_dashboard' },
+            { text: '📁 Тендеры', callback_data: 'cmd_tenders' }
+          ],
+          [
+            { text: '⏰ Напоминания', callback_data: 'cmd_reminders' },
+            { text: '🤖 AI Модели', callback_data: 'cmd_ai' }
+          ],
+          [
+            { text: '🗑️ Очистить историю', callback_data: 'cmd_clear' },
+            { text: '❓ Справка', callback_data: 'cmd_help' }
+          ],
+          [
+            { text: '🌐 Открыть веб-версию', url: 'https://ip-mauve-pi.vercel.app' }
+          ]
+        ]
+      }
+    }
   );
 }
 
@@ -706,10 +747,20 @@ export async function POST(request: NextRequest) {
           await handleModelChange(message, modelKey);
         } else if (text === '/help') {
           await handleHelp(message);
-        } else if (text === '/menu') {
+        } else if (text === '/menu' || text === '📋 Меню') {
           await handleMenu(message);
         } else if (text === '/clear') {
           await handleClear(message);
+        } else if (text === '📊 Статистика') {
+          await handleDashboard(message);
+        } else if (text === '📁 Тендеры') {
+          await handleTenders(message);
+        } else if (text === '⏰ Напоминания') {
+          await handleReminders(message);
+        } else if (text === '🤖 AI') {
+          await handleAI(message);
+        } else if (text === '❓ Справка') {
+          await handleHelp(message);
         } else {
           await handleTextMessage(message);
         }
