@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, provider = 'intelligence', model } = await request.json();
+    const { messages, provider = 'intelligence', model, userId } = await request.json();
 
     // Ключи теперь на сервере - безопасно!
     const intelligenceKey = process.env.INTELLIGENCE_API_KEY;
@@ -99,8 +104,24 @@ export async function POST(request: NextRequest) {
       }
 
       const data = await response.json();
+      const aiMessage = data.choices[0]?.message?.content || 'Нет ответа';
+      
+      // Сохраняем историю в базу (последнее сообщение пользователя + ответ AI)
+      if (userId) {
+        try {
+          const userMessage = messages[messages.length - 1];
+          await supabase.from('chat_history').insert([
+            { user_id: userId, role: 'user', content: userMessage.content },
+            { user_id: userId, role: 'assistant', content: aiMessage },
+          ]);
+          console.log('✅ Web AI: History saved for user', userId);
+        } catch (e) {
+          console.error('❌ Web AI: Failed to save history:', e);
+        }
+      }
+      
       return NextResponse.json({
-        message: data.choices[0]?.message?.content || 'Нет ответа',
+        message: aiMessage,
         provider: 'intelligence'
       });
 
@@ -136,8 +157,24 @@ export async function POST(request: NextRequest) {
       }
 
       const data = await response.json();
+      const aiMessage = data.candidates[0]?.content?.parts[0]?.text || 'Нет ответа';
+      
+      // Сохраняем историю в базу (последнее сообщение пользователя + ответ AI)
+      if (userId) {
+        try {
+          const userMessage = messages[messages.length - 1];
+          await supabase.from('chat_history').insert([
+            { user_id: userId, role: 'user', content: userMessage.content },
+            { user_id: userId, role: 'assistant', content: aiMessage },
+          ]);
+          console.log('✅ Web AI: History saved for user', userId);
+        } catch (e) {
+          console.error('❌ Web AI: Failed to save history:', e);
+        }
+      }
+      
       return NextResponse.json({
-        message: data.candidates[0]?.content?.parts[0]?.text || 'Нет ответа',
+        message: aiMessage,
         provider: 'google'
       });
     }
