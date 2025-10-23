@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, PanInfo } from 'framer-motion';
+import { m, PanInfo } from 'framer-motion';
 import { Supplier } from '@/lib/supabase';
 import { Building2, Phone, Mail, User, Trash2 } from 'lucide-react';
 import { memo } from 'react';
@@ -71,7 +71,7 @@ const SwipeableSupplierCardComponent = ({ supplier, onDelete, onClick, isOpen, o
       </div>
 
       {/* Карточка поставщика */}
-      <motion.div
+      <m.div
         drag="x"
         dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
         dragElastic={0.2}
@@ -135,7 +135,7 @@ const SwipeableSupplierCardComponent = ({ supplier, onDelete, onClick, isOpen, o
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 };

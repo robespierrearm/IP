@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import { QueryProvider } from "@/components/QueryProvider";
 import { Analytics } from '@vercel/analytics/react';
+import { LazyMotion, domAnimation } from 'framer-motion';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -55,11 +56,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <AuthProvider>
-            {children}
-          </AuthProvider>
-        </QueryProvider>
+        <LazyMotion features={domAnimation} strict>
+          <QueryProvider>
+            <AuthProvider>
+              {children}
+            </AuthProvider>
+          </QueryProvider>
+        </LazyMotion>
         <Analytics />
       </body>
     </html>

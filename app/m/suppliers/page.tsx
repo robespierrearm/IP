@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
+import { useAutoClose } from '@/hooks/useAutoClose';
 
 export default function SuppliersPage() {
   const router = useRouter();
@@ -32,33 +33,8 @@ export default function SuppliersPage() {
     filterSuppliers();
   }, [suppliers, debouncedSearchQuery]);
 
-  // Автозакрытие открытой карточки через 3 секунды
-  useEffect(() => {
-    if (openCardId !== -1) {
-      const timer = setTimeout(() => {
-        setOpenCardId(-1);
-      }, 3000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [openCardId]);
-
-  // Закрытие при клике вне карточки
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (openCardId !== -1) {
-        const target = e.target as HTMLElement;
-        const isClickOnCard = target.closest('[data-card-id]');
-        
-        if (!isClickOnCard) {
-          setOpenCardId(-1);
-        }
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  }, [openCardId]);
+  // Автозакрытие карточки (оптимизировано)
+  useAutoClose(openCardId !== -1, () => setOpenCardId(-1), 3000, '[data-card-id]');
 
   const loadSuppliers = async () => {
     setIsLoading(true);

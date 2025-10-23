@@ -5,6 +5,7 @@ import { Tender } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { getStatusColor } from '@/lib/tender-utils';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -59,28 +60,6 @@ export default function DashboardPage() {
       reminderTenders: reminders,
     };
   }, [tenders]);
-
-  // Мемоизированная функция - не пересоздаётся при каждом рендере
-  const getStatusColor = useCallback((status: Tender['status']) => {
-    switch (status) {
-      case 'новый':
-        return 'bg-blue-100 text-blue-700';
-      case 'подано':
-        return 'bg-green-100 text-green-700';
-      case 'на рассмотрении':
-        return 'bg-purple-100 text-purple-700';
-      case 'победа':
-        return 'bg-green-100 text-green-700';
-      case 'в работе':
-        return 'bg-orange-100 text-orange-700';
-      case 'завершён':
-        return 'bg-green-50 text-green-600';
-      case 'проигрыш':
-        return 'bg-red-50 text-red-600';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -5,7 +5,7 @@
  */
 
 import { memo } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { SwipeableTenderCard } from './SwipeableTenderCard';
 import { Tender } from '@/lib/supabase';
 
@@ -31,7 +31,7 @@ export const AnimatedTenderCard = memo(function AnimatedTenderCard({
   isDeleting = false,
 }: AnimatedTenderCardProps) {
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, y: 20, scale: 0.95 }}
       animate={{ 
@@ -61,6 +61,6 @@ export const AnimatedTenderCard = memo(function AnimatedTenderCard({
         onOpen={onOpen}
         getStatusColor={getStatusColor}
       />
-    </motion.div>
+    </m.div>
   );
 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { motion, PanInfo } from 'framer-motion';
+import { m, PanInfo } from 'framer-motion';
 import { Tender } from '@/lib/supabase';
 import { Calendar, DollarSign, Trash2 } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
@@ -80,7 +80,7 @@ const SwipeableTenderCardComponent = ({
       </div>
 
       {/* Карточка тендера */}
-      <motion.div
+      <m.div
         drag="x"
         dragConstraints={{ left: -deleteButtonWidth, right: 0 }}
         dragElastic={0.2}
@@ -126,7 +126,7 @@ const SwipeableTenderCardComponent = ({
             </div>
           )}
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 };
