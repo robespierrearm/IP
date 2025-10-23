@@ -146,6 +146,7 @@ export default function AddTenderPage() {
           </label>
           <input
             type="date"
+            max={new Date().toISOString().split('T')[0]}
             value={formData.publication_date}
             onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
             required
@@ -161,6 +162,7 @@ export default function AddTenderPage() {
           </label>
           <input
             type="date"
+            min={new Date().toISOString().split('T')[0]}
             value={formData.submission_deadline || ''}
             onChange={(e) => setFormData({ ...formData, submission_deadline: e.target.value })}
             className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"

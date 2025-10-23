@@ -70,7 +70,27 @@ export function MobileTenderStatusChanger({ tender, onStatusChanged }: MobileTen
           if (submittedPrice) {
             additionalData.submitted_price = parseFloat(submittedPrice);
           }
-          // Статус остается "подано" до дня дедлайна
+          
+          // АВТОПЕРЕХОД: Если дедлайн уже прошел или сегодня - сразу переводим в "на рассмотрении"
+          if (tender.submission_deadline) {
+            const deadline = new Date(tender.submission_deadline);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            deadline.setHours(0, 0, 0, 0);
+            
+            if (deadline <= today) {
+              // Дедлайн прошел - сразу переводим в "на рассмотрении"
+              await apiClient.updateTender(tender.id, { status: 'на рассмотрении', ...additionalData });
+              setIsDialogOpen(false);
+              setSelectedStatus(null);
+              setWinPrice('');
+              setSubmittedPrice('');
+              alert('👀 Тендер на рассмотрении');
+              onStatusChanged();
+              setIsProcessing(false);
+              return;
+            }
+          }
           break;
 
         case 'на рассмотрении':

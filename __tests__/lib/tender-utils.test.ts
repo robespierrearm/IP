@@ -11,11 +11,11 @@ import {
 describe('tender-utils', () => {
   describe('getStatusColor', () => {
     it('возвращает правильный цвет для статуса "новый"', () => {
-      expect(getStatusColor('новый')).toContain('bg-blue');
+      expect(getStatusColor('новый')).toContain('bg-gray');
     });
 
     it('возвращает правильный цвет для статуса "победа"', () => {
-      expect(getStatusColor('победа')).toContain('bg-green');
+      expect(getStatusColor('победа')).toContain('bg-purple');
     });
 
     it('возвращает правильный цвет для статуса "проигрыш"', () => {

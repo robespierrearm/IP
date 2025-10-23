@@ -143,6 +143,7 @@ export function EditTenderDialog({
                 <Input
                   id="edit-publication_date"
                   type="date"
+                  max={new Date().toISOString().split('T')[0]}
                   value={formData.publication_date || ''}
                   onChange={(e) =>
                     setFormData({
@@ -194,6 +195,7 @@ export function EditTenderDialog({
                 <Input
                   id="edit-submission_deadline"
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={formData.submission_deadline || ''}
                   onChange={(e) =>
                     setFormData({ ...formData, submission_deadline: e.target.value })

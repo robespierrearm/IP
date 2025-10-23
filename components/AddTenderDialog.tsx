@@ -137,12 +137,10 @@ export function AddTenderDialog({
                 <Input
                   id="publication_date"
                   type="date"
-                  value={formData.publication_date}
+                  max={new Date().toISOString().split('T')[0]}
+                  value={formData.publication_date || new Date().toISOString().split('T')[0]}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      publication_date: e.target.value,
-                    })
+                    setFormData({ ...formData, publication_date: e.target.value })
                   }
                   required
                 />
@@ -188,10 +186,13 @@ export function AddTenderDialog({
                 <Input
                   id="submission_deadline"
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={formData.submission_deadline || ''}
                   onChange={(e) =>
                     setFormData({ ...formData, submission_deadline: e.target.value })
                   }
+                  required
+                  placeholder="Выберите дату"
                 />
               </div>
             </div>
