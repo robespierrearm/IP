@@ -12,6 +12,7 @@ import {
 import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { PlatformButton } from '@/components/PlatformButton';
 
 export default function TestFinalPage() {
   const [expandedOld, setExpandedOld] = useState(false);
@@ -283,7 +284,10 @@ export default function TestFinalPage() {
               {/* Заголовок */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-base text-gray-900 mb-2 leading-tight">{sampleTender.name}</h3>
+                  <div className="flex items-center gap-2 mb-2 flex-wrap">
+                    <h3 className="font-semibold text-base text-gray-900 leading-tight">{sampleTender.name}</h3>
+                    <PlatformButton link={sampleTender.link} />
+                  </div>
                   <div className="flex items-center gap-3 flex-wrap">
                     <span className={`inline-flex px-2.5 py-1 rounded-lg text-xs font-medium ${getStatusColor(currentStatus)}`}>
                       {currentStatus}
