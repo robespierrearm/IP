@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Tender, DocumentType, supabase } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
-import { MapPin, ExternalLink, BarChart3, FileText, Receipt, ChevronDown, ChevronUp, Hash, TrendingDown } from 'lucide-react';
+import { MapPin, ExternalLink, BarChart3, FileText, Receipt, ChevronDown, ChevronUp, Hash, TrendingDown, DollarSign } from 'lucide-react';
 import { TenderDocumentsModal } from '@/components/TenderDocumentsModal';
 import { TenderFinancialModal } from '@/components/TenderFinancialModal';
 
@@ -106,116 +106,102 @@ export function TenderCardExpanded({ tender, isExpanded, onToggle }: TenderCardE
 
   return (
     <>
-      {/* Раскрывающееся содержимое */}
+      {/* Раскрывающееся содержимое - НОВЫЙ ДИЗАЙН */}
       {isExpanded && (
-        <div className="border-t bg-gray-50 p-4 space-y-4 animate-in slide-in-from-top-2 duration-200">
-          {/* Номер гос закупки и снижение */}
-          {(tender.purchase_number || reduction) && (
-            <div className="flex flex-wrap gap-2">
-              {/* Номер гос закупки */}
-              {tender.purchase_number && (
-                <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1.5 rounded-md border border-blue-200">
-                  <Hash className="h-3.5 w-3.5" />
-                  <span className="text-xs font-medium">№ {tender.purchase_number}</span>
-                </div>
-              )}
-
+        <div className="border-t bg-white p-4 animate-in slide-in-from-top-2 duration-300">
+          {/* Информация и действия - в две колонки */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Левая колонка - Информация */}
+            <div className="space-y-2">
               {/* Снижение цены */}
               {reduction && (
-                <div className="inline-flex items-center gap-1.5 bg-green-50 text-green-700 px-3 py-1.5 rounded-md border border-green-200">
-                  <TrendingDown className="h-3.5 w-3.5" />
-                  <span className="text-xs font-semibold">
-                    {formatAmount(reduction.amount)}
-                  </span>
-                  <span className="text-xs opacity-75">
-                    ({reduction.percentage.toFixed(1)}%)
-                  </span>
+                <div className="flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg border border-green-200 shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                    <TrendingDown className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-green-700 font-medium">Снижение цены</p>
+                    <p className="text-xs font-bold text-green-600 truncate">
+                      {formatAmount(reduction.amount)} ({reduction.percentage.toFixed(1)}%)
+                    </p>
+                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Регион / Адрес */}
-          {tender.region && (
-            <div className="bg-white p-4 rounded-lg border">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
-                    <h4 className="font-medium text-gray-900">Регион / Адрес</h4>
-                  </div>
-                  <p className="text-sm text-gray-700">{tender.region}</p>
-                </div>
-                <Button
+              {/* Регион - кликабельный с красной булавкой */}
+              {tender.region && (
+                <button 
                   onClick={openGoogleMaps}
-                  size="sm"
-                  variant="outline"
-                  className="flex items-center gap-2"
+                  className="w-full flex items-center justify-between gap-2 p-2.5 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200 hover:border-red-300 hover:shadow-md transition-all text-left group"
                 >
-                  <ExternalLink className="h-4 w-4" />
-                  <span className="hidden sm:inline">Показать на карте</span>
-                  <span className="sm:hidden">Карта</span>
-                </Button>
-              </div>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-8 h-8 rounded-lg bg-red-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      <MapPin className="h-4 w-4 text-red-600 fill-red-600" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] text-red-700 font-medium">Регион / Карта</p>
+                      <p className="text-xs font-bold text-red-600 truncate">{tender.region}</p>
+                    </div>
+                  </div>
+                  <ExternalLink className="h-3.5 w-3.5 text-red-500 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              )}
             </div>
-          )}
 
-          {/* Кнопки действий */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {/* Финансовая сводка */}
-            <Button
-              onClick={() => setFinancialModalOpen(true)}
-              variant="outline"
-              className="flex items-center justify-center gap-2 h-auto py-3 border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 hover:border-indigo-300"
-            >
-              <BarChart3 className="h-5 w-5" />
-              <div className="text-left">
-                <div className="font-medium">Финансовая сводка</div>
-                <div className="text-xs opacity-75">Доходы и расходы</div>
-              </div>
-            </Button>
-
-            {/* Тендерная документация */}
-            <Button
-              onClick={() => {
-                setSelectedDocType('тендерная документация');
-                setDocumentsModalOpen(true);
-              }}
-              variant="outline"
-              className="flex items-center justify-center gap-2 h-auto py-3 border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300"
-            >
-              <FileText className="h-5 w-5" />
-              <div className="text-left">
-                <div className="font-medium">
-                  Тендерная документация
-                  {materialCounts['тендерная документация'] > 0 && (
-                    <span className="ml-1">({materialCounts['тендерная документация']})</span>
-                  )}
+            {/* Правая колонка - Действия */}
+            <div className="space-y-2">
+              {/* Финансовая сводка */}
+              <button 
+                onClick={() => setFinancialModalOpen(true)}
+                className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg border border-purple-200 hover:border-purple-300 hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <BarChart3 className="h-4 w-4 text-purple-600" />
                 </div>
-                <div className="text-xs opacity-75">Документы тендера</div>
-              </div>
-            </Button>
-
-            {/* Закрывающие документы */}
-            <Button
-              onClick={() => {
-                setSelectedDocType('закрывающие документы');
-                setDocumentsModalOpen(true);
-              }}
-              variant="outline"
-              className="flex items-center justify-center gap-2 h-auto py-3 border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-300"
-            >
-              <Receipt className="h-5 w-5" />
-              <div className="text-left">
-                <div className="font-medium">
-                  Закрывающие документы
-                  {materialCounts['закрывающие документы'] > 0 && (
-                    <span className="ml-1">({materialCounts['закрывающие документы']})</span>
-                  )}
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-purple-700">Финансовая сводка</p>
+                  <p className="text-[10px] text-purple-600">Доходы и расходы</p>
                 </div>
-                <div className="text-xs opacity-75">Акты, счета</div>
-              </div>
-            </Button>
+              </button>
+
+              {/* Документация */}
+              <button 
+                onClick={() => {
+                  setSelectedDocType('тендерная документация');
+                  setDocumentsModalOpen(true);
+                }}
+                className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:border-blue-300 hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FileText className="h-4 w-4 text-blue-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-blue-700">
+                    Документация {materialCounts['тендерная документация'] > 0 && `(${materialCounts['тендерная документация']})`}
+                  </p>
+                  <p className="text-[10px] text-blue-600">Тендерные документы</p>
+                </div>
+              </button>
+
+              {/* Закрывающие документы */}
+              <button 
+                onClick={() => {
+                  setSelectedDocType('закрывающие документы');
+                  setDocumentsModalOpen(true);
+                }}
+                className="w-full flex items-center gap-2.5 p-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-lg border border-emerald-200 hover:border-emerald-300 hover:shadow-md transition-all text-left group"
+              >
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Receipt className="h-4 w-4 text-emerald-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-bold text-emerald-700">
+                    Закрывающие {materialCounts['закрывающие документы'] > 0 && `(${materialCounts['закрывающие документы']})`}
+                  </p>
+                  <p className="text-[10px] text-emerald-600">Акты, счета</p>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       )}

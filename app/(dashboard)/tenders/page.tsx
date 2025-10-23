@@ -339,8 +339,15 @@ function TendersContent() {
           {filteredTenders.map((tender) => (
             <Card 
               key={tender.id} 
-              className={`p-4 hover:shadow-lg transition-shadow cursor-pointer ${
-                tender.status === 'подано' ? 'bg-green-50' : ''
+              className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
+                tender.status === 'новый' ? 'border-l-white' :
+                tender.status === 'подано' ? 'border-l-blue-500' :
+                tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
+                tender.status === 'победа' ? 'border-l-purple-500' :
+                tender.status === 'в работе' ? 'border-l-green-500' :
+                tender.status === 'завершён' ? 'border-l-gray-700' :
+                tender.status === 'проигрыш' ? 'border-l-red-500' :
+                'border-l-gray-300'
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
