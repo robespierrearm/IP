@@ -313,98 +313,129 @@ export default function TestFinalPage() {
               </div>
 
               {/* Данные в одну строку */}
-              <div className="flex items-center gap-6 text-sm flex-wrap">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-gray-400" />
-                  <span className="text-gray-700">{sampleTender.region}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-blue-500" />
-                  <span className="text-gray-900 font-medium">{formatPrice(sampleTender.start_price)}</span>
-                  <span className="text-gray-400">→</span>
-                  <DollarSign className="h-4 w-4 text-green-500" />
-                  <span className="text-green-600 font-medium">{formatPrice(sampleTender.submitted_price)}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4 text-orange-500" />
-                  <span className="text-gray-700">{formatDate(sampleTender.submission_deadline)}</span>
-                </div>
-              </div>
-
-              {/* Переключатель статусов */}
-              {availableTransitions.length > 0 && (
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-xs text-gray-500 mb-2">Изменить статус:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {availableTransitions.map((nextStatus) => (
-                      <button
-                        key={nextStatus}
-                        onClick={() => setCurrentStatus(nextStatus)}
-                        className={cn(
-                          'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-md transition-all duration-200 hover:scale-105',
-                          getStatusButtonColor(nextStatus)
-                        )}
-                      >
-                        {getStatusIcon(nextStatus)}
-                        {STATUS_LABELS[nextStatus]}
-                      </button>
-                    ))}
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-6 text-sm flex-wrap">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-700">{sampleTender.region}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-blue-500" />
+                    <span className="text-gray-900 font-medium">{formatPrice(sampleTender.start_price)}</span>
+                    <span className="text-gray-400">→</span>
+                    <DollarSign className="h-4 w-4 text-green-500" />
+                    <span className="text-green-600 font-medium">{formatPrice(sampleTender.submitted_price)}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-orange-500" />
+                    <span className="text-gray-700">{formatDate(sampleTender.submission_deadline)}</span>
                   </div>
                 </div>
-              )}
+
+                {/* Кнопка изменения статуса в закрытом виде */}
+                {!expandedNew && availableTransitions.length > 0 && (
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setExpandedNew(true)}
+                    className="flex items-center gap-1.5 text-xs border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
+                  >
+                    <ArrowRight className="h-3.5 w-3.5" />
+                    Изменить статус
+                  </Button>
+                )}
+              </div>
             </div>
 
-            {/* Раскрывающаяся секция - КОМПАКТНАЯ */}
+            {/* Раскрывающаяся секция - НОВЫЙ ДИЗАЙН */}
             {expandedNew && (
-              <div className="border-t bg-gradient-to-b from-gray-50 to-white p-3 space-y-2 mt-3 animate-in slide-in-from-top-2 duration-300">
-                {/* Финансы - компактно */}
-                <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-500">Снижение цены</p>
-                      <p className="text-xs font-semibold text-green-600">
-                        {reduction && formatPrice(reduction.amount)} ({reduction?.percentage.toFixed(1)}%)
-                      </p>
-                    </div>
-                  </div>
-                  <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-7 px-2">
-                    <BarChart3 className="h-3.5 w-3.5 mr-1" />
-                    <span className="text-xs">Детали</span>
-                  </Button>
-                </div>
-
-                {/* Регион - компактно */}
-                <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                      <MapPin className="h-4 w-4 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-gray-500">Регион</p>
-                      <p className="text-xs font-medium text-gray-900">{sampleTender.region}</p>
+              <div className="border-t bg-white p-4 mt-3 animate-in slide-in-from-top-2 duration-300">
+                {/* Переключатель статусов */}
+                {availableTransitions.length > 0 && (
+                  <div className="mb-4">
+                    <p className="text-xs font-medium text-gray-700 mb-2">Изменить статус:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {availableTransitions.map((nextStatus) => (
+                        <button
+                          key={nextStatus}
+                          onClick={() => setCurrentStatus(nextStatus)}
+                          className={cn(
+                            'inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium border rounded-lg transition-all duration-200 hover:scale-105 hover:shadow-md',
+                            getStatusButtonColor(nextStatus)
+                          )}
+                        >
+                          {getStatusIcon(nextStatus)}
+                          {STATUS_LABELS[nextStatus]}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50 h-7 w-7 p-0">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                  </Button>
+                )}
+
+                {/* Информация и действия - в две колонки */}
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Левая колонка - Информация */}
+                  <div className="space-y-2">
+                    {/* Снижение цены */}
+                    <div className="flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200">
+                      <DollarSign className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-green-700 font-medium">Снижение цены</p>
+                        <p className="text-xs font-semibold text-green-600 truncate">
+                          {reduction && formatPrice(reduction.amount)} ({reduction?.percentage.toFixed(1)}%)
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Регион */}
+                    <div className="flex items-center gap-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                      <MapPin className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-blue-700 font-medium">Регион</p>
+                        <p className="text-xs font-semibold text-blue-600 truncate">{sampleTender.region}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Правая колонка - Действия */}
+                  <div className="space-y-2">
+                    {/* Финансовая сводка */}
+                    <button className="w-full flex items-center gap-2 p-2 bg-indigo-50 rounded-lg border border-indigo-200 hover:bg-indigo-100 transition-colors text-left">
+                      <BarChart3 className="h-4 w-4 text-indigo-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-indigo-700">Финансовая сводка</p>
+                        <p className="text-[10px] text-indigo-600">Доходы и расходы</p>
+                      </div>
+                    </button>
+
+                    {/* Документация */}
+                    <button className="w-full flex items-center gap-2 p-2 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition-colors text-left">
+                      <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-blue-700">Документация (3)</p>
+                        <p className="text-[10px] text-blue-600">Тендерные документы</p>
+                      </div>
+                    </button>
+
+                    {/* Закрывающие документы */}
+                    <button className="w-full flex items-center gap-2 p-2 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition-colors text-left">
+                      <Receipt className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-green-700">Закрывающие (2)</p>
+                        <p className="text-[10px] text-green-600">Акты, счета</p>
+                      </div>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Документы - компактно */}
-                <div className="grid grid-cols-3 gap-2">
-                  <button className="p-2 bg-white rounded-lg border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all text-left">
-                    <BarChart3 className="h-3.5 w-3.5 text-indigo-600 mb-1" />
-                    <p className="text-[10px] font-medium text-indigo-700">Финансы</p>
-                  </button>
-                  <button className="p-2 bg-white rounded-lg border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left">
-                    <FileText className="h-3.5 w-3.5 text-blue-600 mb-1" />
-                    <p className="text-[10px] font-medium text-blue-700">Документы (3)</p>
-                  </button>
-                  <button className="p-2 bg-white rounded-lg border border-green-200 hover:border-green-300 hover:bg-green-50 transition-all text-left">
-                    <Receipt className="h-3.5 w-3.5 text-green-600 mb-1" />
-                    <p className="text-[10px] font-medium text-green-700">Акты (2)</p>
+                {/* Карта - отдельно внизу */}
+                <div className="mt-3">
+                  <button className="w-full flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-200 hover:bg-gray-100 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4 text-gray-600" />
+                      <span className="text-xs font-medium text-gray-700">Показать на карте</span>
+                    </div>
+                    <ExternalLink className="h-3.5 w-3.5 text-gray-500" />
                   </button>
                 </div>
               </div>
