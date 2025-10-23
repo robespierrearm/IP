@@ -273,10 +273,13 @@ export default function TestFinalPage() {
           </div>
           
           <Card className={`
-            p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200
+            p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer
             border-l-4 ${getBorderColor(currentStatus)}
           `}>
-            <div className="flex flex-col gap-3">
+            <div 
+              className="flex flex-col gap-3"
+              onClick={() => setExpandedNew(!expandedNew)}
+            >
               {/* Заголовок */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -294,62 +297,42 @@ export default function TestFinalPage() {
                     )}
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-indigo-50 transition-colors">
                     <Pencil className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 transition-colors">
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0 hover:bg-gray-100 transition-colors"
-                    onClick={() => setExpandedNew(!expandedNew)}
-                  >
-                    {expandedNew ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                  </Button>
                 </div>
               </div>
 
               {/* Данные в одну строку */}
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-6 text-sm flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-700">{sampleTender.region}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <DollarSign className="h-4 w-4 text-blue-500" />
-                    <span className="text-gray-900 font-medium">{formatPrice(sampleTender.start_price)}</span>
-                    <span className="text-gray-400">→</span>
-                    <DollarSign className="h-4 w-4 text-green-500" />
-                    <span className="text-green-600 font-medium">{formatPrice(sampleTender.submitted_price)}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-orange-500" />
-                    <span className="text-gray-700">{formatDate(sampleTender.submission_deadline)}</span>
-                  </div>
+              <div className="flex items-center gap-6 text-sm flex-wrap">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-700">{sampleTender.region}</span>
                 </div>
-
-                {/* Кнопка изменения статуса в закрытом виде */}
-                {!expandedNew && availableTransitions.length > 0 && (
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => setExpandedNew(true)}
-                    className="flex items-center gap-1.5 text-xs border-indigo-200 bg-indigo-50 text-indigo-700 hover:bg-indigo-100"
-                  >
-                    <ArrowRight className="h-3.5 w-3.5" />
-                    Изменить статус
-                  </Button>
-                )}
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-blue-500" />
+                  <span className="text-gray-900 font-medium">{formatPrice(sampleTender.start_price)}</span>
+                  <span className="text-gray-400">→</span>
+                  <DollarSign className="h-4 w-4 text-green-500" />
+                  <span className="text-green-600 font-medium">{formatPrice(sampleTender.submitted_price)}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-orange-500" />
+                  <span className="text-gray-700">{formatDate(sampleTender.submission_deadline)}</span>
+                </div>
               </div>
             </div>
 
             {/* Раскрывающаяся секция - НОВЫЙ ДИЗАЙН */}
             {expandedNew && (
-              <div className="border-t bg-white p-4 mt-3 animate-in slide-in-from-top-2 duration-300">
+              <div 
+                className="border-t bg-white p-4 mt-3 animate-in slide-in-from-top-2 duration-300"
+                onClick={(e) => e.stopPropagation()}
+              >
                 {/* Переключатель статусов */}
                 {availableTransitions.length > 0 && (
                   <div className="mb-4">
