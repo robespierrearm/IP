@@ -6,7 +6,7 @@ import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
-import { getStatusColor, getStatusEmoji } from '@/lib/tender-utils';
+import { getStatusEmoji } from '@/lib/tender-utils';
 import { useAutoClose } from '@/hooks/useAutoClose';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
@@ -85,24 +85,24 @@ export default function TendersPage() {
     setIsLoading(false);
   }, []);
 
-  const getStatusColor = useCallback((status: Tender['status']) => {
+  const getStatusColorMobile = useCallback((status: Tender['status']) => {
     switch (status) {
       case 'новый':
-        return 'bg-blue-100 text-blue-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'подано':
-        return 'bg-green-100 text-green-700'; // Зелёный фон для поданных тендеров
+        return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'на рассмотрении':
-        return 'bg-purple-100 text-purple-700';
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
       case 'победа':
-        return 'bg-green-100 text-green-700';
+        return 'bg-purple-100 text-purple-700 border-purple-200';
       case 'в работе':
-        return 'bg-orange-100 text-orange-700';
+        return 'bg-green-100 text-green-700 border-green-200';
       case 'завершён':
-        return 'bg-green-50 text-green-600';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
       case 'проигрыш':
-        return 'bg-red-50 text-red-600';
+        return 'bg-red-100 text-red-700 border-red-200';
       default:
-        return 'bg-gray-100 text-gray-700';
+        return 'bg-gray-100 text-gray-700 border-gray-200';
     }
   }, []);
 
@@ -221,7 +221,7 @@ export default function TendersPage() {
                 onClick={setSelectedTender}
                 isOpen={openCardId === tender.id}
                 onOpen={setOpenCardId}
-                getStatusColor={getStatusColor}
+                getStatusColor={getStatusColorMobile}
                 isDeleting={deletingId === tender.id}
               />
             ))}
