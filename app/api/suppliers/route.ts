@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
 import { cookies } from 'next/headers';
 
+// Кэширование на 60 секунд
+export const revalidate = 60;
+
 // GET - получить всех поставщиков
 export async function GET(request: NextRequest) {
   try {
