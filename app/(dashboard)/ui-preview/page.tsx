@@ -339,6 +339,112 @@ export default function DesktopUIPreview() {
           </div>
         </div>
 
+        {/* Компактный дизайн */}
+        <div>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              ⭐ Компактный дизайн (РЕКОМЕНДУЕТСЯ)
+            </h2>
+            <p className="text-sm text-gray-600">
+              Оптимальный баланс - компактно, но читаемо. Все данные на одной строке.
+            </p>
+          </div>
+          
+          <div className="grid gap-3">
+            {sampleTenders.map((tender) => {
+              const getBorderColor = (status: string) => {
+                switch (status) {
+                  case 'новый': return 'border-l-blue-500';
+                  case 'подано': return 'border-l-green-500';
+                  case 'на рассмотрении': return 'border-l-yellow-500';
+                  case 'в работе': return 'border-l-orange-500';
+                  case 'победа': return 'border-l-purple-500';
+                  default: return 'border-l-gray-400';
+                }
+              };
+
+              return (
+                <Card 
+                  key={`compact-${tender.id}`}
+                  className={`
+                    hover:shadow-md transition-all duration-200 cursor-pointer
+                    border-l-4 ${getBorderColor(tender.status)}
+                  `}
+                >
+                  <div className="px-5 py-3">
+                    {/* Одна строка - всё компактно */}
+                    <div className="flex items-center justify-between gap-4">
+                      {/* Левая часть - Название и статус */}
+                      <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-sm font-semibold text-gray-900 truncate mb-1">
+                            {tender.name}
+                          </h3>
+                          <div className="flex items-center gap-2">
+                            <span className={`
+                              inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium
+                              ${getStatusColor(tender.status)}
+                            `}>
+                              {tender.status}
+                            </span>
+                            {tender.purchase_number && (
+                              <span className="text-xs text-gray-400 font-mono">
+                                № {tender.purchase_number}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Центральная часть - Данные в строку */}
+                      <div className="hidden lg:flex items-center gap-6 text-sm">
+                        {/* Регион */}
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-700">{tender.region}</span>
+                        </div>
+
+                        {/* Цены */}
+                        <div className="flex items-center gap-2">
+                          <DollarSign className="h-4 w-4 text-blue-500" />
+                          <span className="text-gray-900 font-medium">{formatPrice(tender.start_price)}</span>
+                          {tender.submitted_price && (
+                            <>
+                              <span className="text-gray-400">→</span>
+                              <span className="text-green-600 font-medium">{formatPrice(tender.submitted_price)}</span>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Дедлайн */}
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-orange-500" />
+                          <span className="text-gray-700">{formatDate(tender.submission_deadline)}</span>
+                        </div>
+                      </div>
+
+                      {/* Правая часть - Действия */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        {tender.link && (
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Преимущества */}
         <Card className="p-8">
           <h3 className="text-xl font-bold text-gray-900 mb-6">
