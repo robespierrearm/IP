@@ -48,12 +48,12 @@ export default function TestFinalPage() {
   // Получить цвет рамки
   const getBorderColor = (status: Tender['status']) => {
     switch (status) {
-      case 'новый': return 'border-l-blue-500';
-      case 'подано': return 'border-l-green-500';
+      case 'новый': return 'border-l-white';
+      case 'подано': return 'border-l-blue-500';
       case 'на рассмотрении': return 'border-l-yellow-500';
-      case 'в работе': return 'border-l-orange-500';
       case 'победа': return 'border-l-purple-500';
-      case 'завершён': return 'border-l-gray-400';
+      case 'в работе': return 'border-l-green-500';
+      case 'завершён': return 'border-l-gray-700';
       case 'проигрыш': return 'border-l-red-500';
       default: return 'border-l-gray-300';
     }
@@ -106,7 +106,7 @@ export default function TestFinalPage() {
                 Финальная улучшенная версия
               </h1>
               <p className="text-sm text-gray-500">
-                С цветной рамкой, переключателем статусов, анимациями
+                Новый=белый | Подано=синий | Рассмотрение=желтый | Победа=фиолетовый | В работе=зеленый | Завершён=серый
               </p>
             </div>
           </div>
@@ -356,55 +356,55 @@ export default function TestFinalPage() {
 
             {/* Раскрывающаяся секция - КОМПАКТНАЯ */}
             {expandedNew && (
-              <div className="border-t bg-gradient-to-b from-gray-50 to-white p-4 space-y-3 mt-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="border-t bg-gradient-to-b from-gray-50 to-white p-3 space-y-2 mt-3 animate-in slide-in-from-top-2 duration-300">
                 {/* Финансы - компактно */}
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-                      <DollarSign className="h-5 w-5 text-green-600" />
+                <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200 hover:border-green-300 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-green-50 flex items-center justify-center">
+                      <DollarSign className="h-4 w-4 text-green-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Экономия</p>
-                      <p className="text-sm font-semibold text-green-600">
+                      <p className="text-[10px] text-gray-500">Снижение цены</p>
+                      <p className="text-xs font-semibold text-green-600">
                         {reduction && formatPrice(reduction.amount)} ({reduction?.percentage.toFixed(1)}%)
                       </p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50">
-                    <BarChart3 className="h-4 w-4 mr-1" />
-                    Детали
+                  <Button size="sm" variant="ghost" className="text-green-600 hover:bg-green-50 h-7 px-2">
+                    <BarChart3 className="h-3.5 w-3.5 mr-1" />
+                    <span className="text-xs">Детали</span>
                   </Button>
                 </div>
 
                 {/* Регион - компактно */}
-                <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                      <MapPin className="h-5 w-5 text-blue-600" />
+                <div className="flex items-center justify-between p-2.5 bg-white rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                      <MapPin className="h-4 w-4 text-blue-600" />
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500">Регион</p>
-                      <p className="text-sm font-medium text-gray-900">{sampleTender.region}</p>
+                      <p className="text-[10px] text-gray-500">Регион</p>
+                      <p className="text-xs font-medium text-gray-900">{sampleTender.region}</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50">
-                    <ExternalLink className="h-4 w-4" />
+                  <Button size="sm" variant="ghost" className="text-blue-600 hover:bg-blue-50 h-7 w-7 p-0">
+                    <ExternalLink className="h-3.5 w-3.5" />
                   </Button>
                 </div>
 
                 {/* Документы - компактно */}
                 <div className="grid grid-cols-3 gap-2">
-                  <button className="p-3 bg-white rounded-lg border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all text-left">
-                    <BarChart3 className="h-4 w-4 text-indigo-600 mb-1" />
-                    <p className="text-xs font-medium text-indigo-700">Финансы</p>
+                  <button className="p-2 bg-white rounded-lg border border-indigo-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all text-left">
+                    <BarChart3 className="h-3.5 w-3.5 text-indigo-600 mb-1" />
+                    <p className="text-[10px] font-medium text-indigo-700">Финансы</p>
                   </button>
-                  <button className="p-3 bg-white rounded-lg border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left">
-                    <FileText className="h-4 w-4 text-blue-600 mb-1" />
-                    <p className="text-xs font-medium text-blue-700">Документы (3)</p>
+                  <button className="p-2 bg-white rounded-lg border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-all text-left">
+                    <FileText className="h-3.5 w-3.5 text-blue-600 mb-1" />
+                    <p className="text-[10px] font-medium text-blue-700">Документы (3)</p>
                   </button>
-                  <button className="p-3 bg-white rounded-lg border border-green-200 hover:border-green-300 hover:bg-green-50 transition-all text-left">
-                    <Receipt className="h-4 w-4 text-green-600 mb-1" />
-                    <p className="text-xs font-medium text-green-700">Акты (2)</p>
+                  <button className="p-2 bg-white rounded-lg border border-green-200 hover:border-green-300 hover:bg-green-50 transition-all text-left">
+                    <Receipt className="h-3.5 w-3.5 text-green-600 mb-1" />
+                    <p className="text-[10px] font-medium text-green-700">Акты (2)</p>
                   </button>
                 </div>
               </div>
