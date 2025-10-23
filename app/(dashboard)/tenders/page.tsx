@@ -14,7 +14,7 @@ import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
 import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
 import { TendersSkeleton } from '@/components/TendersSkeleton';
-import { getStatusColor } from '@/lib/tender-utils';
+import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';
@@ -201,21 +201,7 @@ function TendersContent() {
     loadTenders();
   };
 
-  // Форматирование даты
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return '—';
-    return new Date(dateString).toLocaleDateString('ru-RU');
-  };
 
-  // Форматирование цены
-  const formatPrice = (price: number | null) => {
-    if (!price) return '—';
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: 'RUB',
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
 
   // Фильтрация тендеров по табам
   const getFilteredTenders = () => {
