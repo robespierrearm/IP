@@ -16,27 +16,8 @@ import { supabase, File, Tender } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { FileIconComponent } from '@/lib/fileIcons';
+import { getStatusColor } from '@/lib/tender-utils';
 
-const getStatusColor = (status: Tender['status']) => {
-  switch (status) {
-    case 'новый':
-      return 'bg-blue-100 text-blue-800';
-    case 'подано':
-      return 'bg-green-100 text-green-800'; // Зелёный фон для поданных тендеров
-    case 'на рассмотрении':
-      return 'bg-purple-100 text-purple-800';
-    case 'победа':
-      return 'bg-green-100 text-green-800';
-    case 'в работе':
-      return 'bg-orange-100 text-orange-800';
-    case 'завершён':
-      return 'bg-green-50 text-green-700';
-    case 'проигрыш':
-      return 'bg-red-50 text-red-700';
-    default:
-      return 'bg-gray-100 text-gray-800';
-  }
-};
 
 const getStatusLabel = (status: Tender['status']) => {
   const labels: Record<Tender['status'], string> = {

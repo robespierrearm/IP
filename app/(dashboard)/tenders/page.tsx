@@ -14,6 +14,7 @@ import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
 import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
 import { TendersSkeleton } from '@/components/TendersSkeleton';
+import { getStatusColor } from '@/lib/tender-utils';
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';
@@ -214,28 +215,6 @@ function TendersContent() {
       currency: 'RUB',
       maximumFractionDigits: 0,
     }).format(price);
-  };
-
-  // Цвет статуса
-  const getStatusColor = (status: Tender['status']) => {
-    switch (status) {
-      case 'новый':
-        return 'bg-blue-100 text-blue-800';
-      case 'подано':
-        return 'bg-green-100 text-green-800'; // Зелёный фон для поданных тендеров
-      case 'на рассмотрении':
-        return 'bg-purple-100 text-purple-800';
-      case 'победа':
-        return 'bg-green-100 text-green-800';
-      case 'в работе':
-        return 'bg-orange-100 text-orange-800';
-      case 'завершён':
-        return 'bg-green-50 text-green-700 border border-green-200';
-      case 'проигрыш':
-        return 'bg-red-50 text-red-700 border border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
   };
 
   // Фильтрация тендеров по табам
