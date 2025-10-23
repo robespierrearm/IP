@@ -346,13 +346,139 @@ export default function DesktopUIPreview() {
           </Card>
         </div>
 
+        {/* Разделитель */}
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t-2 border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-gray-50 px-6 text-lg font-bold text-gray-500">
+              И ЕЩЁ
+            </span>
+          </div>
+        </div>
+
+        {/* ВАРИАНТ 3: Apple-style */}
+        <div>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-2">
+              🍎 Вариант 3: Apple-style
+            </h2>
+            <p className="text-sm text-gray-600">
+              Минималистичный, элегантный, с плавными тенями и акцентом на типографику
+            </p>
+          </div>
+          
+          <div className="grid gap-3">
+            {sampleTenders.map((tender) => {
+              const getStatusBadge = (status: string) => {
+                switch (status) {
+                  case 'новый': 
+                    return 'bg-blue-500/10 text-blue-700 ring-1 ring-blue-500/20';
+                  case 'подано': 
+                    return 'bg-green-500/10 text-green-700 ring-1 ring-green-500/20';
+                  case 'на рассмотрении': 
+                    return 'bg-yellow-500/10 text-yellow-700 ring-1 ring-yellow-500/20';
+                  case 'в работе': 
+                    return 'bg-orange-500/10 text-orange-700 ring-1 ring-orange-500/20';
+                  case 'победа': 
+                    return 'bg-purple-500/10 text-purple-700 ring-1 ring-purple-500/20';
+                  default: 
+                    return 'bg-gray-500/10 text-gray-700 ring-1 ring-gray-500/20';
+                }
+              };
+
+              return (
+                <div 
+                  key={`v3-${tender.id}`}
+                  className="group bg-white rounded-2xl p-5 hover:shadow-2xl hover:scale-[1.01] transition-all duration-300 cursor-pointer border border-gray-100"
+                >
+                  {/* Одна строка - Apple минимализм */}
+                  <div className="flex items-center gap-6">
+                    {/* Левая часть - Название */}
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-[15px] font-medium text-gray-900 leading-snug mb-1.5 line-clamp-1 group-hover:text-indigo-600 transition-colors">
+                        {tender.name}
+                      </h3>
+                      <div className="flex items-center gap-3">
+                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide ${getStatusBadge(tender.status)}`}>
+                          {tender.status.toUpperCase()}
+                        </span>
+                        {tender.purchase_number && (
+                          <span className="text-[11px] text-gray-400 font-mono tracking-tight">
+                            {tender.purchase_number}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Центр - Данные минималистично */}
+                    <div className="hidden xl:flex items-center gap-8">
+                      {/* Регион */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                        </div>
+                        <span className="text-[13px] text-gray-600 font-medium">{tender.region}</span>
+                      </div>
+
+                      {/* Цены */}
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-[11px] text-gray-400 uppercase tracking-wide mb-0.5">Начальная</p>
+                          <p className="text-[15px] font-semibold text-gray-900">{formatPrice(tender.start_price)}</p>
+                        </div>
+                        {tender.submitted_price && (
+                          <>
+                            <div className="w-px h-8 bg-gray-200"></div>
+                            <div className="text-right">
+                              <p className="text-[11px] text-gray-400 uppercase tracking-wide mb-0.5">Поданная</p>
+                              <p className="text-[15px] font-semibold text-green-600">{formatPrice(tender.submitted_price)}</p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Дедлайн */}
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center">
+                          <Calendar className="h-4 w-4 text-orange-500" />
+                        </div>
+                        <div>
+                          <p className="text-[11px] text-gray-400 uppercase tracking-wide">Дедлайн</p>
+                          <p className="text-[13px] font-medium text-gray-900">{formatDate(tender.submission_deadline)}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Правая часть - Действия */}
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                      {tender.link && (
+                        <button className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center transition-colors">
+                          <ExternalLink className="h-4 w-4 text-gray-600" />
+                        </button>
+                      )}
+                      <button className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-indigo-50 flex items-center justify-center transition-colors">
+                        <Pencil className="h-4 w-4 text-gray-600 group-hover:text-indigo-600" />
+                      </button>
+                      <button className="w-9 h-9 rounded-xl bg-gray-50 hover:bg-red-50 flex items-center justify-center transition-colors">
+                        <Trash2 className="h-4 w-4 text-gray-600 hover:text-red-600" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         {/* Сравнение */}
         <Card className="p-8 bg-gradient-to-br from-indigo-50 to-white">
           <h3 className="text-xl font-bold text-gray-900 mb-6">
             📊 Сравнение вариантов
           </h3>
           
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-3 gap-8">
             {/* Вариант 1 */}
             <div>
               <h4 className="font-semibold text-gray-900 mb-3">✨ Вариант 1: Улучшенный</h4>
@@ -403,6 +529,33 @@ export default function DesktopUIPreview() {
                 <div className="flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <span className="text-gray-700">Непривычный формат</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Вариант 3 */}
+            <div>
+              <h4 className="font-semibold text-gray-900 mb-3">🍎 Вариант 3: Apple-style</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Минималистичный дизайн</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Плавные анимации (hover:scale)</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Элегантная типографика</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Прозрачные бейджи с ring</span>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <span className="text-gray-700">Компактно и стильно</span>
                 </div>
               </div>
             </div>
