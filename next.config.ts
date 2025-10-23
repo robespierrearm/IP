@@ -96,11 +96,4 @@ const nextConfig: NextConfig = {
 // Оборачиваем в Sentry конфиг
 export default withSentryConfig(nextConfig, {
   silent: true,
-  org: "your-org",
-  project: "tender-crm",
-}, {
-  widenClientFileUpload: true,
-  transpileClientSDK: true,
-  hideSourceMaps: true,
-  disableLogger: true,
 });

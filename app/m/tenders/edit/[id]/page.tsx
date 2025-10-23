@@ -24,8 +24,9 @@ export default function EditTenderPage() {
   const loadTender = async () => {
     setIsLoading(true);
     try {
-      const tenders = await apiClient.getTenders();
-      const data = tenders.find(t => t.id === parseInt(tenderId));
+      const response = await apiClient.getTenders();
+      const tenders = (response.success && response.data) ? response.data as any[] : [];
+      const data = tenders.find((t: any) => t.id === parseInt(tenderId));
       if (data) {
         setTender(data);
       }
@@ -54,9 +55,7 @@ export default function EditTenderPage() {
       setIsSaving(false);
       haptics.success();
       toast.success('Тендер обновлён!', {
-        description: apiClient.getOnlineStatus() 
-          ? 'Изменения сохранены' 
-          : 'Изменения будут синхронизированы при подключении к сети'
+        description: 'Изменения сохранены'
       });
       router.push('/m/tenders');
     } catch (error) {

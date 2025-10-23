@@ -43,9 +43,7 @@ export default function AddSupplierPage() {
       setIsSaving(false);
       haptics.success();
       toast.success('Поставщик добавлен!', {
-        description: apiClient.getOnlineStatus() 
-          ? 'Поставщик сохранён' 
-          : 'Поставщик будет синхронизирован при подключении к сети'
+        description: 'Поставщик успешно сохранён'
       });
       router.push('/m/suppliers');
     } catch (error) {

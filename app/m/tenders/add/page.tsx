@@ -52,9 +52,7 @@ export default function AddTenderPage() {
       
       haptics.success();
       toast.success('Тендер добавлен!', {
-        description: apiClient.getOnlineStatus() 
-          ? 'Тендер сохранён' 
-          : 'Тендер будет синхронизирован при подключении к сети'
+        description: 'Тендер успешно сохранён'
       });
       router.push('/m/tenders');
     } catch (error) {
