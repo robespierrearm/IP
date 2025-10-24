@@ -4,9 +4,10 @@ import { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { getStatusColor } from '@/lib/tender-utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
-import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit } from 'lucide-react';
+import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit, AlertCircle, TrendingUp, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TenderDetailsModalProps {
@@ -25,6 +26,20 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
   const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
   const [tempSubmissionDate, setTempSubmissionDate] = useState('');
   const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
+  const [expenses, setExpenses] = useState(0);
+  const [filesCount, setFilesCount] = useState(0);
+
+  // Загружаем расходы
+  useEffect(() => {
+    if (tender) {
+      apiClient.getExpenses({ tender_id: tender.id }).then(response => {
+        if (response.success && response.data && Array.isArray(response.data)) {
+          const total = response.data.reduce((sum: number, exp: any) => sum + (exp.amount || 0), 0);
+          setExpenses(total);
+        }
+      });
+    }
+  }, [tender]);
 
   // Блокируем скролл body когда модальное окно открыто
   useEffect(() => {
@@ -89,16 +104,46 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="bg-white rounded-t-3xl w-full flex flex-col"
+            className="backdrop-blur-xl bg-white/95 rounded-t-3xl w-full flex flex-col border-t border-white/20 shadow-2xl"
             style={{ maxHeight: 'min(80vh, 700px)', marginBottom: '80px' }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
-            {/* Шапка - sticky */}
-            <div className="sticky top-0 bg-white z-10 px-6 pt-3 pb-4 border-b border-gray-100">
+            {/* Шапка - sticky СТЕКЛЯННАЯ */}
+            <div className="sticky top-0 backdrop-blur-xl bg-white/90 z-10 px-6 pt-3 pb-4 border-b border-white/20">
               {/* Индикатор свайпа */}
               <div className="flex justify-center mb-3">
                 <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
               </div>
+
+              {/* Умное уведомление */}
+              {(() => {
+                const notification = getSmartNotification(tender);
+                if (notification && (notification.priority === 'urgent' || notification.priority === 'high')) {
+                  return (
+                    <div className={`mb-3 p-3 rounded-xl backdrop-blur-xl border border-white/20 ${
+                      notification.color === 'red' ? 'bg-red-500/20 shadow-red-500/50' :
+                      notification.color === 'orange' ? 'bg-orange-500/20 shadow-orange-500/50' :
+                      'bg-yellow-500/20 shadow-yellow-500/50'
+                    } shadow-lg`}>
+                      <div className="flex items-center gap-2">
+                        <AlertCircle className={`w-5 h-5 ${
+                          notification.color === 'red' ? 'text-red-600' :
+                          notification.color === 'orange' ? 'text-orange-600' :
+                          'text-yellow-600'
+                        }`} />
+                        <span className={`font-semibold text-sm ${
+                          notification.color === 'red' ? 'text-red-700' :
+                          notification.color === 'orange' ? 'text-orange-700' :
+                          'text-yellow-700'
+                        }`}>
+                          {notification.icon} {notification.message}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
 
               {/* Заголовок + Статус */}
               <div className="flex items-start justify-between gap-3">
