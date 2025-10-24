@@ -74,7 +74,9 @@ export default function DashboardPage() {
   const [dashboardFiles, setDashboardFiles] = useState<File[]>([]);
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [stats, setStats] = useState({
+    urgent: 0,
     inWork: 0,
+    monthRevenue: 0,
     underReview: 0,
     reminders: 0,
     total: 0,
@@ -255,14 +257,39 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Три основных блока */}
-        <div className="grid gap-3 md:grid-cols-3 mb-5">
+        {/* Компактные метрики */}
+        <Card className="mb-5 bg-white border-gray-200">
+          <CardContent className="p-3">
+            <div className="flex items-center justify-center gap-6 text-sm">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <span className="font-medium text-gray-600">Срочно:</span>
+                <span className="text-xl font-bold text-red-600">{stats.urgent}</span>
+              </div>
+              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="flex items-center gap-2">
+                <Briefcase className="h-4 w-4 text-green-600" />
+                <span className="font-medium text-gray-600">В работе:</span>
+                <span className="text-xl font-bold text-green-600">{stats.inWork}</span>
+              </div>
+              <div className="h-6 w-px bg-gray-300"></div>
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-gray-600">Месяц:</span>
+                <span className="text-xl font-bold text-blue-600">{formatCompactPrice(stats.monthRevenue)}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Два основных блока */}
+        <div className="grid gap-3 md:grid-cols-2 mb-5">
           {/* 1. СРОЧНО */}
           <Card className="transition-all hover:shadow-lg border border-red-200 bg-white h-[240px]">
             <CardHeader className="p-3 pb-2">
               <div className="flex items-center gap-1.5">
                 <AlertCircle className="h-4 w-4 text-red-600" />
-                <CardTitle className="text-sm font-medium text-gray-900">Срочно ({urgentTenders.length})</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-900">СРОЧНО</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
@@ -307,7 +334,7 @@ export default function DashboardPage() {
             <CardHeader className="p-3 pb-2">
               <div className="flex items-center gap-1.5">
                 <Briefcase className="h-4 w-4 text-green-600" />
-                <CardTitle className="text-sm font-medium text-gray-900">В работе ({stats.inWork})</CardTitle>
+                <CardTitle className="text-sm font-medium text-gray-900">В РАБОТЕ</CardTitle>
               </div>
             </CardHeader>
             <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
@@ -327,25 +354,23 @@ export default function DashboardPage() {
                         </p>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-600">
-                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(contractPrice)}
-                            {expenses > 0 && <span className="text-red-600"> • -{formatCompactPrice(expenses)}</span>}
+                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • 
+                            {expenses > 0 ? (
+                              <>
+                                <span className="text-green-600 font-semibold">💰 {formatCompactPrice(contractPrice - expenses)}</span>
+                                <span className="text-gray-500"> (из {formatCompactPrice(contractPrice)})</span>
+                              </>
+                            ) : (
+                              <span className="font-medium text-gray-900">{formatCompactPrice(contractPrice)}</span>
+                            )}
                           </span>
-                          <div className="flex gap-1">
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); router.push(`/accounting?tender=${tender.id}`); }}
-                              className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
-                              title="Расходы"
-                            >
-                              💰
-                            </button>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); alert('Функция отчёта в разработке'); }}
-                              className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
-                              title="Отчёт"
-                            >
-                              📊
-                            </button>
-                          </div>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); router.push(`/accounting?tender=${tender.id}`); }}
+                            className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
+                            title="Расходы"
+                          >
+                            💰
+                          </button>
                         </div>
                       </div>
                     );
@@ -366,56 +391,12 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
-
-          {/* 3. СТАТИСТИКА */}
-          <Card className="transition-all hover:shadow-lg border border-blue-200 bg-white h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-blue-50">
-                  <TrendingUp className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">Статистика</h3>
-                  <p className="text-lg font-bold text-gray-900">За месяц</p>
-                </div>
-              </div>
-            
-              <div className="space-y-1.5 flex-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Новых:</span>
-                  <span className="font-semibold text-gray-900">{stats.new}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Поданных:</span>
-                  <span className="font-semibold text-gray-900">{stats.submitted}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Рассмотрение:</span>
-                  <span className="font-semibold text-gray-900">{stats.underReview}</span>
-                </div>
-                <div className="h-px bg-gray-200 my-1.5"></div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Побед:</span>
-                  <span className="font-semibold text-green-600">{stats.won}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Проигрышей:</span>
-                  <span className="font-semibold text-red-600">{stats.lost}</span>
-                </div>
-                <div className="h-px bg-gray-200 my-1.5"></div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600">Выручка:</span>
-                  <span className="font-semibold text-blue-600">{formatCompactPrice(stats.totalRevenue)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* Нижние два блока: Последние тендеры (70%) + Файлы (30%) */}
-        <div className="grid gap-3 md:grid-cols-3">
+        {/* Нижние два блока: Последние тендеры (60%) + Файлы (40%) */}
+        <div className="grid gap-3 md:grid-cols-5">
           {/* Последние тендеры */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-3">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900">Последние тендеры</h3>
@@ -480,7 +461,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Файлы */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-2">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
