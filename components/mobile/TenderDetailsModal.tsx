@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { getStatusColor } from '@/lib/tender-utils';
@@ -25,6 +25,27 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
   const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
   const [tempSubmissionDate, setTempSubmissionDate] = useState('');
   const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
+
+  // Блокируем скролл body когда модальное окно открыто
+  useEffect(() => {
+    if (tender) {
+      // Сохраняем текущую позицию скролла
+      const scrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = '100%';
+      document.body.style.overflow = 'hidden';
+
+      return () => {
+        // Восстанавливаем скролл при закрытии
+        document.body.style.position = '';
+        document.body.style.top = '';
+        document.body.style.width = '';
+        document.body.style.overflow = '';
+        window.scrollTo(0, scrollY);
+      };
+    }
+  }, [tender]);
 
   if (!tender) return null;
 
