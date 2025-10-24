@@ -6,7 +6,8 @@ import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { getStatusColor } from '@/lib/tender-utils';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
-import { Calendar, DollarSign, MapPin, ExternalLink, FileText } from 'lucide-react';
+import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface TenderDetailsModalProps {
   tender: Tender | null;
@@ -19,12 +20,17 @@ interface TenderDetailsModalProps {
  * Вынесено в отдельный компонент для оптимизации
  */
 export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsModalProps) {
+  const router = useRouter();
   const [editingSubmissionDate, setEditingSubmissionDate] = useState(false);
   const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
   const [tempSubmissionDate, setTempSubmissionDate] = useState('');
   const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
 
   if (!tender) return null;
+
+  const handleEdit = () => {
+    router.push(`/m/tenders/edit/${tender.id}`);
+  };
 
   const handleUpdateSubmissionDate = async () => {
     await apiClient.updateTender(tender.id, { submission_date: tempSubmissionDate });
@@ -282,12 +288,21 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
 
             {/* Футер - sticky */}
             <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4">
-              <button
-                onClick={onClose}
-                className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
-              >
-                Закрыть
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleEdit}
+                  className="flex-1 py-3 bg-gradient-to-br from-primary-500 to-secondary-600 text-white font-medium rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                >
+                  <Edit className="w-4 h-4" />
+                  Редактировать
+                </button>
+                <button
+                  onClick={onClose}
+                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  Закрыть
+                </button>
+              </div>
             </div>
           </m.div>
         </m.div>
