@@ -340,7 +340,7 @@ function TendersContent() {
             <Card 
               key={tender.id} 
               className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
-                tender.status === 'новый' ? 'border-l-white' :
+                tender.status === 'новый' ? 'border-l-gray-300' :
                 tender.status === 'подано' ? 'border-l-blue-500' :
                 tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
                 tender.status === 'победа' ? 'border-l-purple-500' :
