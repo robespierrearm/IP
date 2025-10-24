@@ -1,12 +1,10 @@
 'use client';
 
-import { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { getStatusColor } from '@/lib/tender-utils';
 import { formatPrice, formatDate } from '@/lib/utils';
-import { apiClient } from '@/lib/api-client';
-import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit } from 'lucide-react';
+import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit, Bell, Clock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TenderDetailsModalProps {
@@ -21,10 +19,6 @@ interface TenderDetailsModalProps {
  */
 export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsModalProps) {
   const router = useRouter();
-  const [editingSubmissionDate, setEditingSubmissionDate] = useState(false);
-  const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
-  const [tempSubmissionDate, setTempSubmissionDate] = useState('');
-  const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
 
   if (!tender) return null;
 
@@ -32,17 +26,30 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
     router.push(`/m/tenders/edit/${tender.id}`);
   };
 
-  const handleUpdateSubmissionDate = async () => {
-    await apiClient.updateTender(tender.id, { submission_date: tempSubmissionDate });
-    setEditingSubmissionDate(false);
-    onUpdate();
+  // Расчет дней до дедлайна
+  const getDaysUntilDeadline = () => {
+    if (!tender.submission_deadline) return null;
+    const deadline = new Date(tender.submission_deadline);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    deadline.setHours(0, 0, 0, 0);
+    const diffTime = deadline.getTime() - now.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
   };
 
-  const handleUpdateSubmittedPrice = async () => {
-    await apiClient.updateTender(tender.id, { submitted_price: parseFloat(tempSubmittedPrice) });
-    setEditingSubmittedPrice(false);
-    onUpdate();
+  const daysLeft = getDaysUntilDeadline();
+  
+  // Определяем цвет дедлайна
+  const getDeadlineColor = () => {
+    if (!daysLeft) return null;
+    if (daysLeft < 0) return 'expired'; // Просрочен
+    if (daysLeft <= 3) return 'urgent'; // Срочно
+    if (daysLeft <= 7) return 'soon'; // Скоро
+    return 'normal'; // Нормально
   };
+
+  const deadlineColor = getDeadlineColor();
 
   return (
     <AnimatePresence>
@@ -98,191 +105,158 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
 
             {/* Контент - скроллится */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
-              {/* Компактные карточки с данными */}
               <div className="space-y-3">
-                {/* Номер закупки */}
-                {tender.purchase_number && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Номер закупки</span>
-                    </div>
-                    <div className="font-mono text-sm font-medium text-gray-900">
-                      {tender.purchase_number}
-                    </div>
-                  </div>
-                )}
-
-                {/* Регион */}
-                {tender.region && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>Регион</span>
-                    </div>
-                    <div className="font-medium text-gray-900">{tender.region}</div>
-                  </div>
-                )}
-
-                {/* Даты */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Публикация</span>
-                    </div>
-                    <div className="font-semibold text-sm text-gray-900">
-                      {tender.publication_date ? formatDate(tender.publication_date) : '—'}
-                    </div>
-                  </div>
-
-                  {/* Дата подачи */}
-                  {tender.status !== 'новый' && tender.status !== 'подано' && (
-                    <div className="bg-blue-50 rounded-xl p-3">
-                      <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Дата подачи</span>
+                
+                {/* ДЕДЛАЙН - ПЕРВОЕ МЕСТО! */}
+                {tender.submission_deadline && (
+                  <div className={`rounded-xl p-4 border-l-4 ${
+                    deadlineColor === 'expired' ? 'bg-gradient-to-r from-gray-100 to-gray-50 border-gray-500' :
+                    deadlineColor === 'urgent' ? 'bg-gradient-to-r from-red-50 to-orange-50 border-red-500' :
+                    deadlineColor === 'soon' ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-500' :
+                    'bg-gradient-to-r from-green-50 to-emerald-50 border-green-500'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Clock className={`w-4 h-4 ${
+                            deadlineColor === 'expired' ? 'text-gray-600' :
+                            deadlineColor === 'urgent' ? 'text-red-600' :
+                            deadlineColor === 'soon' ? 'text-yellow-600' :
+                            'text-green-600'
+                          }`} />
+                          <p className={`text-xs font-medium ${
+                            deadlineColor === 'expired' ? 'text-gray-600' :
+                            deadlineColor === 'urgent' ? 'text-red-600' :
+                            deadlineColor === 'soon' ? 'text-yellow-600' :
+                            'text-green-600'
+                          }`}>
+                            ДЕДЛАЙН ПОДАЧИ
+                          </p>
+                        </div>
+                        <p className={`text-2xl font-bold ${
+                          deadlineColor === 'expired' ? 'text-gray-900' :
+                          deadlineColor === 'urgent' ? 'text-red-900' :
+                          deadlineColor === 'soon' ? 'text-yellow-900' :
+                          'text-green-900'
+                        }`}>
+                          {formatDate(tender.submission_deadline)}
+                        </p>
                       </div>
-                      {tender.status === 'на рассмотрении' ? (
-                        editingSubmissionDate ? (
-                          <div className="flex gap-2">
-                            <input
-                              type="date"
-                              value={tempSubmissionDate}
-                              onChange={(e) => setTempSubmissionDate(e.target.value)}
-                              className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-xs"
-                            />
-                            <button
-                              onClick={handleUpdateSubmissionDate}
-                              className="px-2 py-1 bg-green-600 text-white rounded-lg text-xs"
-                            >
-                              ✓
-                            </button>
-                            <button
-                              onClick={() => setEditingSubmissionDate(false)}
-                              className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        ) : (
-                          <div
-                            onClick={() => {
-                              setTempSubmissionDate(
-                                tender.submission_date || new Date().toISOString().split('T')[0]
-                              );
-                              setEditingSubmissionDate(true);
-                            }}
-                            className="font-semibold text-sm text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
-                          >
-                            {tender.submission_date ? formatDate(tender.submission_date) : '— (нажмите)'}
-                          </div>
-                        )
-                      ) : (
-                        <div className="font-semibold text-sm text-blue-900">
-                          {tender.submission_date ? formatDate(tender.submission_date) : '—'}
+                      {daysLeft !== null && (
+                        <div className="text-right">
+                          <p className={`text-xs ${
+                            deadlineColor === 'expired' ? 'text-gray-600' :
+                            deadlineColor === 'urgent' ? 'text-red-600' :
+                            deadlineColor === 'soon' ? 'text-yellow-600' :
+                            'text-green-600'
+                          }`}>
+                            {daysLeft < 0 ? 'Просрочен' : 'Осталось'}
+                          </p>
+                          <p className={`text-xl font-bold ${
+                            deadlineColor === 'expired' ? 'text-gray-900' :
+                            deadlineColor === 'urgent' ? 'text-red-900' :
+                            deadlineColor === 'soon' ? 'text-yellow-900' :
+                            'text-green-900'
+                          }`}>
+                            {Math.abs(daysLeft)} {Math.abs(daysLeft) === 1 ? 'день' : daysLeft >= 2 && daysLeft <= 4 ? 'дня' : 'дней'}
+                          </p>
                         </div>
                       )}
                     </div>
-                  )}
-                </div>
-
-                {/* Цены */}
-                {tender.start_price && (
-                  <div className="bg-green-50 rounded-xl p-3 border border-green-100">
-                    <div className="flex items-center gap-2 text-xs text-green-600 mb-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <span>Начальная цена</span>
-                    </div>
-                    <div className="font-bold text-lg text-green-900">
-                      {formatPrice(tender.start_price)}
-                    </div>
-                  </div>
-                )}
-
-                {/* Цена подачи */}
-                {(tender.status === 'на рассмотрении' ||
-                  tender.status === 'победа' ||
-                  tender.status === 'в работе' ||
-                  tender.status === 'завершён' ||
-                  tender.status === 'проигрыш') && (
-                  <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
-                    <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <span>Цена подачи</span>
-                    </div>
-                    {tender.status === 'на рассмотрении' ? (
-                      editingSubmittedPrice ? (
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            value={tempSubmittedPrice}
-                            onChange={(e) => setTempSubmittedPrice(e.target.value)}
-                            className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-sm"
-                            placeholder="Введите сумму"
-                          />
-                          <button
-                            onClick={handleUpdateSubmittedPrice}
-                            className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={() => setEditingSubmittedPrice(false)}
-                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => {
-                            setTempSubmittedPrice(tender.submitted_price?.toString() || '');
-                            setEditingSubmittedPrice(true);
-                          }}
-                          className="font-bold text-lg text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
-                        >
-                          {tender.submitted_price ? formatPrice(tender.submitted_price) : '— (нажмите)'}
-                        </div>
-                      )
-                    ) : (
-                      <div className="font-bold text-lg text-blue-900">
-                        {tender.submitted_price ? formatPrice(tender.submitted_price) : '—'}
+                    {deadlineColor === 'urgent' && (
+                      <div className="flex items-center gap-2 mt-2 pt-2 border-t border-red-200">
+                        <Bell className="w-4 h-4 text-red-600 animate-pulse" />
+                        <p className="text-xs text-red-700 font-medium">⚠️ СРОЧНО! Требуется внимание</p>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Цена победы */}
-                {(tender.status === 'победа' ||
-                  tender.status === 'в работе' ||
-                  tender.status === 'завершён') &&
-                  tender.win_price && (
-                    <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
-                      <div className="flex items-center gap-2 text-xs text-yellow-700 mb-1">
-                        <DollarSign className="w-3.5 h-3.5" />
-                        <span>Цена победы</span>
+                {/* СЕКЦИЯ: ОСНОВНОЕ */}
+                <div className="bg-blue-50 rounded-xl p-4 border-l-4 border-blue-500">
+                  <h3 className="text-xs font-bold text-blue-900 mb-3 flex items-center gap-2">
+                    <FileText className="w-4 h-4" />
+                    ОСНОВНОЕ
+                  </h3>
+                  <div className="space-y-2">
+                    {tender.purchase_number && (
+                      <div>
+                        <p className="text-xs text-blue-600">📄 Номер закупки</p>
+                        <p className="font-mono text-sm font-medium text-blue-900">{tender.purchase_number}</p>
                       </div>
-                      <div className="font-bold text-lg text-yellow-900">
-                        {formatPrice(tender.win_price)}
+                    )}
+                    {tender.region && (
+                      <div>
+                        <p className="text-xs text-blue-600">📍 Регион</p>
+                        <p className="text-sm font-medium text-blue-900">{tender.region}</p>
                       </div>
-                    </div>
-                  )}
+                    )}
+                    {tender.link && (
+                      <a
+                        href={tender.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-blue-700 font-medium hover:text-blue-900 transition-colors"
+                      >
+                        <ExternalLink className="w-4 h-4" />
+                        <span>🔗 Открыть тендер →</span>
+                      </a>
+                    )}
+                  </div>
+                </div>
 
-                {/* Ссылка */}
-                {tender.link && (
-                  <a
-                    href={tender.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-blue-50 rounded-xl p-3 border border-blue-100 hover:bg-blue-100 transition-colors"
-                  >
-                    <div className="flex items-center gap-2 text-sm text-blue-700 font-medium">
-                      <ExternalLink className="w-4 h-4" />
-                      <span>Открыть тендер</span>
+                {/* СЕКЦИЯ: ДАТЫ */}
+                <div className="bg-orange-50 rounded-xl p-4 border-l-4 border-orange-500">
+                  <h3 className="text-xs font-bold text-orange-900 mb-3 flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    ДАТЫ
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="bg-white rounded-lg p-3">
+                      <p className="text-xs text-orange-600 mb-1">Публикация</p>
+                      <p className="text-sm font-bold text-orange-900">
+                        {tender.publication_date ? formatDate(tender.publication_date) : '—'}
+                      </p>
                     </div>
-                  </a>
-                )}
+                    {tender.submission_date && (
+                      <div className="bg-white rounded-lg p-3">
+                        <p className="text-xs text-orange-600 mb-1">Подача</p>
+                        <p className="text-sm font-bold text-orange-900">
+                          {formatDate(tender.submission_date)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* СЕКЦИЯ: ФИНАНСЫ */}
+                <div className="bg-green-50 rounded-xl p-4 border-l-4 border-green-500">
+                  <h3 className="text-xs font-bold text-green-900 mb-3 flex items-center gap-2">
+                    <DollarSign className="w-4 h-4" />
+                    ФИНАНСЫ
+                  </h3>
+                  <div className="space-y-2">
+                    {tender.start_price && (
+                      <div className="bg-gray-50 rounded-lg p-3 border-l-4 border-gray-400">
+                        <p className="text-xs text-gray-600">Начальная цена</p>
+                        <p className="text-lg font-bold text-gray-900">{formatPrice(tender.start_price)}</p>
+                      </div>
+                    )}
+                    {tender.submitted_price && (
+                      <div className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-500">
+                        <p className="text-xs text-blue-600">Цена подачи</p>
+                        <p className="text-lg font-bold text-blue-900">{formatPrice(tender.submitted_price)}</p>
+                      </div>
+                    )}
+                    {tender.win_price && (
+                      <div className="bg-purple-50 rounded-lg p-3 border-l-4 border-purple-500">
+                        <p className="text-xs text-purple-600">Цена победы</p>
+                        <p className="text-lg font-bold text-purple-900">{formatPrice(tender.win_price)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
               </div>
             </div>
 
