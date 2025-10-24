@@ -243,7 +243,12 @@ export default function TendersPage() {
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ duration: 0.2 }}
-            />
+            >
+              {/* Невидимый текст для размера */}
+              <span className="font-medium text-sm whitespace-nowrap opacity-0">
+                {statusFilters.find(f => f.value === selectedStatus)?.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
+              </span>
+            </motion.div>
           </div>
           
           {/* Карусель фильтров */}
