@@ -227,22 +227,22 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
-        {/* Верхняя строка: Заголовок слева, Время справа */}
-        <div className="flex items-center justify-between mb-5">
+        {/* Верхняя строка: Заголовок слева, Время справа - СТЕКЛЯННАЯ */}
+        <div className="flex items-center justify-between mb-5 backdrop-blur-xl bg-white/40 border border-white/20 rounded-2xl shadow-lg p-4">
           {/* Заголовок */}
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-0.5">Общая информация</h1>
             <p className="text-xs text-gray-600">Обзор ключевых показателей вашего бизнеса</p>
           </div>
 
-          {/* Блок с датой и временем */}
-          <div className="flex items-center justify-center gap-3 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-indigo-600 backdrop-blur-sm rounded-xl shadow-lg border border-blue-400">
-            <Clock className="h-4 w-4 text-white" />
-            <span className="text-sm font-bold text-white tabular-nums">
+          {/* Блок с датой и временем - СТЕКЛЯННЫЙ */}
+          <div className="flex items-center justify-center gap-3 px-4 py-2.5 backdrop-blur-xl bg-blue-500/20 border border-white/20 rounded-xl shadow-lg shadow-blue-500/50">
+            <Clock className="h-4 w-4 text-blue-600" />
+            <span className="text-sm font-bold text-blue-600 tabular-nums">
               {formatTime(currentDateTime)}
             </span>
-            <span className="text-sm text-blue-100">•</span>
-            <span className="text-sm font-medium text-white">{formatDate(currentDateTime)}</span>
+            <span className="text-sm text-blue-400">•</span>
+            <span className="text-sm font-medium text-blue-600">{formatDate(currentDateTime)}</span>
           </div>
         </div>
 
