@@ -59,24 +59,13 @@ const formatCompactPrice = (price: number | null) => {
   return price.toString();
 };
 
-// Вычисление дней в работе
-const getDaysInWork = (tender: Tender) => {
-  if (tender.status !== 'в работе' || !tender.created_at) return null;
-  const start = new Date(tender.created_at);
-  const now = new Date();
-  const days = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  return days;
-};
-
 export default function DashboardPage() {
   const router = useRouter();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [dashboardFiles, setDashboardFiles] = useState<File[]>([]);
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [stats, setStats] = useState({
-    urgent: 0,
     inWork: 0,
-    monthRevenue: 0,
     underReview: 0,
     reminders: 0,
     total: 0,
@@ -257,58 +246,43 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Компактные метрики */}
-        <Card className="mb-5 bg-white border-gray-200">
-          <CardContent className="p-3">
-            <div className="flex items-center justify-center gap-6 text-sm">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <span className="font-medium text-gray-600">Срочно:</span>
-                <span className="text-xl font-bold text-red-600">{stats.urgent}</span>
-              </div>
-              <div className="h-6 w-px bg-gray-300"></div>
-              <div className="flex items-center gap-2">
-                <Briefcase className="h-4 w-4 text-green-600" />
-                <span className="font-medium text-gray-600">В работе:</span>
-                <span className="text-xl font-bold text-green-600">{stats.inWork}</span>
-              </div>
-              <div className="h-6 w-px bg-gray-300"></div>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-600" />
-                <span className="font-medium text-gray-600">Месяц:</span>
-                <span className="text-xl font-bold text-blue-600">{formatCompactPrice(stats.monthRevenue)}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Два основных блока */}
-        <div className="grid gap-3 md:grid-cols-2 mb-5">
+        {/* Три основных блока */}
+        <div className="grid gap-3 md:grid-cols-3 mb-5">
           {/* 1. СРОЧНО */}
           <Card className="transition-all hover:shadow-lg border border-red-200 bg-white h-[240px]">
-            <CardHeader className="p-3 pb-2">
-              <div className="flex items-center gap-1.5">
-                <AlertCircle className="h-4 w-4 text-red-600" />
-                <CardTitle className="text-sm font-medium text-gray-900">СРОЧНО</CardTitle>
+            <CardContent className="p-3 h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                <div className="p-1.5 rounded-lg bg-red-50">
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">Срочно</h3>
+                  <p className="text-3xl font-bold text-gray-900">{urgentTenders.length}</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
+            
               {urgentTenders.length > 0 ? (
-                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                   {urgentTenders.map((tender) => {
                     const notification = getSmartNotification(tender);
                     return (
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-1.5 rounded-lg bg-red-50/50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
+                        className="p-2 rounded-lg bg-red-50/50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
                       >
-                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
-                          {notification?.icon} {tender.name}
+                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
+                          {tender.name}
                         </p>
-                        <p className="text-xs text-gray-600">
-                          {notification?.shortMessage} • {formatCompactPrice(tender.start_price)}
-                        </p>
+                        {notification && (
+                          <p className={`text-xs font-medium ${
+                            notification.color === 'red' ? 'text-red-600' :
+                            notification.color === 'orange' ? 'text-orange-600' :
+                            'text-gray-600'
+                          }`}>
+                            {notification.icon} {notification.shortMessage}
+                          </p>
+                        )}
                       </div>
                     );
                   })}
@@ -331,46 +305,46 @@ export default function DashboardPage() {
 
           {/* 2. В РАБОТЕ */}
           <Card className="transition-all hover:shadow-lg border border-green-200 bg-white h-[240px]">
-            <CardHeader className="p-3 pb-2">
-              <div className="flex items-center gap-1.5">
-                <Briefcase className="h-4 w-4 text-green-600" />
-                <CardTitle className="text-sm font-medium text-gray-900">В РАБОТЕ</CardTitle>
+            <CardContent className="p-3 h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                <div className="p-1.5 rounded-lg bg-green-50">
+                  <Briefcase className="h-4 w-4 text-green-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">В работе</h3>
+                  <p className="text-3xl font-bold text-gray-900">{stats.inWork}</p>
+                </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
+            
               {inWorkTenders.length > 0 ? (
-                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
                   {inWorkTenders.map((tender) => {
+                    const notification = getSmartNotification(tender);
                     const expenses = tenderExpenses[tender.id] || 0;
                     const contractPrice = tender.win_price || tender.submitted_price || 0;
+                    const profit = contractPrice - expenses;
                     return (
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-1.5 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors cursor-pointer border border-green-100"
+                        className="p-2 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors cursor-pointer border border-green-100"
                       >
-                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
-                          🔨 {tender.name}
+                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
+                          {tender.name}
                         </p>
                         <div className="flex items-center justify-between text-xs">
                           <span className="text-gray-600">
-                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • 
-                            {expenses > 0 ? (
-                              <>
-                                <span className="text-green-600 font-semibold">💰 {formatCompactPrice(contractPrice - expenses)}</span>
-                                <span className="text-gray-500"> (из {formatCompactPrice(contractPrice)})</span>
-                              </>
-                            ) : (
-                              <span className="font-medium text-gray-900">{formatCompactPrice(contractPrice)}</span>
-                            )}
+                            {notification?.shortMessage || 'В работе'}
                           </span>
-                          <button 
-                            onClick={(e) => { e.stopPropagation(); router.push(`/accounting?tender=${tender.id}`); }}
-                            className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
-                            title="Расходы"
-                          >
-                            💰
-                          </button>
+                          {expenses > 0 ? (
+                            <span className="font-semibold text-green-600">
+                              💰 {formatCompactPrice(profit)} (из {formatCompactPrice(contractPrice)})
+                            </span>
+                          ) : (
+                            <span className="font-semibold text-green-600">
+                              {formatPrice(contractPrice)}
+                            </span>
+                          )}
                         </div>
                       </div>
                     );
@@ -391,12 +365,56 @@ export default function DashboardPage() {
               </Button>
             </CardContent>
           </Card>
+
+          {/* 3. СТАТИСТИКА */}
+          <Card className="transition-all hover:shadow-lg border border-blue-200 bg-white h-[240px]">
+            <CardContent className="p-3 h-full flex flex-col">
+              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
+                <div className="p-1.5 rounded-lg bg-blue-50">
+                  <TrendingUp className="h-4 w-4 text-blue-600" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium text-gray-600">Статистика</h3>
+                  <p className="text-lg font-bold text-gray-900">За месяц</p>
+                </div>
+              </div>
+            
+              <div className="space-y-2 flex-1">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Новых:</span>
+                  <span className="font-semibold text-gray-900">{stats.new}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Поданных:</span>
+                  <span className="font-semibold text-gray-900">{stats.submitted}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Рассмотрение:</span>
+                  <span className="font-semibold text-gray-900">{stats.underReview}</span>
+                </div>
+                <div className="h-px bg-gray-200 my-2"></div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Побед:</span>
+                  <span className="font-semibold text-green-600">{stats.won}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Проигрышей:</span>
+                  <span className="font-semibold text-red-600">{stats.lost}</span>
+                </div>
+                <div className="h-px bg-gray-200 my-2"></div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Выручка:</span>
+                  <span className="font-semibold text-blue-600">{formatPrice(stats.totalRevenue)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Нижние два блока: Последние тендеры (60%) + Файлы (40%) */}
-        <div className="grid gap-3 md:grid-cols-5">
+        {/* Нижние два блока: Последние тендеры (70%) + Файлы (30%) */}
+        <div className="grid gap-3 md:grid-cols-3">
           {/* Последние тендеры */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-3">
+          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-2">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900">Последние тендеры</h3>
@@ -461,7 +479,7 @@ export default function DashboardPage() {
           </Card>
 
           {/* Файлы */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
