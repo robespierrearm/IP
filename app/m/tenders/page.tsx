@@ -7,6 +7,7 @@ import { apiClient } from '@/lib/api-client';
 import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { getStatusEmoji } from '@/lib/tender-utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 import { useAutoClose } from '@/hooks/useAutoClose';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
@@ -59,7 +60,13 @@ export default function TendersPage() {
 
     // Фильтр по статусу
     if (selectedStatus !== 'all') {
-      if (selectedStatus === 'новый') {
+      if (selectedStatus === 'urgent') {
+        // Срочные: умные уведомления с priority urgent или high
+        filtered = filtered.filter((t) => {
+          const notification = getSmartNotification(t);
+          return notification && (notification.priority === 'urgent' || notification.priority === 'high');
+        });
+      } else if (selectedStatus === 'новый') {
         filtered = filtered.filter((t) => t.status === 'новый' || t.status === 'подано');
       } else {
         filtered = filtered.filter((t) => t.status === selectedStatus);
@@ -113,9 +120,13 @@ export default function TendersPage() {
 
   const statusFilters = [
     { value: 'all', label: 'Все' },
+    { value: 'urgent', label: '🔥 Срочные' },
     { value: 'новый', label: 'Новые' },
     { value: 'в работе', label: 'В работе' },
     { value: 'на рассмотрении', label: 'Рассмотрение' },
+    { value: 'подано', label: 'Подано' },
+    { value: 'победа', label: 'Победа' },
+    { value: 'проигрыш', label: 'Проигрыш' },
     { value: 'завершён', label: 'Завершённые' },
   ];
 
