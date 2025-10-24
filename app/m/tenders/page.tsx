@@ -228,7 +228,7 @@ export default function TendersPage() {
 
         {/* Свайпабельный фильтр - бесконечная карусель */}
         <div className="relative overflow-hidden py-2 h-12">
-          {/* Карусель фильтров с капсулой */}
+          {/* Невидимая зона для свайпа */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -249,8 +249,11 @@ export default function TendersPage() {
                 haptics.light();
               }
             }}
-            className="flex items-center justify-center gap-8 h-full cursor-grab active:cursor-grabbing relative"
-          >
+            className="absolute inset-0 z-30 cursor-grab active:cursor-grabbing"
+          />
+          
+          {/* Карусель фильтров с капсулой */}
+          <div className="flex items-center justify-center gap-8 h-full relative z-20">
             {(() => {
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
               const prevIndex = currentIndex === 0 ? statusFilters.length - 1 : currentIndex - 1;
@@ -285,7 +288,8 @@ export default function TendersPage() {
                 
                 return (
                   <motion.button
-                    key={`${filter.value}-${index}`}
+                    key={filter.value}
+                    layout
                     onClick={() => {
                       setSelectedStatus(filter.value);
                       haptics.light();
@@ -296,15 +300,25 @@ export default function TendersPage() {
                       opacity: isCenter ? 1 : 0.4,
                     }}
                     transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 30,
+                      layout: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 35,
+                      },
+                      scale: {
+                        type: "spring",
+                        stiffness: 300,
+                        damping: 35,
+                      },
+                      opacity: {
+                        duration: 0.2,
+                      },
                     }}
                     className={`flex-shrink-0 relative ${
                       isCenter ? 'backdrop-blur-xl border border-white/20 rounded-full shadow-lg ' + bgColors[filter.value as keyof typeof bgColors] : ''
                     }`}
                   >
-                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
+                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors duration-200 ${
                       isCenter 
                         ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
                         : 'text-gray-400'
@@ -315,7 +329,7 @@ export default function TendersPage() {
                 );
               });
             })()}
-          </motion.div>
+          </div>
         </div>
       </div>
 
