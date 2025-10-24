@@ -307,71 +307,74 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                   ) : null}
                 </div>
 
-                {/* Цены */}
-                {tender.start_price && (
-                  <div className="backdrop-blur-xl bg-green-500/10 rounded-lg p-3 border border-white/20 shadow-sm shadow-green-500/30">
-                    <div className="flex items-center gap-2 text-xs text-green-600 mb-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <span>Начальная цена</span>
-                    </div>
-                    <div className="font-bold text-lg text-green-900">
-                      {formatPrice(tender.start_price)}
-                    </div>
-                  </div>
-                )}
-
-                {/* Цена подачи */}
-                {(tender.status === 'на рассмотрении' ||
-                  tender.status === 'победа' ||
-                  tender.status === 'в работе' ||
-                  tender.status === 'завершён' ||
-                  tender.status === 'проигрыш') && (
-                  <div className="backdrop-blur-xl bg-blue-500/10 rounded-lg p-3 border border-white/20 shadow-sm shadow-blue-500/30">
-                    <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
-                      <DollarSign className="w-3.5 h-3.5" />
-                      <span>Цена подачи</span>
-                    </div>
-                    {tender.status === 'на рассмотрении' ? (
-                      editingSubmittedPrice ? (
-                        <div className="flex gap-2">
-                          <input
-                            type="number"
-                            value={tempSubmittedPrice}
-                            onChange={(e) => setTempSubmittedPrice(e.target.value)}
-                            className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-sm"
-                            placeholder="Введите сумму"
-                          />
-                          <button
-                            onClick={handleUpdateSubmittedPrice}
-                            className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs"
-                          >
-                            ✓
-                          </button>
-                          <button
-                            onClick={() => setEditingSubmittedPrice(false)}
-                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
-                          >
-                            ✕
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => {
-                            setTempSubmittedPrice(tender.submitted_price?.toString() || '');
-                            setEditingSubmittedPrice(true);
-                          }}
-                          className="font-bold text-lg text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
-                        >
-                          {tender.submitted_price ? formatPrice(tender.submitted_price) : '— (нажмите)'}
-                        </div>
-                      )
-                    ) : (
-                      <div className="font-bold text-lg text-blue-900">
-                        {tender.submitted_price ? formatPrice(tender.submitted_price) : '—'}
+                {/* Цены в одну строку */}
+                <div className="grid grid-cols-2 gap-2">
+                  {/* Начальная цена */}
+                  {tender.start_price && (
+                    <div className="backdrop-blur-xl bg-green-500/10 rounded-lg p-2 border border-white/20 shadow-sm shadow-green-500/30">
+                      <div className="flex items-center gap-1 mb-1">
+                        <DollarSign className="w-3.5 h-3.5 text-green-600" />
+                        <span className="text-xs text-green-600">Начальная</span>
                       </div>
-                    )}
-                  </div>
-                )}
+                      <div className="font-bold text-base text-green-900">
+                        {formatPrice(tender.start_price)}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Цена подачи */}
+                  {(tender.status === 'на рассмотрении' ||
+                    tender.status === 'победа' ||
+                    tender.status === 'в работе' ||
+                    tender.status === 'завершён' ||
+                    tender.status === 'проигрыш') && (
+                    <div className="backdrop-blur-xl bg-blue-500/10 rounded-lg p-2 border border-white/20 shadow-sm shadow-blue-500/30">
+                      <div className="flex items-center gap-1 mb-1">
+                        <DollarSign className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-xs text-blue-600">Подача</span>
+                      </div>
+                      {tender.status === 'на рассмотрении' ? (
+                        editingSubmittedPrice ? (
+                          <div className="flex gap-1">
+                            <input
+                              type="number"
+                              value={tempSubmittedPrice}
+                              onChange={(e) => setTempSubmittedPrice(e.target.value)}
+                              className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-xs"
+                              placeholder="Сумма"
+                            />
+                            <button
+                              onClick={handleUpdateSubmittedPrice}
+                              className="px-2 py-1 bg-green-600 text-white rounded-lg text-xs"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => setEditingSubmittedPrice(false)}
+                              className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => {
+                              setTempSubmittedPrice(tender.submitted_price?.toString() || '');
+                              setEditingSubmittedPrice(true);
+                            }}
+                            className="font-bold text-base text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
+                          >
+                            {tender.submitted_price ? formatPrice(tender.submitted_price) : '— (нажмите)'}
+                          </div>
+                        )
+                      ) : (
+                        <div className="font-bold text-base text-blue-900">
+                          {tender.submitted_price ? formatPrice(tender.submitted_price) : '—'}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Цена победы + Расходы + Прибыль */}
                 {(tender.status === 'победа' ||
