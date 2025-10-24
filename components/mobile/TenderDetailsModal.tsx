@@ -1,10 +1,12 @@
 'use client';
 
+import { useState } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { getStatusColor } from '@/lib/tender-utils';
 import { formatPrice, formatDate } from '@/lib/utils';
-import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit, X } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { Calendar, DollarSign, MapPin, ExternalLink, FileText, Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface TenderDetailsModalProps {
@@ -19,11 +21,27 @@ interface TenderDetailsModalProps {
  */
 export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsModalProps) {
   const router = useRouter();
+  const [editingSubmissionDate, setEditingSubmissionDate] = useState(false);
+  const [editingSubmittedPrice, setEditingSubmittedPrice] = useState(false);
+  const [tempSubmissionDate, setTempSubmissionDate] = useState('');
+  const [tempSubmittedPrice, setTempSubmittedPrice] = useState('');
 
   if (!tender) return null;
 
   const handleEdit = () => {
     router.push(`/m/tenders/edit/${tender.id}`);
+  };
+
+  const handleUpdateSubmissionDate = async () => {
+    await apiClient.updateTender(tender.id, { submission_date: tempSubmissionDate });
+    setEditingSubmissionDate(false);
+    onUpdate();
+  };
+
+  const handleUpdateSubmittedPrice = async () => {
+    await apiClient.updateTender(tender.id, { submitted_price: parseFloat(tempSubmittedPrice) });
+    setEditingSubmittedPrice(false);
+    onUpdate();
   };
 
   return (
@@ -38,42 +56,48 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
           onClick={onClose}
         >
           <m.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={{ top: 0, bottom: 0.5 }}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100) {
+                onClose();
+              }
+            }}
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
             transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-            className="bg-white rounded-t-3xl w-full flex flex-col overflow-hidden"
-            style={{ maxHeight: 'min(75vh, 600px)', marginBottom: '80px' }}
+            className="bg-white rounded-t-3xl w-full flex flex-col"
+            style={{ maxHeight: 'min(80vh, 700px)', marginBottom: '80px' }}
             onClick={(e: React.MouseEvent) => e.stopPropagation()}
           >
             {/* Шапка - sticky */}
-            <div className="sticky top-0 bg-white z-10 px-4 pt-2 pb-3 border-b border-gray-100">
-              {/* Заголовок + Кнопка закрыть */}
-              <div className="flex items-start justify-between gap-3 mb-2">
-                <h2 className="text-lg font-bold text-gray-900 flex-1 line-clamp-2">
+            <div className="sticky top-0 bg-white z-10 px-6 pt-3 pb-4 border-b border-gray-100">
+              {/* Индикатор свайпа */}
+              <div className="flex justify-center mb-3">
+                <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
+              </div>
+
+              {/* Заголовок + Статус */}
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="text-xl font-bold text-gray-900 flex-1">
                   {tender.name}
                 </h2>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
-                >
-                  <X className="w-5 h-5 text-gray-500" />
-                </button>
+                {tender.status !== 'новый' && (
+                  <span
+                    className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${getStatusColor(
+                      tender.status
+                    )}`}
+                  >
+                    {STATUS_LABELS[tender.status]}
+                  </span>
+                )}
               </div>
-              {/* Статус */}
-              {tender.status !== 'новый' && (
-                <span
-                  className={`inline-block px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(
-                    tender.status
-                  )}`}
-                >
-                  {STATUS_LABELS[tender.status]}
-                </span>
-              )}
             </div>
 
             {/* Контент - скроллится */}
-            <div className="flex-1 overflow-y-auto px-6 py-4">
+            <div className="flex-1 overflow-y-auto px-6 py-4 overscroll-behavior-contain">
               {/* Компактные карточки с данными */}
               <div className="space-y-3">
                 {/* Номер закупки */}
@@ -113,15 +137,52 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                   </div>
 
                   {/* Дата подачи */}
-                  {tender.submission_date && (
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                  {tender.status !== 'новый' && tender.status !== 'подано' && (
+                    <div className="bg-blue-50 rounded-xl p-3">
+                      <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
                         <Calendar className="w-3.5 h-3.5" />
                         <span>Дата подачи</span>
                       </div>
-                      <div className="font-semibold text-sm text-gray-900">
-                        {formatDate(tender.submission_date)}
-                      </div>
+                      {tender.status === 'на рассмотрении' ? (
+                        editingSubmissionDate ? (
+                          <div className="flex gap-2">
+                            <input
+                              type="date"
+                              value={tempSubmissionDate}
+                              onChange={(e) => setTempSubmissionDate(e.target.value)}
+                              className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-xs"
+                            />
+                            <button
+                              onClick={handleUpdateSubmissionDate}
+                              className="px-2 py-1 bg-green-600 text-white rounded-lg text-xs"
+                            >
+                              ✓
+                            </button>
+                            <button
+                              onClick={() => setEditingSubmissionDate(false)}
+                              className="px-2 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={() => {
+                              setTempSubmissionDate(
+                                tender.submission_date || new Date().toISOString().split('T')[0]
+                              );
+                              setEditingSubmissionDate(true);
+                            }}
+                            className="font-semibold text-sm text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
+                          >
+                            {tender.submission_date ? formatDate(tender.submission_date) : '— (нажмите)'}
+                          </div>
+                        )
+                      ) : (
+                        <div className="font-semibold text-sm text-blue-900">
+                          {tender.submission_date ? formatDate(tender.submission_date) : '—'}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -140,15 +201,55 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                 )}
 
                 {/* Цена подачи */}
-                {tender.submitted_price && (
+                {(tender.status === 'на рассмотрении' ||
+                  tender.status === 'победа' ||
+                  tender.status === 'в работе' ||
+                  tender.status === 'завершён' ||
+                  tender.status === 'проигрыш') && (
                   <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
                     <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
                       <DollarSign className="w-3.5 h-3.5" />
                       <span>Цена подачи</span>
                     </div>
-                    <div className="font-bold text-lg text-blue-900">
-                      {formatPrice(tender.submitted_price)}
-                    </div>
+                    {tender.status === 'на рассмотрении' ? (
+                      editingSubmittedPrice ? (
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            value={tempSubmittedPrice}
+                            onChange={(e) => setTempSubmittedPrice(e.target.value)}
+                            className="flex-1 px-2 py-1 border border-blue-200 rounded-lg text-sm"
+                            placeholder="Введите сумму"
+                          />
+                          <button
+                            onClick={handleUpdateSubmittedPrice}
+                            className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs"
+                          >
+                            ✓
+                          </button>
+                          <button
+                            onClick={() => setEditingSubmittedPrice(false)}
+                            className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-xs"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ) : (
+                        <div
+                          onClick={() => {
+                            setTempSubmittedPrice(tender.submitted_price?.toString() || '');
+                            setEditingSubmittedPrice(true);
+                          }}
+                          className="font-bold text-lg text-blue-900 cursor-pointer hover:text-blue-700 transition-colors"
+                        >
+                          {tender.submitted_price ? formatPrice(tender.submitted_price) : '— (нажмите)'}
+                        </div>
+                      )
+                    ) : (
+                      <div className="font-bold text-lg text-blue-900">
+                        {tender.submitted_price ? formatPrice(tender.submitted_price) : '—'}
+                      </div>
+                    )}
                   </div>
                 )}
 
