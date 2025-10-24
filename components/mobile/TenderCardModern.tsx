@@ -4,6 +4,7 @@ import { m, PanInfo } from 'framer-motion';
 import { Tender } from '@/lib/supabase';
 import { Calendar, DollarSign, Trash2, Clock, MapPin, AlertCircle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 import { memo } from 'react';
 
 interface TenderCardModernProps {
@@ -25,33 +26,8 @@ const TenderCardModernComponent = ({
 }: TenderCardModernProps) => {
   const deleteButtonWidth = 80;
 
-  // Расчет дней до дедлайна
-  const getDaysUntilDeadline = () => {
-    if (!tender.submission_deadline) return null;
-    const deadline = new Date(tender.submission_deadline);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    deadline.setHours(0, 0, 0, 0);
-    const diffTime = deadline.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const daysLeft = getDaysUntilDeadline();
-
-  // Определяем срочность
-  const getUrgency = () => {
-    if (!daysLeft) return null;
-    if (daysLeft < 0) return 'expired';
-    if (daysLeft <= 3) return 'urgent';
-    if (daysLeft <= 7) return 'soon';
-    return 'normal';
-  };
-
-  const urgency = getUrgency();
-
-  // Дедлайн актуален только для новых и поданных тендеров
-  const isDeadlineRelevant = tender.status === 'новый' || tender.status === 'подано';
+  // Получаем умное уведомление для тендера
+  const notification = getSmartNotification(tender);
 
   const handleDrag = (_event: any, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 5 && !isOpen) {
@@ -144,40 +120,30 @@ const TenderCardModernComponent = ({
             </span>
           </div>
 
-          {/* ДЕДЛАЙН - только для новых и поданных */}
-          {isDeadlineRelevant && tender.submission_deadline && daysLeft !== null && (
-            <div className="mb-2 flex items-center gap-2">
-              <Clock className={`w-4 h-4 flex-shrink-0 ${
-                urgency === 'urgent' ? 'text-red-500' :
-                urgency === 'soon' ? 'text-orange-500' :
-                urgency === 'expired' ? 'text-gray-400' :
-                'text-gray-400'
-              }`} />
-              <span className="text-sm text-gray-700">
-                {formatDate(tender.submission_deadline)}
-              </span>
-              <span className={`ml-auto text-xs font-semibold ${
-                urgency === 'urgent' ? 'text-red-600' :
-                urgency === 'soon' ? 'text-orange-600' :
-                urgency === 'expired' ? 'text-gray-500' :
-                'text-gray-500'
-              }`}>
-                {daysLeft < 0 ? 'Просрочен' : 
-                 daysLeft === 0 ? 'Сегодня!' :
-                 daysLeft === 1 ? 'Завтра' :
-                 `${daysLeft} дн.`}
-              </span>
-              {urgency === 'urgent' && (
-                <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">
-                  СРОЧНО
+          {/* УМНОЕ УВЕДОМЛЕНИЕ */}
+          {notification && (
+            <>
+              <div className="mb-2 flex items-center gap-2">
+                <span className="text-base">{notification.icon}</span>
+                <span className={`text-sm flex-1 ${
+                  notification.color === 'red' ? 'text-red-600 font-semibold' :
+                  notification.color === 'orange' ? 'text-orange-600 font-semibold' :
+                  notification.color === 'yellow' ? 'text-yellow-600' :
+                  notification.color === 'blue' ? 'text-blue-600' :
+                  notification.color === 'green' ? 'text-green-600' :
+                  notification.color === 'purple' ? 'text-purple-600' :
+                  'text-gray-600'
+                }`}>
+                  {notification.message}
                 </span>
-              )}
-            </div>
-          )}
-
-          {/* Разделитель если есть дедлайн */}
-          {isDeadlineRelevant && tender.submission_deadline && (
-            <div className="h-px bg-gray-100 my-2"></div>
+                {notification.priority === 'urgent' && (
+                  <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">
+                    СРОЧНО
+                  </span>
+                )}
+              </div>
+              <div className="h-px bg-gray-100 my-2"></div>
+            </>
           )}
 
           {/* Информация о тендере - компактно */}

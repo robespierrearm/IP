@@ -4,6 +4,7 @@ import { m, PanInfo } from 'framer-motion';
 import { Tender } from '@/lib/supabase';
 import { Trash2, Clock, ChevronRight } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 import { memo } from 'react';
 
 interface TenderCardAppleProps {
@@ -25,33 +26,8 @@ const TenderCardAppleComponent = ({
 }: TenderCardAppleProps) => {
   const deleteButtonWidth = 80;
 
-  // Расчет дней до дедлайна
-  const getDaysUntilDeadline = () => {
-    if (!tender.submission_deadline) return null;
-    const deadline = new Date(tender.submission_deadline);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    deadline.setHours(0, 0, 0, 0);
-    const diffTime = deadline.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const daysLeft = getDaysUntilDeadline();
-
-  // Определяем срочность
-  const getUrgency = () => {
-    if (!daysLeft) return null;
-    if (daysLeft < 0) return 'expired';
-    if (daysLeft <= 3) return 'urgent';
-    if (daysLeft <= 7) return 'soon';
-    return 'normal';
-  };
-
-  const urgency = getUrgency();
-
-  // Дедлайн актуален только для новых и поданных тендеров
-  const isDeadlineRelevant = tender.status === 'новый' || tender.status === 'подано';
+  // Получаем умное уведомление для тендера
+  const notification = getSmartNotification(tender);
 
   const handleDrag = (_event: any, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 5 && !isOpen) {
@@ -137,37 +113,30 @@ const TenderCardAppleComponent = ({
             <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
           </div>
 
-          {/* Дедлайн - только для новых и поданных */}
-          {isDeadlineRelevant && tender.submission_deadline && daysLeft !== null && (
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className={`w-4 h-4 ${
-                urgency === 'urgent' ? 'text-red-500' :
-                urgency === 'soon' ? 'text-orange-500' :
-                urgency === 'expired' ? 'text-gray-400' :
-                'text-green-500'
-              }`} />
-              <span className={`text-[13px] font-medium ${
-                urgency === 'urgent' ? 'text-red-600' :
-                urgency === 'soon' ? 'text-orange-600' :
-                urgency === 'expired' ? 'text-gray-500' :
-                'text-green-600'
-              }`}>
-                {daysLeft < 0 ? 'Просрочен' : 
-                 daysLeft === 0 ? 'Сегодня' :
-                 daysLeft === 1 ? 'Завтра' :
-                 `Через ${daysLeft} ${daysLeft === 1 ? 'день' : daysLeft >= 2 && daysLeft <= 4 ? 'дня' : 'дней'}`}
-              </span>
-              {urgency === 'urgent' && (
-                <span className="ml-auto px-2 py-0.5 bg-red-500 text-white text-[11px] font-semibold rounded-full">
-                  СРОЧНО
+          {/* УМНОЕ УВЕДОМЛЕНИЕ */}
+          {notification && (
+            <>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm">{notification.icon}</span>
+                <span className={`text-[13px] font-medium flex-1 ${
+                  notification.color === 'red' ? 'text-red-600' :
+                  notification.color === 'orange' ? 'text-orange-600' :
+                  notification.color === 'yellow' ? 'text-yellow-600' :
+                  notification.color === 'blue' ? 'text-blue-600' :
+                  notification.color === 'green' ? 'text-green-600' :
+                  notification.color === 'purple' ? 'text-purple-600' :
+                  'text-gray-600'
+                }`}>
+                  {notification.message}
                 </span>
-              )}
-            </div>
-          )}
-
-          {/* Разделитель если есть дедлайн */}
-          {isDeadlineRelevant && tender.submission_deadline && (
-            <div className="h-px bg-gray-100 my-2"></div>
+                {notification.priority === 'urgent' && (
+                  <span className="px-2 py-0.5 bg-red-500 text-white text-[11px] font-semibold rounded-full">
+                    СРОЧНО
+                  </span>
+                )}
+              </div>
+              <div className="h-px bg-gray-100 my-2"></div>
+            </>
           )}
 
           {/* Информация - компактно */}
