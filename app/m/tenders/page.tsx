@@ -226,21 +226,68 @@ export default function TendersPage() {
           />
         </div>
 
-        {/* Фильтры статусов */}
-        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-          {statusFilters.map((filter) => (
-            <button
-              key={filter.value}
-              onClick={() => setSelectedStatus(filter.value)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-colors ${
-                selectedStatus === filter.value
-                  ? 'bg-primary-500 text-white'
-                  : 'bg-gray-100 text-gray-700 active:bg-gray-200'
-              }`}
+        {/* Свайпабельный фильтр */}
+        <div className="relative">
+          <motion.div
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, { offset, velocity }) => {
+              const swipe = Math.abs(offset.x) * velocity.x;
+              if (swipe > 500) {
+                // Свайп вправо - предыдущий
+                const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+                if (currentIndex > 0) {
+                  setSelectedStatus(statusFilters[currentIndex - 1].value);
+                  haptics.light();
+                }
+              } else if (swipe < -500) {
+                // Свайп влево - следующий
+                const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+                if (currentIndex < statusFilters.length - 1) {
+                  setSelectedStatus(statusFilters[currentIndex + 1].value);
+                  haptics.light();
+                }
+              }
+            }}
+            className="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl p-4 text-center cursor-grab active:cursor-grabbing"
+          >
+            <motion.div
+              key={selectedStatus}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
             >
-              {filter.label}
-            </button>
-          ))}
+              <div className="text-3xl mb-1">
+                {statusFilters.find(f => f.value === selectedStatus)?.label.split(' ')[0]}
+              </div>
+              <div className="text-white font-semibold text-lg">
+                {statusFilters.find(f => f.value === selectedStatus)?.label.split(' ').slice(1).join(' ')}
+              </div>
+              <div className="text-white/70 text-xs mt-1">
+                Свайп для переключения
+              </div>
+            </motion.div>
+          </motion.div>
+          
+          {/* Точки-индикаторы */}
+          <div className="flex justify-center gap-1.5 mt-3">
+            {statusFilters.map((filter, index) => (
+              <button
+                key={filter.value}
+                onClick={() => {
+                  setSelectedStatus(filter.value);
+                  haptics.light();
+                }}
+                className={`h-1.5 rounded-full transition-all ${
+                  selectedStatus === filter.value
+                    ? 'w-6 bg-primary-500'
+                    : 'w-1.5 bg-gray-300'
+                }`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 
