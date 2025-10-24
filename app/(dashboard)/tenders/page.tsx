@@ -354,7 +354,7 @@ function TendersContent() {
                 tender.status === 'проигрыш' ? 'border-l-red-500' :
                 'border-l-gray-300'
               } ${
-                isUrgent ? 'ring-2 ring-red-500 ring-offset-1' : ''
+                isUrgent ? 'ring-1 ring-red-300 bg-gradient-to-r from-red-50/30 via-transparent to-transparent' : ''
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
@@ -367,7 +367,7 @@ function TendersContent() {
                       <h3 className="font-semibold text-base text-gray-900 truncate">{tender.name}</h3>
                       <PlatformButton link={tender.link} />
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <span
                         className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${getStatusColor(
                           tender.status
@@ -376,18 +376,18 @@ function TendersContent() {
                         {STATUS_LABELS[tender.status]}
                       </span>
                       {notification && (
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border ${
-                          notification.color === 'red' ? 'bg-red-50 text-red-700 border-red-200' :
-                          notification.color === 'orange' ? 'bg-orange-50 text-orange-700 border-orange-200' :
-                          notification.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                          notification.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                          notification.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
-                          notification.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
-                          'bg-gray-50 text-gray-700 border-gray-200'
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
+                          notification.color === 'red' ? 'bg-red-50 text-red-700' :
+                          notification.color === 'orange' ? 'bg-orange-50 text-orange-700' :
+                          notification.color === 'yellow' ? 'bg-yellow-50 text-yellow-700' :
+                          notification.color === 'blue' ? 'bg-blue-50 text-blue-700' :
+                          notification.color === 'green' ? 'bg-green-50 text-green-700' :
+                          notification.color === 'purple' ? 'bg-purple-50 text-purple-700' :
+                          'bg-gray-50 text-gray-700'
                         }`}>
-                          <span>{notification.icon}</span>
-                          <span>{notification.shortMessage}</span>
-                        </span>
+                          <span className="text-sm">{notification.icon}</span>
+                          <span className="font-medium">{notification.message}</span>
+                        </div>
                       )}
                     </div>
                   </div>
