@@ -141,17 +141,17 @@ export function AppSidebar() {
         />
       )}
 
-      {/* Sidebar */}
+      {/* Sidebar - СТЕКЛЯННЫЙ */}
       <div
         className={cn(
-          "fixed md:static inset-y-0 left-0 z-40 flex h-screen flex-col border-r bg-white shadow-lg transition-all duration-300 md:translate-x-0",
+          "fixed md:static inset-y-0 left-0 z-40 flex h-screen flex-col border-r backdrop-blur-xl bg-white/40 border-white/20 shadow-lg transition-all duration-300 md:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           isCollapsed ? "md:w-20" : "md:w-64",
           "w-64"
         )}
       >
-      {/* Logo */}
-      <div className="flex h-20 items-center border-b bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 relative overflow-hidden shadow-lg">
+      {/* Logo - СТЕКЛЯННЫЙ */}
+      <div className="flex h-20 items-center border-b backdrop-blur-xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-500/20 border-white/20 relative overflow-hidden shadow-lg shadow-blue-500/50">
         {/* Декоративный фон */}
         <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDE0YzMuMzEgMCA2IDIuNjkgNiA2cy0yLjY5IDYtNiA2LTYtMi42OS02LTYgMi42OS02IDYtNnpNNiAzNGMzLjMxIDAgNiAyLjY5IDYgNnMtMi42OSA2LTYgNi02LTIuNjktNi02IDIuNjktNiA2LTZ6Ii8+PC9nPjwvZz48L3N2Zz4=')] opacity-30"></div>
         
@@ -166,10 +166,10 @@ export function AppSidebar() {
                 <Logo size={40} />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white drop-shadow-lg tracking-tight">
+                <h1 className="text-xl font-bold text-blue-600 drop-shadow-lg tracking-tight">
                   TenderCRM
                 </h1>
-                <p className="text-xs text-white/70">Управление тендерами</p>
+                <p className="text-xs text-blue-500">Управление тендерами</p>
               </div>
             </div>
           ) : (
@@ -181,13 +181,13 @@ export function AppSidebar() {
         
         <button
           onClick={toggleCollapse}
-          className="hidden md:flex items-center justify-center w-14 h-full hover:bg-white/10 transition-all duration-300 border-l border-white/20 relative z-10 group"
+          className="hidden md:flex items-center justify-center w-14 h-full hover:bg-blue-500/10 transition-all duration-300 border-l border-white/20 relative z-10 group"
           title={isCollapsed ? "Развернуть меню" : "Свернуть меню"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+            <PanelLeftOpen className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-white group-hover:scale-110 transition-transform" />
+            <PanelLeftClose className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
           )}
         </button>
       </div>
@@ -217,10 +217,10 @@ export function AppSidebar() {
                     className={cn(
                         'w-full gap-3 transition-all flex items-center rounded-md text-sm font-medium h-9 px-4',
                         isAllTenders
-                          ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100 border-l-4 border-blue-600'
+                          ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-l-4 border-blue-600 shadow-lg shadow-blue-500/50'
                           : hasActiveSubtab
-                          ? 'bg-gray-100 text-gray-700'
-                          : 'hover:bg-secondary/80 text-gray-700',
+                          ? 'backdrop-blur-xl bg-gray-500/10 text-gray-700'
+                          : 'hover:bg-white/50 text-gray-700',
                         isCollapsed && 'justify-center px-2'
                       )}
                     >
@@ -254,8 +254,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'new'
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 font-medium shadow-sm shadow-blue-500/30'
+                            : 'text-gray-600 hover:bg-white/50'
                         )}
                       >
                         Новые
@@ -320,8 +320,8 @@ export function AppSidebar() {
                 'flex items-center gap-3 w-full rounded-md text-sm font-medium h-9 px-4 transition-all',
                 isCollapsed ? 'justify-center px-2' : 'justify-start',
                 isActive 
-                  ? 'bg-gradient-to-r from-blue-50 to-purple-50 text-blue-700 hover:from-blue-100 hover:to-purple-100 border-l-4 border-blue-600'
-                  : 'hover:bg-secondary/80 text-gray-700'
+                  ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-l-4 border-blue-600 shadow-lg shadow-blue-500/50'
+                  : 'hover:bg-white/50 text-gray-700'
               )}
               title={isCollapsed ? item.title : undefined}
             >
@@ -332,12 +332,12 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* User info and Logout */}
-      <div className="border-t p-4 bg-gradient-to-r from-gray-50 to-gray-100 flex-shrink-0">
+      {/* User info and Logout - СТЕКЛЯННЫЙ */}
+      <div className="border-t border-white/20 p-4 backdrop-blur-xl bg-white/30 flex-shrink-0">
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Имя пользователя */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-3 px-3 py-2 backdrop-blur-xl bg-white/50 rounded-lg border border-white/20 shadow-sm">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
                 {currentUser.username?.charAt(0).toUpperCase() || 'U'}
               </div>
@@ -355,7 +355,7 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all justify-start px-4 border border-red-200 hover:border-red-300"
+              className="w-full gap-2 text-red-600 backdrop-blur-xl bg-red-500/10 hover:bg-red-500/20 hover:text-red-700 transition-all justify-start px-4 border border-white/20 shadow-sm shadow-red-500/30"
             >
               <LogOut className="h-4 w-4" />
               <span className="font-medium">Выход</span>

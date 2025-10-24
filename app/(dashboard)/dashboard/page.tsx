@@ -248,8 +248,8 @@ export default function DashboardPage() {
 
         {/* Три основных блока */}
         <div className="grid gap-3 md:grid-cols-3 mb-5">
-          {/* 1. СРОЧНО */}
-          <Card className="transition-all hover:shadow-lg border border-red-200 bg-white h-[240px]">
+          {/* 1. СРОЧНО - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-lg backdrop-blur-xl bg-red-500/10 border border-white/20 shadow-lg shadow-red-500/50 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-red-50">
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-red-50/50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
+                        className="p-2 rounded-lg backdrop-blur-xl bg-red-500/10 hover:bg-red-500/20 transition-colors cursor-pointer border border-white/20"
                       >
                         <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
                           {tender.name}
@@ -303,8 +303,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* 2. В РАБОТЕ */}
-          <Card className="transition-all hover:shadow-lg border border-green-200 bg-white h-[240px]">
+          {/* 2. В РАБОТЕ - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-lg backdrop-blur-xl bg-green-500/10 border border-white/20 shadow-lg shadow-green-500/50 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-green-50">
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors cursor-pointer border border-green-100"
+                        className="p-2 rounded-lg backdrop-blur-xl bg-green-500/10 hover:bg-green-500/20 transition-colors cursor-pointer border border-white/20"
                       >
                         <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
                           {tender.name}
@@ -366,8 +366,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* 3. СТАТИСТИКА */}
-          <Card className="transition-all hover:shadow-lg border border-blue-200 bg-white h-[240px]">
+          {/* 3. СТАТИСТИКА - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-lg backdrop-blur-xl bg-blue-500/10 border border-white/20 shadow-lg shadow-blue-500/50 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-blue-50">
@@ -413,8 +413,8 @@ export default function DashboardPage() {
 
         {/* Нижние два блока: Последние тендеры (70%) + Файлы (30%) */}
         <div className="grid gap-3 md:grid-cols-3">
-          {/* Последние тендеры */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+          {/* Последние тендеры - СТЕКЛЯННАЯ */}
+          <Card className="backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg hover:shadow-xl transition-shadow md:col-span-2">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900">Последние тендеры</h3>
@@ -433,7 +433,7 @@ export default function DashboardPage() {
                     <div 
                       key={tender.id} 
                       className={`px-4 py-3 transition-colors cursor-pointer ${
-                        tender.status === 'подано' ? 'bg-green-50 hover:bg-green-100' : 'hover:bg-gray-50'
+                        tender.status === 'подано' ? 'backdrop-blur-xl bg-green-500/10 hover:bg-green-500/20' : 'hover:bg-white/50'
                       }`}
                       onClick={() => navigateToTender(tender.id)}
                     >
@@ -478,8 +478,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Файлы */}
-          <Card className="bg-white shadow-sm hover:shadow-md transition-shadow">
+          {/* Файлы - СТЕКЛЯННЫЙ */}
+          <Card className="backdrop-blur-xl bg-purple-500/10 border border-white/20 shadow-lg shadow-purple-500/50 hover:shadow-xl transition-shadow">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
@@ -498,7 +498,7 @@ export default function DashboardPage() {
                   {dashboardFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center gap-1.5 p-1.5 bg-gray-50 rounded hover:bg-gray-100 transition-colors group"
+                      className="flex items-center gap-1.5 p-1.5 backdrop-blur-xl bg-white/50 rounded hover:bg-purple-500/20 transition-colors group border border-white/20"
                     >
                       <FileIconComponent 
                         fileName={file.original_name} 
