@@ -226,54 +226,90 @@ export default function TendersPage() {
           />
         </div>
 
-        {/* Свайпабельный фильтр */}
-        <div className="relative">
+        {/* Свайпабельный фильтр - компактный с соседями */}
+        <div className="relative overflow-hidden py-2">
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
+            dragElastic={0.1}
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
-              if (swipe > 500) {
+              const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+              
+              if (swipe > 300 || offset.x > 50) {
                 // Свайп вправо - предыдущий
-                const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
                 if (currentIndex > 0) {
                   setSelectedStatus(statusFilters[currentIndex - 1].value);
                   haptics.light();
                 }
-              } else if (swipe < -500) {
+              } else if (swipe < -300 || offset.x < -50) {
                 // Свайп влево - следующий
-                const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
                 if (currentIndex < statusFilters.length - 1) {
                   setSelectedStatus(statusFilters[currentIndex + 1].value);
                   haptics.light();
                 }
               }
             }}
-            className="bg-gradient-to-r from-primary-500 to-secondary-600 rounded-2xl p-4 text-center cursor-grab active:cursor-grabbing"
+            className="flex items-center justify-center gap-4 cursor-grab active:cursor-grabbing"
           >
-            <motion.div
-              key={selectedStatus}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <div className="text-3xl mb-1">
-                {statusFilters.find(f => f.value === selectedStatus)?.label.split(' ')[0]}
-              </div>
-              <div className="text-white font-semibold text-lg">
-                {statusFilters.find(f => f.value === selectedStatus)?.label.split(' ').slice(1).join(' ')}
-              </div>
-              <div className="text-white/70 text-xs mt-1">
-                Свайп для переключения
-              </div>
-            </motion.div>
+            {statusFilters.map((filter, index) => {
+              const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+              const isActive = filter.value === selectedStatus;
+              const isPrev = index === currentIndex - 1;
+              const isNext = index === currentIndex + 1;
+              const isVisible = isActive || isPrev || isNext;
+              
+              if (!isVisible) return null;
+              
+              return (
+                <motion.div
+                  key={filter.value}
+                  initial={false}
+                  animate={{
+                    scale: isActive ? 1 : 0.7,
+                    opacity: isActive ? 1 : 0.3,
+                    x: isActive ? 0 : isPrev ? -20 : 20,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 300,
+                    damping: 30,
+                  }}
+                  onClick={() => {
+                    if (!isActive) {
+                      setSelectedStatus(filter.value);
+                      haptics.light();
+                    }
+                  }}
+                  className={`rounded-2xl px-6 py-3 text-center ${
+                    isActive 
+                      ? 'bg-gradient-to-r from-primary-500 to-secondary-600 shadow-lg' 
+                      : 'bg-gray-200'
+                  }`}
+                >
+                  <div className={`text-2xl mb-0.5 ${isActive ? '' : 'grayscale'}`}>
+                    {filter.label.split(' ')[0]}
+                  </div>
+                  {isActive && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="text-white font-semibold text-sm"
+                    >
+                      {filter.label.split(' ').slice(1).join(' ')}
+                    </motion.div>
+                  )}
+                </motion.div>
+              );
+            })}
           </motion.div>
           
           {/* Точки-индикаторы */}
           <div className="flex justify-center gap-1.5 mt-3">
-            {statusFilters.map((filter, index) => (
+            {statusFilters.map((filter) => (
               <button
                 key={filter.value}
                 onClick={() => {
