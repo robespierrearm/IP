@@ -248,7 +248,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-600">Срочно</h3>
-                  <p className="text-3xl font-bold text-gray-900">{urgentTenders.length}</p>
+                  <p className="text-xl font-bold text-gray-900">{urgentTenders.length}</p>
                 </div>
               </div>
             
@@ -297,7 +297,7 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-medium text-gray-600">В работе</h3>
-                  <p className="text-3xl font-bold text-gray-900">{stats.inWork}</p>
+                  <p className="text-xl font-bold text-gray-900">{stats.inWork}</p>
                 </div>
               </div>
             
@@ -314,9 +314,27 @@ export default function DashboardPage() {
                         <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
                           🔨 {tender.name}
                         </p>
-                        <p className="text-xs text-gray-600">
-                          {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(tender.win_price || tender.submitted_price)}
-                        </p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-gray-600">
+                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(tender.win_price || tender.submitted_price)}
+                          </p>
+                          <div className="flex gap-1">
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); alert('Функция расходов в разработке'); }}
+                              className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
+                              title="Расходы"
+                            >
+                              💰
+                            </button>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); alert('Функция отчёта в разработке'); }}
+                              className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
+                              title="Отчёт"
+                            >
+                              📊
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
@@ -350,32 +368,32 @@ export default function DashboardPage() {
                 </div>
               </div>
             
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center justify-between text-sm">
+              <div className="space-y-1.5 flex-1">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Новых:</span>
                   <span className="font-semibold text-gray-900">{stats.new}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Поданных:</span>
                   <span className="font-semibold text-gray-900">{stats.submitted}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Рассмотрение:</span>
                   <span className="font-semibold text-gray-900">{stats.underReview}</span>
                 </div>
-                <div className="h-px bg-gray-200 my-2"></div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="h-px bg-gray-200 my-1.5"></div>
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Побед:</span>
                   <span className="font-semibold text-green-600">{stats.won}</span>
                 </div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Проигрышей:</span>
                   <span className="font-semibold text-red-600">{stats.lost}</span>
                 </div>
-                <div className="h-px bg-gray-200 my-2"></div>
-                <div className="flex items-center justify-between text-sm">
+                <div className="h-px bg-gray-200 my-1.5"></div>
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600">Выручка:</span>
-                  <span className="font-semibold text-blue-600">{formatPrice(stats.totalRevenue)}</span>
+                  <span className="font-semibold text-blue-600">{formatCompactPrice(stats.totalRevenue)}</span>
                 </div>
               </div>
             </CardContent>
