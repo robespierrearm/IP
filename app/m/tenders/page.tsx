@@ -227,12 +227,33 @@ export default function TendersPage() {
         </div>
 
         {/* Свайпабельный фильтр - стиль камеры iPhone */}
-        <div className="relative py-2">
-          {/* Невидимая зона для свайпа */}
+        <div className="relative py-2 h-12">
+          {/* Капсула - фиксированная в центре */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <motion.div
+              className={`backdrop-blur-xl border border-white/20 rounded-full shadow-lg px-5 py-2.5
+                ${selectedStatus === 'all' ? 'bg-blue-500/20 shadow-blue-500/50' : ''}
+                ${selectedStatus === 'urgent' ? 'bg-red-500/20 shadow-red-500/50' : ''}
+                ${selectedStatus === 'новый' ? 'bg-purple-500/20 shadow-purple-500/50' : ''}
+                ${selectedStatus === 'в работе' ? 'bg-green-500/20 shadow-green-500/50' : ''}
+                ${selectedStatus === 'на рассмотрении' ? 'bg-orange-500/20 shadow-orange-500/50' : ''}
+                ${selectedStatus === 'завершён' ? 'bg-gray-500/20 shadow-gray-500/50' : ''}
+              `}
+              animate={{
+                scale: [1, 1.05, 1],
+              }}
+              transition={{
+                duration: 0.3,
+              }}
+            />
+          </div>
+          
+          {/* Фильтры - крутятся */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
@@ -249,32 +270,22 @@ export default function TendersPage() {
                 }
               }
             }}
-            className="absolute inset-0 z-20 cursor-grab active:cursor-grabbing"
-          />
-          
-          {/* Фильтры - фиксированные */}
-          <div className="flex items-center justify-center gap-6 px-6 relative z-10">
+            className="flex items-center justify-center gap-6 h-full cursor-grab active:cursor-grabbing relative z-10"
+            animate={{
+              x: (() => {
+                const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+                const offset = currentIndex * -100; // Сдвиг на 100px за каждый фильтр
+                return offset;
+              })()
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+            }}
+          >
             {statusFilters.map((filter) => {
               const isActive = filter.value === selectedStatus;
-              
-              // Цвета сияния по статусам
-              const glowColors = {
-                'all': 'shadow-blue-500/50',
-                'urgent': 'shadow-red-500/50',
-                'новый': 'shadow-purple-500/50',
-                'в работе': 'shadow-green-500/50',
-                'на рассмотрении': 'shadow-orange-500/50',
-                'завершён': 'shadow-gray-500/50',
-              };
-              
-              const bgColors = {
-                'all': 'bg-blue-500/20',
-                'urgent': 'bg-red-500/20',
-                'новый': 'bg-purple-500/20',
-                'в работе': 'bg-green-500/20',
-                'на рассмотрении': 'bg-orange-500/20',
-                'завершён': 'bg-gray-500/20',
-              };
               
               const textColors = {
                 'all': 'text-blue-400',
@@ -292,24 +303,9 @@ export default function TendersPage() {
                     setSelectedStatus(filter.value);
                     haptics.light();
                   }}
-                  className="relative z-30"
+                  className="relative flex-shrink-0"
                 >
-                  {/* Прозрачная капсула с сиянием */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeFilter"
-                      className={`absolute inset-0 backdrop-blur-xl ${bgColors[filter.value as keyof typeof bgColors]} 
-                        border border-white/20 rounded-full shadow-lg ${glowColors[filter.value as keyof typeof glowColors]}`}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  
-                  {/* Текст */}
-                  <span className={`relative z-10 px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
+                  <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
                     isActive 
                       ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
                       : 'text-gray-400'
@@ -319,7 +315,7 @@ export default function TendersPage() {
                 </button>
               );
             })}
-          </div>
+          </motion.div>
         </div>
       </div>
 
