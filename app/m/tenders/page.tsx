@@ -226,13 +226,14 @@ export default function TendersPage() {
           />
         </div>
 
-        {/* Свайпабельный фильтр - бесконечная карусель */}
+        {/* Свайпабельный фильтр - плавное перетаскивание */}
         <div className="relative overflow-hidden py-2 h-12">
-          {/* Невидимая зона для свайпа */}
+          {/* Карусель фильтров - можно тянуть */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.1}
+            dragElastic={0.2}
+            dragTransition={{ bounceStiffness: 600, bounceDamping: 30 }}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
@@ -249,11 +250,8 @@ export default function TendersPage() {
                 haptics.light();
               }
             }}
-            className="absolute inset-0 z-30 cursor-grab active:cursor-grabbing"
-          />
-          
-          {/* Карусель фильтров с капсулой */}
-          <div className="flex items-center justify-center gap-8 h-full relative z-20">
+            className="flex items-center justify-center gap-8 h-full cursor-grab active:cursor-grabbing"
+          >
             {(() => {
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
               const prevIndex = currentIndex === 0 ? statusFilters.length - 1 : currentIndex - 1;
@@ -291,8 +289,10 @@ export default function TendersPage() {
                     key={filter.value}
                     layout
                     onClick={() => {
-                      setSelectedStatus(filter.value);
-                      haptics.light();
+                      if (!isCenter) {
+                        setSelectedStatus(filter.value);
+                        haptics.light();
+                      }
                     }}
                     initial={false}
                     animate={{
@@ -302,23 +302,23 @@ export default function TendersPage() {
                     transition={{
                       layout: {
                         type: "spring",
-                        stiffness: 300,
-                        damping: 35,
+                        stiffness: 400,
+                        damping: 30,
                       },
                       scale: {
                         type: "spring",
-                        stiffness: 300,
-                        damping: 35,
+                        stiffness: 400,
+                        damping: 30,
                       },
                       opacity: {
-                        duration: 0.2,
+                        duration: 0.15,
                       },
                     }}
-                    className={`flex-shrink-0 relative ${
+                    className={`flex-shrink-0 relative pointer-events-auto ${
                       isCenter ? 'backdrop-blur-xl border border-white/20 rounded-full shadow-lg ' + bgColors[filter.value as keyof typeof bgColors] : ''
                     }`}
                   >
-                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors duration-200 ${
+                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors duration-150 ${
                       isCenter 
                         ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
                         : 'text-gray-400'
@@ -329,7 +329,7 @@ export default function TendersPage() {
                 );
               });
             })()}
-          </div>
+          </motion.div>
         </div>
       </div>
 
