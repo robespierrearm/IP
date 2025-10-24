@@ -190,7 +190,7 @@ export default function EditTenderPage() {
               value={tender.publication_date || ''}
               onChange={(e) => setTender({ ...tender, publication_date: e.target.value })}
               max={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-2 py-2.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
           <div>
@@ -202,7 +202,7 @@ export default function EditTenderPage() {
               value={tender.submission_deadline || ''}
               onChange={(e) => setTender({ ...tender, submission_deadline: e.target.value })}
               min={new Date().toISOString().split('T')[0]}
-              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full px-2 py-2.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500 focus:border-transparent"
             />
           </div>
         </div>
@@ -216,7 +216,7 @@ export default function EditTenderPage() {
             type="date"
             value={tender.submission_date || ''}
             onChange={(e) => setTender({ ...tender, submission_date: e.target.value })}
-            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-2 py-2.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 

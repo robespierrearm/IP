@@ -79,135 +79,136 @@ export default function AddTenderPage() {
         </div>
       </div>
 
-      {/* Форма */}
-      <div className="px-6 py-6 space-y-4">
+      {/* Форма - компактная */}
+      <div className="px-4 py-4 space-y-3">
         {/* Название */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Название тендера *
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            Название *
           </label>
           <input
             type="text"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             placeholder="Введите название"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Статус скрыт - автоматически "новый" */}
-
-        {/* Номер закупки */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Номер гос закупки
-          </label>
-          <input
-            type="text"
-            value={formData.purchase_number || ''}
-            onChange={(e) => setFormData({ ...formData, purchase_number: e.target.value })}
-            placeholder="№ 0123456789012345678901"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
+        {/* Номер закупки + Регион */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              № закупки
+            </label>
+            <input
+              type="text"
+              value={formData.purchase_number || ''}
+              onChange={(e) => setFormData({ ...formData, purchase_number: e.target.value })}
+              placeholder="№ 123..."
+              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              📍 Регион
+            </label>
+            <input
+              type="text"
+              value={formData.region || ''}
+              onChange={(e) => setFormData({ ...formData, region: e.target.value })}
+              placeholder="Москва"
+              className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
         </div>
 
         {/* Ссылка */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Ссылка на тендер
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            🔗 Ссылка на тендер
           </label>
           <input
             type="url"
             value={formData.link || ''}
             onChange={(e) => setFormData({ ...formData, link: e.target.value })}
             placeholder="https://..."
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Регион */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Регион / Адрес
-          </label>
-          <input
-            type="text"
-            value={formData.region || ''}
-            onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-            placeholder="Москва, Россия"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
+        {/* Разделитель */}
+        <div className="border-t border-gray-200 my-3"></div>
+
+        {/* Даты: Публикация + Дедлайн */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              📅 Публикация
+            </label>
+            <input
+              type="date"
+              max={new Date().toISOString().split('T')[0]}
+              value={formData.publication_date}
+              onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
+              required
+              className="w-full px-2 py-2.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              ⏰ Дедлайн
+            </label>
+            <input
+              type="date"
+              min={new Date().toISOString().split('T')[0]}
+              value={formData.submission_deadline || ''}
+              onChange={(e) => setFormData({ ...formData, submission_deadline: e.target.value })}
+              className="w-full px-2 py-2.5 bg-white border border-gray-200 rounded-lg text-xs focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            />
+          </div>
         </div>
 
-        {/* Дата публикации */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Дата публикации *
-          </label>
-          <input
-            type="date"
-            max={new Date().toISOString().split('T')[0]}
-            value={formData.publication_date}
-            onChange={(e) => setFormData({ ...formData, publication_date: e.target.value })}
-            required
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Дата подачи скрыта - устанавливается автоматически при смене статуса */}
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Срок подачи заявок
-          </label>
-          <input
-            type="date"
-            min={new Date().toISOString().split('T')[0]}
-            value={formData.submission_deadline || ''}
-            onChange={(e) => setFormData({ ...formData, submission_deadline: e.target.value })}
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
+        {/* Разделитель */}
+        <div className="border-t border-gray-200 my-3"></div>
 
         {/* Начальная цена */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Начальная цена (₽)
+          <label className="block text-xs font-medium text-gray-600 mb-1">
+            💵 Начальная цена
           </label>
           <input
             type="number"
             value={formData.start_price || ''}
             onChange={(e) => setFormData({ ...formData, start_price: e.target.value ? parseFloat(e.target.value) : null })}
             placeholder="0"
-            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-3 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Цена подачи и цена победы скрыты - появятся при смене статуса */}
-
         {/* Кнопки */}
-        <div className="flex gap-3 pt-4">
+        <div className="flex gap-2.5 pt-3">
           <button
             type="button"
             onClick={handleSave}
             disabled={isSaving}
-            className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-4 rounded-xl font-medium flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50 disabled:scale-100"
+            className="flex-1 bg-gradient-to-br from-primary-500 to-secondary-600 text-white py-3 rounded-lg font-medium text-sm flex items-center justify-center gap-2 active:scale-95 transition-transform disabled:opacity-50"
           >
             {isSaving ? (
               <>
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 Создание...
               </>
             ) : (
               <>
-                <Save className="w-5 h-5" />
+                <Save className="w-4 h-4" />
                 Создать тендер
               </>
             )}
           </button>
           <button
             onClick={() => router.push('/m/tenders')}
-            className="px-6 bg-gray-100 text-gray-700 py-4 rounded-xl font-medium active:bg-gray-200 transition-colors"
+            className="px-5 bg-gray-100 text-gray-700 py-3 rounded-lg font-medium text-sm active:bg-gray-200 transition-colors"
           >
             Отмена
           </button>
