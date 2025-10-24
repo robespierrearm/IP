@@ -226,52 +226,59 @@ export default function TendersPage() {
           />
         </div>
 
-        {/* Свайпабельный фильтр - стиль камеры iPhone */}
-        <div className="relative overflow-x-auto overflow-y-visible no-scrollbar py-2">
+        {/* Свайпабельный фильтр - бесконечная карусель */}
+        <div className="relative overflow-hidden py-2 h-12">
+          {/* Капсула - фиксированная в центре */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
+            <motion.div
+              key={selectedStatus}
+              className={`backdrop-blur-xl border border-white/20 rounded-full shadow-lg px-5 py-2.5
+                ${selectedStatus === 'all' ? 'bg-blue-500/20 shadow-blue-500/50' : ''}
+                ${selectedStatus === 'urgent' ? 'bg-red-500/20 shadow-red-500/50' : ''}
+                ${selectedStatus === 'новый' ? 'bg-purple-500/20 shadow-purple-500/50' : ''}
+                ${selectedStatus === 'в работе' ? 'bg-green-500/20 shadow-green-500/50' : ''}
+                ${selectedStatus === 'на рассмотрении' ? 'bg-orange-500/20 shadow-orange-500/50' : ''}
+                ${selectedStatus === 'завершён' ? 'bg-gray-500/20 shadow-gray-500/50' : ''}
+              `}
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+          </div>
+          
+          {/* Карусель фильтров */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
-            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
               
               if (swipe > 300 || offset.x > 50) {
-                if (currentIndex > 0) {
-                  setSelectedStatus(statusFilters[currentIndex - 1].value);
-                  haptics.light();
-                }
+                // Свайп вправо - предыдущий (по кругу)
+                const prevIndex = currentIndex === 0 ? statusFilters.length - 1 : currentIndex - 1;
+                setSelectedStatus(statusFilters[prevIndex].value);
+                haptics.light();
               } else if (swipe < -300 || offset.x < -50) {
-                if (currentIndex < statusFilters.length - 1) {
-                  setSelectedStatus(statusFilters[currentIndex + 1].value);
-                  haptics.light();
-                }
+                // Свайп влево - следующий (по кругу)
+                const nextIndex = currentIndex === statusFilters.length - 1 ? 0 : currentIndex + 1;
+                setSelectedStatus(statusFilters[nextIndex].value);
+                haptics.light();
               }
             }}
-            className="flex items-center justify-center gap-6 px-6 cursor-grab active:cursor-grabbing"
+            className="flex items-center justify-center gap-8 h-full cursor-grab active:cursor-grabbing relative z-10"
           >
-            {statusFilters.map((filter) => {
-              const isActive = filter.value === selectedStatus;
+            {(() => {
+              const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+              const prevIndex = currentIndex === 0 ? statusFilters.length - 1 : currentIndex - 1;
+              const nextIndex = currentIndex === statusFilters.length - 1 ? 0 : currentIndex + 1;
               
-              // Цвета сияния по статусам
-              const glowColors = {
-                'all': 'shadow-blue-500/50',
-                'urgent': 'shadow-red-500/50',
-                'новый': 'shadow-purple-500/50',
-                'в работе': 'shadow-green-500/50',
-                'на рассмотрении': 'shadow-orange-500/50',
-                'завершён': 'shadow-gray-500/50',
-              };
-              
-              const bgColors = {
-                'all': 'bg-blue-500/20',
-                'urgent': 'bg-red-500/20',
-                'новый': 'bg-purple-500/20',
-                'в работе': 'bg-green-500/20',
-                'на рассмотрении': 'bg-orange-500/20',
-                'завершён': 'bg-gray-500/20',
-              };
+              const visibleFilters = [
+                statusFilters[prevIndex],
+                statusFilters[currentIndex],
+                statusFilters[nextIndex],
+              ];
               
               const textColors = {
                 'all': 'text-blue-400',
@@ -282,41 +289,39 @@ export default function TendersPage() {
                 'завершён': 'text-gray-400',
               };
               
-              return (
-                <button
-                  key={filter.value}
-                  onClick={() => {
-                    setSelectedStatus(filter.value);
-                    haptics.light();
-                  }}
-                  className="relative flex-shrink-0"
-                  style={{ minWidth: 'fit-content' }}
-                >
-                  {/* Прозрачная капсула с сиянием */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeFilter"
-                      className={`absolute inset-0 backdrop-blur-xl ${bgColors[filter.value as keyof typeof bgColors]} 
-                        border border-white/20 rounded-full shadow-lg ${glowColors[filter.value as keyof typeof glowColors]}`}
-                      transition={{
-                        type: "spring",
-                        stiffness: 400,
-                        damping: 30,
-                      }}
-                    />
-                  )}
-                  
-                  {/* Текст */}
-                  <span className={`relative z-10 px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
-                    isActive 
-                      ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
-                      : 'text-gray-400'
-                  }`}>
-                    {filter.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
-                  </span>
-                </button>
-              );
-            })}
+              return visibleFilters.map((filter, index) => {
+                const isCenter = index === 1;
+                
+                return (
+                  <motion.button
+                    key={`${filter.value}-${index}`}
+                    onClick={() => {
+                      setSelectedStatus(filter.value);
+                      haptics.light();
+                    }}
+                    initial={false}
+                    animate={{
+                      scale: isCenter ? 1 : 0.8,
+                      opacity: isCenter ? 1 : 0.4,
+                    }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 400,
+                      damping: 30,
+                    }}
+                    className="flex-shrink-0"
+                  >
+                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
+                      isCenter 
+                        ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
+                        : 'text-gray-400'
+                    }`}>
+                      {filter.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
+                    </span>
+                  </motion.button>
+                );
+              });
+            })()}
           </motion.div>
         </div>
       </div>
