@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { FileText, Clock, Download, FolderOpen, Briefcase, Eye, Bell, ChevronRight, AlertCircle, TrendingUp } from 'lucide-react';
-import { supabase, File, Tender } from '@/lib/supabase';
+import { supabase, File, Tender, Expense } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
 import { FileIconComponent } from '@/lib/fileIcons';
@@ -88,6 +88,7 @@ export default function DashboardPage() {
   const [reminderTenders, setReminderTenders] = useState<Array<{id: number, name: string, deadline: string}>>([]);
   const [urgentTenders, setUrgentTenders] = useState<Tender[]>([]);
   const [inWorkTenders, setInWorkTenders] = useState<Tender[]>([]);
+  const [tenderExpenses, setTenderExpenses] = useState<Record<number, number>>({});
 
   // Предпросмотр файлов
   const [previewFile, setPreviewFile] = useState<File | null>(null);
@@ -142,6 +143,23 @@ export default function DashboardPage() {
             .filter((t: Tender) => t.status === 'в работе')
             .slice(0, 3);
           setInWorkTenders(inWork);
+          
+          // Загружаем расходы для тендеров в работе
+          if (inWork.length > 0) {
+            const tenderIds = inWork.map((t: Tender) => t.id);
+            const { data: expenses } = await supabase
+              .from('expenses')
+              .select('tender_id, amount')
+              .in('tender_id', tenderIds);
+            
+            if (expenses) {
+              const expenseMap: Record<number, number> = {};
+              expenses.forEach((exp: any) => {
+                expenseMap[exp.tender_id] = (expenseMap[exp.tender_id] || 0) + exp.amount;
+              });
+              setTenderExpenses(expenseMap);
+            }
+          }
         }
       } catch (err) {
         console.error('Критическая ошибка загрузки dashboard:', err);
@@ -241,19 +259,15 @@ export default function DashboardPage() {
         <div className="grid gap-3 md:grid-cols-3 mb-5">
           {/* 1. СРОЧНО */}
           <Card className="transition-all hover:shadow-lg border border-red-200 bg-white h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-red-50">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">Срочно</h3>
-                  <p className="text-xl font-bold text-gray-900">{urgentTenders.length}</p>
-                </div>
+            <CardHeader className="p-3 pb-2">
+              <div className="flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4 text-red-600" />
+                <CardTitle className="text-sm font-medium text-gray-900">Срочно ({urgentTenders.length})</CardTitle>
               </div>
-            
+            </CardHeader>
+            <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
               {urgentTenders.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
                   {urgentTenders.map((tender) => {
                     const notification = getSmartNotification(tender);
                     return (
@@ -290,21 +304,18 @@ export default function DashboardPage() {
 
           {/* 2. В РАБОТЕ */}
           <Card className="transition-all hover:shadow-lg border border-green-200 bg-white h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-green-50">
-                  <Briefcase className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">В работе</h3>
-                  <p className="text-xl font-bold text-gray-900">{stats.inWork}</p>
-                </div>
+            <CardHeader className="p-3 pb-2">
+              <div className="flex items-center gap-1.5">
+                <Briefcase className="h-4 w-4 text-green-600" />
+                <CardTitle className="text-sm font-medium text-gray-900">В работе ({stats.inWork})</CardTitle>
               </div>
-            
+            </CardHeader>
+            <CardContent className="p-3 pt-0 h-[calc(100%-50px)] flex flex-col">
               {inWorkTenders.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-1">
                   {inWorkTenders.map((tender) => {
-                    const notification = getSmartNotification(tender);
+                    const expenses = tenderExpenses[tender.id] || 0;
+                    const contractPrice = tender.win_price || tender.submitted_price || 0;
                     return (
                       <div
                         key={tender.id}
@@ -314,13 +325,14 @@ export default function DashboardPage() {
                         <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
                           🔨 {tender.name}
                         </p>
-                        <div className="flex items-center justify-between">
-                          <p className="text-xs text-gray-600">
-                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(tender.win_price || tender.submitted_price)}
-                          </p>
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-gray-600">
+                            {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(contractPrice)}
+                            {expenses > 0 && <span className="text-red-600"> • -{formatCompactPrice(expenses)}</span>}
+                          </span>
                           <div className="flex gap-1">
                             <button 
-                              onClick={(e) => { e.stopPropagation(); alert('Функция расходов в разработке'); }}
+                              onClick={(e) => { e.stopPropagation(); router.push(`/accounting?tender=${tender.id}`); }}
                               className="text-xs px-1.5 py-0.5 rounded bg-green-100 hover:bg-green-200 transition-colors"
                               title="Расходы"
                             >
