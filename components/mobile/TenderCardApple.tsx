@@ -117,7 +117,16 @@ const TenderCardAppleComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className="bg-white rounded-xl cursor-pointer select-none relative z-10 overflow-hidden border border-gray-200/50 active:bg-gray-50 transition-colors"
+        className={`bg-white rounded-xl cursor-pointer select-none relative z-10 border border-gray-200/50 active:bg-gray-50 transition-colors border-l-4 ${
+          tender.status === 'новый' ? 'border-l-blue-500' :
+          tender.status === 'подано' ? 'border-l-cyan-500' :
+          tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
+          tender.status === 'победа' ? 'border-l-purple-500' :
+          tender.status === 'в работе' ? 'border-l-green-500' :
+          tender.status === 'завершён' ? 'border-l-gray-500' :
+          tender.status === 'проигрыш' ? 'border-l-red-500' :
+          'border-l-gray-300'
+        }`}
       >
         <div className="px-4 py-3">
           {/* Шапка: Название + Chevron */}
@@ -156,33 +165,28 @@ const TenderCardAppleComponent = ({
             </div>
           )}
 
-          {/* Дата подачи - для поданных и далее */}
-          {tender.submission_date && tender.status !== 'новый' && (
-            <div className="flex items-center gap-2 mb-2">
-              <Clock className="w-4 h-4 text-blue-500" />
-              <span className="text-[13px] font-medium text-blue-600">
-                Подано {formatDate(tender.submission_date)}
-              </span>
-            </div>
+          {/* Разделитель если есть дедлайн */}
+          {isDeadlineRelevant && tender.submission_deadline && (
+            <div className="h-px bg-gray-100 my-2"></div>
           )}
 
-          {/* Цена подачи - для поданных и далее */}
-          {tender.submitted_price && tender.status !== 'новый' && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[13px] font-medium text-purple-600">
-                💵 Подача: {formatPrice(tender.submitted_price)}
-              </span>
-            </div>
-          )}
+          {/* Информация - компактно */}
+          <div className="space-y-1 text-[13px] text-gray-600">
+            {/* Дата подачи */}
+            {tender.submission_date && tender.status !== 'новый' && (
+              <div>Подано {formatDate(tender.submission_date)}</div>
+            )}
 
-          {/* Цена победы - для победивших */}
-          {tender.win_price && (tender.status === 'победа' || tender.status === 'в работе' || tender.status === 'завершён') && (
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-[13px] font-semibold text-green-600">
-                🏆 Победа: {formatPrice(tender.win_price)}
-              </span>
-            </div>
-          )}
+            {/* Цена подачи */}
+            {tender.submitted_price && tender.status !== 'новый' && (
+              <div>Подача: <span className="font-semibold text-gray-900">{formatPrice(tender.submitted_price)}</span></div>
+            )}
+
+            {/* Цена победы */}
+            {tender.win_price && (tender.status === 'победа' || tender.status === 'в работе' || tender.status === 'завершён') && (
+              <div className="font-semibold text-green-600">🏆 {formatPrice(tender.win_price)}</div>
+            )}
+          </div>
 
           {/* Разделитель */}
           <div className="h-px bg-gray-100 my-2"></div>

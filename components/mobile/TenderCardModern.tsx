@@ -117,21 +117,17 @@ const TenderCardModernComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className="bg-white rounded-2xl shadow-sm active:shadow-md cursor-pointer select-none relative z-10 overflow-hidden"
+        className={`bg-white rounded-2xl shadow-sm active:shadow-md cursor-pointer select-none relative z-10 border-l-4 ${
+          tender.status === 'новый' ? 'border-l-blue-500' :
+          tender.status === 'подано' ? 'border-l-cyan-500' :
+          tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
+          tender.status === 'победа' ? 'border-l-purple-500' :
+          tender.status === 'в работе' ? 'border-l-green-500' :
+          tender.status === 'завершён' ? 'border-l-gray-500' :
+          tender.status === 'проигрыш' ? 'border-l-red-500' :
+          'border-l-gray-300'
+        }`}
       >
-        {/* Полоска срочности сверху - ТОЛЬКО для новых и поданных */}
-        {isDeadlineRelevant && urgency === 'urgent' && (
-          <div className="h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
-        )}
-        {isDeadlineRelevant && urgency === 'soon' && (
-          <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-400"></div>
-        )}
-        {isDeadlineRelevant && urgency === 'normal' && tender.submission_deadline && (
-          <div className="h-1 bg-gradient-to-r from-green-400 to-emerald-400"></div>
-        )}
-        {isDeadlineRelevant && urgency === 'expired' && (
-          <div className="h-1 bg-gray-400"></div>
-        )}
 
         <div className="p-4">
           {/* Шапка: Название + Статус */}
@@ -150,103 +146,83 @@ const TenderCardModernComponent = ({
 
           {/* ДЕДЛАЙН - только для новых и поданных */}
           {isDeadlineRelevant && tender.submission_deadline && daysLeft !== null && (
-            <div className={`mb-3 p-2.5 rounded-xl flex items-center gap-2 ${
-              urgency === 'urgent' ? 'bg-red-50 border border-red-200' :
-              urgency === 'soon' ? 'bg-yellow-50 border border-yellow-200' :
-              urgency === 'expired' ? 'bg-gray-50 border border-gray-200' :
-              'bg-green-50 border border-green-200'
-            }`}>
+            <div className="mb-2 flex items-center gap-2">
               <Clock className={`w-4 h-4 flex-shrink-0 ${
-                urgency === 'urgent' ? 'text-red-600' :
-                urgency === 'soon' ? 'text-yellow-600' :
-                urgency === 'expired' ? 'text-gray-600' :
-                'text-green-600'
+                urgency === 'urgent' ? 'text-red-500' :
+                urgency === 'soon' ? 'text-orange-500' :
+                urgency === 'expired' ? 'text-gray-400' :
+                'text-gray-400'
               }`} />
-              <div className="flex-1 min-w-0">
-                <p className={`text-xs font-medium ${
-                  urgency === 'urgent' ? 'text-red-900' :
-                  urgency === 'soon' ? 'text-yellow-900' :
-                  urgency === 'expired' ? 'text-gray-900' :
-                  'text-green-900'
-                }`}>
-                  Дедлайн: {formatDate(tender.submission_deadline)}
-                </p>
-              </div>
-              <div className={`px-2 py-0.5 rounded-md text-xs font-bold ${
-                urgency === 'urgent' ? 'bg-red-600 text-white' :
-                urgency === 'soon' ? 'bg-yellow-600 text-white' :
-                urgency === 'expired' ? 'bg-gray-600 text-white' :
-                'bg-green-600 text-white'
+              <span className="text-sm text-gray-700">
+                {formatDate(tender.submission_deadline)}
+              </span>
+              <span className={`ml-auto text-xs font-semibold ${
+                urgency === 'urgent' ? 'text-red-600' :
+                urgency === 'soon' ? 'text-orange-600' :
+                urgency === 'expired' ? 'text-gray-500' :
+                'text-gray-500'
               }`}>
-                {daysLeft < 0 ? 'Просрочен' : `${daysLeft}д`}
-              </div>
+                {daysLeft < 0 ? 'Просрочен' : 
+                 daysLeft === 0 ? 'Сегодня!' :
+                 daysLeft === 1 ? 'Завтра' :
+                 `${daysLeft} дн.`}
+              </span>
+              {urgency === 'urgent' && (
+                <span className="px-1.5 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">
+                  СРОЧНО
+                </span>
+              )}
             </div>
           )}
 
-          {/* Дата подачи - для поданных и далее */}
-          {tender.submission_date && tender.status !== 'новый' && (
-            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-blue-50 border border-blue-200">
-              <Calendar className="w-4 h-4 flex-shrink-0 text-blue-600" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-blue-900">
-                  Подано: {formatDate(tender.submission_date)}
-                </p>
-              </div>
-            </div>
+          {/* Разделитель если есть дедлайн */}
+          {isDeadlineRelevant && tender.submission_deadline && (
+            <div className="h-px bg-gray-100 my-2"></div>
           )}
 
-          {/* Цена подачи - для поданных и далее */}
-          {tender.submitted_price && tender.status !== 'новый' && (
-            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-purple-50 border border-purple-200">
-              <DollarSign className="w-4 h-4 flex-shrink-0 text-purple-600" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-purple-900">
-                  Цена подачи: {formatPrice(tender.submitted_price)}
-                </p>
+          {/* Информация о тендере - компактно */}
+          <div className="space-y-1.5 text-sm text-gray-600">
+            {/* Дата подачи */}
+            {tender.submission_date && tender.status !== 'новый' && (
+              <div className="flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span>Подано {formatDate(tender.submission_date)}</span>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Цена победы - для победивших */}
-          {tender.win_price && (tender.status === 'победа' || tender.status === 'в работе' || tender.status === 'завершён') && (
-            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-green-50 border border-green-200">
-              <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-green-900">
-                  🏆 Цена победы: {formatPrice(tender.win_price)}
-                </p>
+            {/* Цена подачи */}
+            {tender.submitted_price && tender.status !== 'новый' && (
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span>Подача: <span className="font-semibold text-gray-900">{formatPrice(tender.submitted_price)}</span></span>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Дополнительная информация */}
-          <div className="flex items-center gap-3 text-xs text-gray-600">
+            {/* Цена победы */}
+            {tender.win_price && (tender.status === 'победа' || tender.status === 'в работе' || tender.status === 'завершён') && (
+              <div className="flex items-center gap-2">
+                <span className="text-base">🏆</span>
+                <span className="font-semibold text-green-600">{formatPrice(tender.win_price)}</span>
+              </div>
+            )}
+
             {/* Регион */}
             {tender.region && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                <span className="truncate">{tender.region}</span>
+              <div className="flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span>{tender.region}</span>
               </div>
             )}
             
             {/* Начальная цена - только для новых */}
             {tender.start_price && tender.status === 'новый' && (
-              <div className="flex items-center gap-1.5 text-gray-900">
-                <DollarSign className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
-                <span className="font-semibold truncate">
-                  {formatPrice(tender.start_price)}
-                </span>
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span className="font-semibold text-gray-900">{formatPrice(tender.start_price)}</span>
               </div>
             )}
           </div>
 
-          {/* Бейдж СРОЧНО - только для актуальных дедлайнов */}
-          {isDeadlineRelevant && urgency === 'urgent' && (
-            <div className="mt-2 flex items-center gap-1.5 text-red-600">
-              <AlertCircle className="w-3.5 h-3.5 animate-pulse" />
-              <span className="text-xs font-bold">СРОЧНО!</span>
-            </div>
-          )}
         </div>
       </m.div>
     </div>
