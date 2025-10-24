@@ -7,7 +7,11 @@
 import { memo } from 'react';
 import { m } from 'framer-motion';
 import { SwipeableTenderCard } from './SwipeableTenderCard';
+import { TenderCardModern } from './TenderCardModern';
+import { TenderCardApple } from './TenderCardApple';
 import { Tender } from '@/lib/supabase';
+
+type CardStyle = 'original' | 'modern' | 'apple';
 
 interface AnimatedTenderCardProps {
   tender: Tender;
@@ -18,6 +22,7 @@ interface AnimatedTenderCardProps {
   onOpen: (id: number) => void;
   getStatusColor: (status: Tender['status']) => string;
   isDeleting?: boolean;
+  cardStyle?: CardStyle;
 }
 
 export const AnimatedTenderCard = memo(function AnimatedTenderCard({
@@ -29,7 +34,14 @@ export const AnimatedTenderCard = memo(function AnimatedTenderCard({
   onOpen,
   getStatusColor,
   isDeleting = false,
+  cardStyle = 'original',
 }: AnimatedTenderCardProps) {
+  // Выбираем компонент карточки в зависимости от стиля
+  const CardComponent = 
+    cardStyle === 'modern' ? TenderCardModern :
+    cardStyle === 'apple' ? TenderCardApple :
+    SwipeableTenderCard;
+
   return (
     <m.div
       layout
@@ -53,7 +65,7 @@ export const AnimatedTenderCard = memo(function AnimatedTenderCard({
         layout: { duration: 0.3 }
       }}
     >
-      <SwipeableTenderCard
+      <CardComponent
         tender={tender}
         onDelete={onDelete}
         onClick={onClick}

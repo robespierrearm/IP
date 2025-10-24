@@ -10,6 +10,8 @@ import { getStatusEmoji } from '@/lib/tender-utils';
 import { useAutoClose } from '@/hooks/useAutoClose';
 import { MobileTenderStatusChanger } from '@/components/mobile/TenderStatusChanger';
 import { SwipeableTenderCard } from '@/components/mobile/SwipeableTenderCard';
+import { TenderCardModern } from '@/components/mobile/TenderCardModern';
+import { TenderCardApple } from '@/components/mobile/TenderCardApple';
 import { AnimatedTenderCard } from '@/components/mobile/AnimatedTenderCard';
 import { TenderCardSkeletonGroup } from '@/components/mobile/TenderCardSkeleton';
 import { TenderDetailsModal } from '@/components/mobile/TenderDetailsModal';
@@ -17,6 +19,8 @@ import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
+
+type CardStyle = 'original' | 'modern' | 'apple';
 
 export default function TendersPage() {
   const router = useRouter();
@@ -31,6 +35,7 @@ export default function TendersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [openCardId, setOpenCardId] = useState<number>(-1);
+  const [cardStyle, setCardStyle] = useState<CardStyle>('modern'); // Стиль карточек
 
   useEffect(() => {
     // Читаем параметр status из URL
@@ -169,7 +174,37 @@ export default function TendersPage() {
     <div className="min-h-screen bg-gray-50">
       {/* Шапка */}
       <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Тендеры</h1>
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold text-gray-900">Тендеры</h1>
+          
+          {/* Переключатель стилей */}
+          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+            <button
+              onClick={() => setCardStyle('modern')}
+              className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                cardStyle === 'modern' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+              }`}
+            >
+              Modern
+            </button>
+            <button
+              onClick={() => setCardStyle('apple')}
+              className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                cardStyle === 'apple' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+              }`}
+            >
+              Apple
+            </button>
+            <button
+              onClick={() => setCardStyle('original')}
+              className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
+                cardStyle === 'original' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+              }`}
+            >
+              Old
+            </button>
+          </div>
+        </div>
 
         {/* Поиск */}
         <div className="relative mb-3">
@@ -223,6 +258,7 @@ export default function TendersPage() {
                 onOpen={setOpenCardId}
                 getStatusColor={getStatusColorMobile}
                 isDeleting={deletingId === tender.id}
+                cardStyle={cardStyle}
               />
             ))}
           </AnimatePresence>
