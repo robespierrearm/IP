@@ -228,30 +228,7 @@ export default function TendersPage() {
 
         {/* Свайпабельный фильтр - бесконечная карусель */}
         <div className="relative overflow-hidden py-2 h-12">
-          {/* Капсула - фиксированная в центре */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
-            <motion.div
-              key={selectedStatus}
-              className={`backdrop-blur-xl border border-white/20 rounded-full shadow-lg px-5 py-2.5
-                ${selectedStatus === 'all' ? 'bg-blue-500/20 shadow-blue-500/50' : ''}
-                ${selectedStatus === 'urgent' ? 'bg-red-500/20 shadow-red-500/50' : ''}
-                ${selectedStatus === 'новый' ? 'bg-purple-500/20 shadow-purple-500/50' : ''}
-                ${selectedStatus === 'в работе' ? 'bg-green-500/20 shadow-green-500/50' : ''}
-                ${selectedStatus === 'на рассмотрении' ? 'bg-orange-500/20 shadow-orange-500/50' : ''}
-                ${selectedStatus === 'завершён' ? 'bg-gray-500/20 shadow-gray-500/50' : ''}
-              `}
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Невидимый текст для размера */}
-              <span className="font-medium text-sm whitespace-nowrap opacity-0">
-                {statusFilters.find(f => f.value === selectedStatus)?.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
-              </span>
-            </motion.div>
-          </div>
-          
-          {/* Карусель фильтров */}
+          {/* Карусель фильтров с капсулой */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -272,7 +249,7 @@ export default function TendersPage() {
                 haptics.light();
               }
             }}
-            className="flex items-center justify-center gap-8 h-full cursor-grab active:cursor-grabbing relative z-10"
+            className="flex items-center justify-center gap-8 h-full cursor-grab active:cursor-grabbing relative"
           >
             {(() => {
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
@@ -292,6 +269,15 @@ export default function TendersPage() {
                 'в работе': 'text-green-400',
                 'на рассмотрении': 'text-orange-400',
                 'завершён': 'text-gray-400',
+              };
+              
+              const bgColors = {
+                'all': 'bg-blue-500/20 shadow-blue-500/50',
+                'urgent': 'bg-red-500/20 shadow-red-500/50',
+                'новый': 'bg-purple-500/20 shadow-purple-500/50',
+                'в работе': 'bg-green-500/20 shadow-green-500/50',
+                'на рассмотрении': 'bg-orange-500/20 shadow-orange-500/50',
+                'завершён': 'bg-gray-500/20 shadow-gray-500/50',
               };
               
               return visibleFilters.map((filter, index) => {
@@ -314,7 +300,9 @@ export default function TendersPage() {
                       stiffness: 400,
                       damping: 30,
                     }}
-                    className="flex-shrink-0"
+                    className={`flex-shrink-0 relative ${
+                      isCenter ? 'backdrop-blur-xl border border-white/20 rounded-full shadow-lg ' + bgColors[filter.value as keyof typeof bgColors] : ''
+                    }`}
                   >
                     <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
                       isCenter 
