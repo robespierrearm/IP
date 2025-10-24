@@ -344,7 +344,7 @@ function TendersContent() {
             return (
             <Card 
               key={tender.id} 
-              className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
+              className={`hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
                 tender.status === 'новый' ? 'border-l-gray-300' :
                 tender.status === 'подано' ? 'border-l-blue-500' :
                 tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
@@ -353,12 +353,12 @@ function TendersContent() {
                 tender.status === 'завершён' ? 'border-l-gray-700' :
                 tender.status === 'проигрыш' ? 'border-l-red-500' :
                 'border-l-gray-300'
-              } ${
-                isUrgent ? 'ring-2 ring-red-400/50 shadow-[0_0_20px_rgba(239,68,68,0.15)] bg-gradient-to-r from-red-50/60 via-red-50/20 to-transparent' : ''
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
-              <div className="flex flex-col gap-3">
+              <div className={`flex flex-col gap-3 p-4 rounded-r-lg ${
+                isUrgent ? 'ring-2 ring-red-400/50 shadow-[0_0_20px_rgba(239,68,68,0.15)] bg-gradient-to-r from-red-50/60 via-red-50/20 to-transparent' : ''
+              }`}>
                 {/* Заголовок и действия */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
