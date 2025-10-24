@@ -15,6 +15,7 @@ import { TenderCardExpanded } from '@/components/TenderCardExpanded';
 import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
 import { TendersSkeleton } from '@/components/TendersSkeleton';
 import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';
@@ -336,7 +337,11 @@ function TendersContent() {
         </div>
       ) : (
         <div className="grid gap-4">
-          {filteredTenders.map((tender) => (
+          {filteredTenders.map((tender) => {
+            const notification = getSmartNotification(tender);
+            const isUrgent = notification && (notification.priority === 'urgent' || notification.priority === 'high');
+            
+            return (
             <Card 
               key={tender.id} 
               className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
@@ -348,6 +353,8 @@ function TendersContent() {
                 tender.status === 'завершён' ? 'border-l-gray-700' :
                 tender.status === 'проигрыш' ? 'border-l-red-500' :
                 'border-l-gray-300'
+              } ${
+                isUrgent ? 'ring-2 ring-red-500 ring-offset-1' : ''
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
@@ -368,6 +375,20 @@ function TendersContent() {
                       >
                         {STATUS_LABELS[tender.status]}
                       </span>
+                      {notification && (
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border ${
+                          notification.color === 'red' ? 'bg-red-50 text-red-700 border-red-200' :
+                          notification.color === 'orange' ? 'bg-orange-50 text-orange-700 border-orange-200' :
+                          notification.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
+                          notification.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                          notification.color === 'green' ? 'bg-green-50 text-green-700 border-green-200' :
+                          notification.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                          'bg-gray-50 text-gray-700 border-gray-200'
+                        }`}>
+                          <span>{notification.icon}</span>
+                          <span>{notification.shortMessage}</span>
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -454,7 +475,8 @@ function TendersContent() {
                 onToggle={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
               />
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
 
