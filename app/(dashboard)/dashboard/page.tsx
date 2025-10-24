@@ -47,6 +47,27 @@ const formatTenderDate = (dateString: string | null) => {
   return new Date(dateString).toLocaleDateString('ru-RU');
 };
 
+// Компактное форматирование цены
+const formatCompactPrice = (price: number | null) => {
+  if (!price) return '—';
+  if (price >= 1000000) {
+    return `${(price / 1000000).toFixed(1)}M`;
+  }
+  if (price >= 1000) {
+    return `${Math.round(price / 1000)}K`;
+  }
+  return price.toString();
+};
+
+// Вычисление дней в работе
+const getDaysInWork = (tender: Tender) => {
+  if (tender.status !== 'в работе' || !tender.created_at) return null;
+  const start = new Date(tender.created_at);
+  const now = new Date();
+  const days = Math.ceil((now.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+  return days;
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -239,20 +260,14 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-red-50/50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
+                        className="p-1.5 rounded-lg bg-red-50/50 hover:bg-red-100 transition-colors cursor-pointer border border-red-100"
                       >
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
-                          {tender.name}
+                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
+                          {notification?.icon} {tender.name}
                         </p>
-                        {notification && (
-                          <p className={`text-xs font-medium ${
-                            notification.color === 'red' ? 'text-red-600' :
-                            notification.color === 'orange' ? 'text-orange-600' :
-                            'text-gray-600'
-                          }`}>
-                            {notification.icon} {notification.shortMessage}
-                          </p>
-                        )}
+                        <p className="text-xs text-gray-600">
+                          {notification?.shortMessage} • {formatCompactPrice(tender.start_price)}
+                        </p>
                       </div>
                     );
                   })}
@@ -294,19 +309,14 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors cursor-pointer border border-green-100"
+                        className="p-1.5 rounded-lg bg-green-50/50 hover:bg-green-100 transition-colors cursor-pointer border border-green-100"
                       >
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
-                          {tender.name}
+                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
+                          🔨 {tender.name}
                         </p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">
-                            {notification?.shortMessage || 'В работе'}
-                          </span>
-                          <span className="font-semibold text-green-600">
-                            {formatPrice(tender.win_price || tender.submitted_price)}
-                          </span>
-                        </div>
+                        <p className="text-xs text-gray-600">
+                          {getDaysInWork(tender) ? `${getDaysInWork(tender)}д` : 'В работе'} • {formatCompactPrice(tender.win_price || tender.submitted_price)}
+                        </p>
                       </div>
                     );
                   })}
