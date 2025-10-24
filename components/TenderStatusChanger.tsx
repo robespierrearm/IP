@@ -180,11 +180,11 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
       case 'подано':
         return 'bg-blue-600 hover:bg-blue-700';
       case 'на рассмотрении':
-        return 'bg-purple-600 hover:bg-purple-700';
+        return 'bg-yellow-600 hover:bg-yellow-700';
       case 'победа':
-        return 'bg-green-600 hover:bg-green-700';
+        return 'bg-purple-600 hover:bg-purple-700';
       case 'в работе':
-        return 'bg-orange-600 hover:bg-orange-700';
+        return 'bg-green-600 hover:bg-green-700';
       case 'завершён':
         return 'bg-gray-600 hover:bg-gray-700';
       case 'проигрыш':
@@ -247,11 +247,11 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
           }
           // Остальные переходы - современный стиль
           const colorMap: Record<Tender['status'], string> = {
-            'новый': 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200',
-            'подано': 'text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border-indigo-200',
-            'на рассмотрении': 'text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-200',
-            'победа': 'text-green-700 bg-green-50 hover:bg-green-100 border-green-200',
-            'в работе': 'text-orange-700 bg-orange-50 hover:bg-orange-100 border-orange-200',
+            'новый': 'text-gray-700 bg-gray-50 hover:bg-gray-100 border-gray-200',
+            'подано': 'text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200',
+            'на рассмотрении': 'text-yellow-700 bg-yellow-50 hover:bg-yellow-100 border-yellow-200',
+            'победа': 'text-purple-700 bg-purple-50 hover:bg-purple-100 border-purple-200',
+            'в работе': 'text-green-700 bg-green-50 hover:bg-green-100 border-green-200',
             'завершён': 'text-gray-700 bg-gray-50 hover:bg-gray-100 border-gray-200',
             'проигрыш': 'text-red-700 bg-red-50 hover:bg-red-100 border-red-200',
           };

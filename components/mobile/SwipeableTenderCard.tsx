@@ -121,12 +121,12 @@ const SwipeableTenderCardComponent = ({
 
         <div className="flex items-center gap-4 text-xs text-gray-600">
           <div className="flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
+            <Calendar className="w-3.5 h-3.5 text-blue-500" />
             <span>{formatDate(tender.publication_date)}</span>
           </div>
           {tender.start_price && (
             <div className="flex items-center gap-1">
-              <DollarSign className="w-3 h-3" />
+              <DollarSign className="w-3.5 h-3.5 text-gray-500" />
               <span className="font-medium text-gray-900">
                 {formatPrice(tender.start_price)}
               </span>

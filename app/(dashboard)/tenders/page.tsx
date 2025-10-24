@@ -401,36 +401,36 @@ function TendersContent() {
 
                 {/* Информация */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-sm">
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-blue-500" />
                     <div>
                       <p className="text-xs text-gray-500">Публикация</p>
                       <p className="font-medium text-gray-900">{formatDate(tender.publication_date)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <Calendar className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-orange-500" />
                     <div>
                       <p className="text-xs text-gray-500">Подача</p>
                       <p className="font-medium text-gray-900">{formatDate(tender.submission_date)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-gray-500" />
                     <div>
                       <p className="text-xs text-gray-500">Начальная</p>
                       <p className="font-medium text-gray-900">{formatPrice(tender.start_price)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-indigo-600" />
                     <div>
                       <p className="text-xs text-gray-500">Подачи</p>
                       <p className="font-medium text-gray-900">{formatPrice(tender.submitted_price)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1.5">
-                    <DollarSign className="h-3.5 w-3.5 text-gray-400" />
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-green-600" />
                     <div>
                       <p className="text-xs text-gray-500">Победы</p>
                       <p className="font-medium text-green-600">{formatPrice(tender.win_price)}</p>
