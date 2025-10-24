@@ -6,6 +6,7 @@ import { apiClient } from '@/lib/api-client';
 import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { getStatusColor } from '@/lib/tender-utils';
+import { getSmartNotification } from '@/lib/tender-notifications';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { haptics } from '@/lib/haptics';
@@ -43,15 +44,19 @@ export default function DashboardPage() {
     const inWorkCount = tenders.filter((t) => t.status === 'в работе').length;
     const underReviewCount = tenders.filter((t) => t.status === 'на рассмотрении').length;
 
-    // Напоминания: тендеры с дедлайном в ближайшие 3 дня
-    const threeDaysFromNow = new Date();
-    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3);
-    const reminders = tenders.filter((t) => {
-      if (!t.submission_deadline) return false;
-      const deadline = new Date(t.submission_deadline);
-      const now = new Date();
-      return deadline >= now && deadline <= threeDaysFromNow;
-    });
+    // Напоминания: тендеры с умными уведомлениями (urgent + high priority)
+    const reminders = tenders
+      .map((t) => ({ tender: t, notification: getSmartNotification(t) }))
+      .filter(({ notification }) => 
+        notification && (notification.priority === 'urgent' || notification.priority === 'high')
+      )
+      .sort((a, b) => {
+        // Сортировка: urgent сначала, потом high
+        if (a.notification!.priority === 'urgent' && b.notification!.priority !== 'urgent') return -1;
+        if (a.notification!.priority !== 'urgent' && b.notification!.priority === 'urgent') return 1;
+        return 0;
+      })
+      .map(({ tender }) => tender);
 
     return {
       inWork: inWorkCount,
@@ -159,7 +164,9 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-3">
-          {tenders.slice(0, 5).map((tender) => (
+          {tenders.slice(0, 5).map((tender) => {
+            const notification = getSmartNotification(tender);
+            return (
             <div
               key={tender.id}
               onClick={() => router.push(`/m/tenders?id=${tender.id}`)}
@@ -180,6 +187,17 @@ export default function DashboardPage() {
                 </span>
               </div>
 
+              {notification && (notification.priority === 'urgent' || notification.priority === 'high') && (
+                <div className={`text-xs font-medium mb-2 ${
+                  notification.color === 'red' ? 'text-red-600' :
+                  notification.color === 'orange' ? 'text-orange-600' :
+                  notification.color === 'yellow' ? 'text-yellow-600' :
+                  'text-gray-600'
+                }`}>
+                  {notification.icon} {notification.shortMessage}
+                </div>
+              )}
+
               <div className="flex items-center gap-4 text-xs text-gray-600">
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3" />
@@ -195,7 +213,8 @@ export default function DashboardPage() {
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {tenders.length === 0 && (
@@ -246,15 +265,13 @@ export default function DashboardPage() {
                 <div className="text-center py-12">
                   <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                   <p className="text-gray-500 text-sm">Нет напоминаний</p>
-                  <p className="text-gray-400 text-xs mt-1">Тендеры с дедлайном в ближайшие 3 дня появятся здесь</p>
+                  <p className="text-gray-400 text-xs mt-1">Срочные тендеры появятся здесь</p>
                 </div>
               ) : (
                 <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2">
                   {stats.reminderTenders.map((tender: Tender) => {
-                    const deadline = new Date(tender.submission_deadline!);
-                    const now = new Date();
-                    const daysLeft = Math.ceil((deadline.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-                    const isUrgent = daysLeft <= 1;
+                    const notification = getSmartNotification(tender);
+                    const isUrgent = notification?.priority === 'urgent';
 
                     return (
                       <div
@@ -279,20 +296,25 @@ export default function DashboardPage() {
                             <h3 className="font-semibold text-gray-900 text-sm mb-1 line-clamp-2">
                               {tender.name}
                             </h3>
-                            <div className={`text-xs font-medium mb-2 ${
-                              isUrgent ? 'text-red-600' : 'text-amber-600'
-                            }`}>
-                              {isUrgent ? '🔥 Срочно!' : '⏰'} Дедлайн: {formatDate(tender.submission_deadline!)}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs">
-                              <span className={`px-2 py-1 rounded-lg font-medium ${
-                                isUrgent ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                            {notification && (
+                              <div className={`text-xs font-medium mb-2 ${
+                                notification.color === 'red' ? 'text-red-600' :
+                                notification.color === 'orange' ? 'text-orange-600' :
+                                notification.color === 'yellow' ? 'text-yellow-600' :
+                                'text-gray-600'
                               }`}>
-                                {daysLeft === 0 ? 'Сегодня!' : daysLeft === 1 ? 'Завтра' : `Осталось ${daysLeft} дн.`}
-                              </span>
+                                {notification.icon} {notification.message}
+                              </div>
+                            )}
+                            <div className="flex items-center gap-2 text-xs">
                               <span className={`px-2 py-1 rounded-lg text-xs font-medium ${getStatusColor(tender.status)}`}>
                                 {tender.status}
                               </span>
+                              {tender.start_price && (
+                                <span className="text-gray-600">
+                                  {formatPrice(tender.start_price)}
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
