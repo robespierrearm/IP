@@ -161,14 +161,32 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
 
               {/* Прогресс-бар */}
               <div className="backdrop-blur-xl bg-white/50 rounded-xl p-3 border border-white/20">
-                <div className="flex items-center justify-between mb-2">
+                <div className="relative flex items-center justify-between mb-2">
+                  {/* Линии за кружками */}
+                  <div className="absolute top-1/2 left-0 right-0 h-0.5 -translate-y-1/2 flex">
+                    {[0, 1, 2, 3].map((index) => {
+                      const statusIndex = ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе', 'завершён'].indexOf(tender.status);
+                      const isActive = index < statusIndex;
+                      return (
+                        <div
+                          key={index}
+                          className={`flex-1 h-0.5 transition-all ${
+                            isActive ? 'bg-blue-500' : 'bg-gray-200'
+                          }`}
+                          style={{ marginLeft: index === 0 ? '10%' : '0', marginRight: index === 3 ? '10%' : '0' }}
+                        />
+                      );
+                    })}
+                  </div>
+                  
+                  {/* Кружки с цифрами */}
                   {['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'].map((status, index) => {
                     const statusIndex = ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе', 'завершён'].indexOf(tender.status);
                     const isActive = index <= statusIndex;
                     const isCurrent = ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'][index] === tender.status;
                     
                     return (
-                      <div key={status} className="flex-1 flex flex-col items-center">
+                      <div key={status} className="flex-1 flex flex-col items-center relative z-10">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                           isCurrent ? 'bg-blue-500 text-white scale-110 shadow-lg' :
                           isActive ? 'bg-blue-200 text-blue-700' :
@@ -176,11 +194,6 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                         }`}>
                           {index + 1}
                         </div>
-                        {index < 4 && (
-                          <div className={`h-0.5 w-full mt-4 absolute transition-all ${
-                            isActive ? 'bg-blue-500' : 'bg-gray-200'
-                          }`} style={{ left: `${(index + 0.5) * 20}%`, width: '20%' }} />
-                        )}
                       </div>
                     );
                   })}
