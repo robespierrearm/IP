@@ -118,8 +118,8 @@ const TenderCardAppleComponent = ({
           damping: 35
         }}
         className={`bg-white rounded-xl cursor-pointer select-none relative z-10 border border-gray-200/50 active:bg-gray-50 transition-colors border-l-4 ${
-          tender.status === 'новый' ? 'border-l-blue-500' :
-          tender.status === 'подано' ? 'border-l-cyan-500' :
+          tender.status === 'новый' ? 'border-l-gray-300' :
+          tender.status === 'подано' ? 'border-l-blue-500' :
           tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
           tender.status === 'победа' ? 'border-l-purple-500' :
           tender.status === 'в работе' ? 'border-l-green-500' :
