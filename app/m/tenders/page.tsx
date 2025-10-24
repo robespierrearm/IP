@@ -226,8 +226,8 @@ export default function TendersPage() {
           />
         </div>
 
-        {/* Свайпабельный фильтр - компактный с соседями */}
-        <div className="relative overflow-hidden py-2">
+        {/* Свайпабельный фильтр - стиль камеры iPhone */}
+        <div className="relative overflow-x-auto overflow-y-visible no-scrollbar py-2">
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
@@ -238,92 +238,86 @@ export default function TendersPage() {
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
               
               if (swipe > 300 || offset.x > 50) {
-                // Свайп вправо - предыдущий
                 if (currentIndex > 0) {
                   setSelectedStatus(statusFilters[currentIndex - 1].value);
                   haptics.light();
                 }
               } else if (swipe < -300 || offset.x < -50) {
-                // Свайп влево - следующий
                 if (currentIndex < statusFilters.length - 1) {
                   setSelectedStatus(statusFilters[currentIndex + 1].value);
                   haptics.light();
                 }
               }
             }}
-            className="flex items-center justify-center gap-4 cursor-grab active:cursor-grabbing"
+            className="flex items-center justify-start gap-6 px-6 cursor-grab active:cursor-grabbing min-w-max"
           >
-            {statusFilters.map((filter, index) => {
-              const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
+            {statusFilters.map((filter) => {
               const isActive = filter.value === selectedStatus;
-              const isPrev = index === currentIndex - 1;
-              const isNext = index === currentIndex + 1;
-              const isVisible = isActive || isPrev || isNext;
               
-              if (!isVisible) return null;
+              // Цвета сияния по статусам
+              const glowColors = {
+                'all': 'shadow-blue-500/50',
+                'urgent': 'shadow-red-500/50',
+                'новый': 'shadow-purple-500/50',
+                'в работе': 'shadow-green-500/50',
+                'на рассмотрении': 'shadow-orange-500/50',
+                'завершён': 'shadow-gray-500/50',
+              };
+              
+              const bgColors = {
+                'all': 'bg-blue-500/20',
+                'urgent': 'bg-red-500/20',
+                'новый': 'bg-purple-500/20',
+                'в работе': 'bg-green-500/20',
+                'на рассмотрении': 'bg-orange-500/20',
+                'завершён': 'bg-gray-500/20',
+              };
+              
+              const textColors = {
+                'all': 'text-blue-400',
+                'urgent': 'text-red-400',
+                'новый': 'text-purple-400',
+                'в работе': 'text-green-400',
+                'на рассмотрении': 'text-orange-400',
+                'завершён': 'text-gray-400',
+              };
               
               return (
-                <motion.div
+                <motion.button
                   key={filter.value}
-                  initial={false}
-                  animate={{
-                    scale: isActive ? 1 : 0.7,
-                    opacity: isActive ? 1 : 0.3,
-                    x: isActive ? 0 : isPrev ? -20 : 20,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 30,
-                  }}
                   onClick={() => {
-                    if (!isActive) {
-                      setSelectedStatus(filter.value);
-                      haptics.light();
-                    }
+                    setSelectedStatus(filter.value);
+                    haptics.light();
                   }}
-                  className={`rounded-2xl px-6 py-3 text-center ${
-                    isActive 
-                      ? 'bg-gradient-to-r from-primary-500 to-secondary-600 shadow-lg' 
-                      : 'bg-gray-200'
-                  }`}
+                  className="relative"
+                  whileTap={{ scale: 0.95 }}
                 >
-                  <div className={`text-2xl mb-0.5 ${isActive ? '' : 'grayscale'}`}>
-                    {filter.label.split(' ')[0]}
-                  </div>
+                  {/* Прозрачная капсула с сиянием */}
                   {isActive && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="text-white font-semibold text-sm"
-                    >
-                      {filter.label.split(' ').slice(1).join(' ')}
-                    </motion.div>
+                      layoutId="activeFilter"
+                      className={`absolute inset-0 backdrop-blur-xl ${bgColors[filter.value as keyof typeof bgColors]} 
+                        border border-white/20 rounded-full shadow-lg ${glowColors[filter.value as keyof typeof glowColors]}`}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
                   )}
-                </motion.div>
+                  
+                  {/* Текст */}
+                  <span className={`relative z-10 px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors ${
+                    isActive 
+                      ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
+                      : 'text-gray-400'
+                  }`}>
+                    {filter.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
+                  </span>
+                </motion.button>
               );
             })}
           </motion.div>
-          
-          {/* Точки-индикаторы */}
-          <div className="flex justify-center gap-1.5 mt-3">
-            {statusFilters.map((filter) => (
-              <button
-                key={filter.value}
-                onClick={() => {
-                  setSelectedStatus(filter.value);
-                  haptics.light();
-                }}
-                className={`h-1.5 rounded-full transition-all ${
-                  selectedStatus === filter.value
-                    ? 'w-6 bg-primary-500'
-                    : 'w-1.5 bg-gray-300'
-                }`}
-              />
-            ))}
-          </div>
         </div>
       </div>
 
