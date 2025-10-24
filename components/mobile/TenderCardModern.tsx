@@ -50,6 +50,9 @@ const TenderCardModernComponent = ({
 
   const urgency = getUrgency();
 
+  // Дедлайн актуален только для новых и поданных тендеров
+  const isDeadlineRelevant = tender.status === 'новый' || tender.status === 'подано';
+
   const handleDrag = (_event: any, info: PanInfo) => {
     if (Math.abs(info.offset.x) > 5 && !isOpen) {
       onOpen(-1);
@@ -116,17 +119,17 @@ const TenderCardModernComponent = ({
         }}
         className="bg-white rounded-2xl shadow-sm active:shadow-md cursor-pointer select-none relative z-10 overflow-hidden"
       >
-        {/* Полоска срочности сверху */}
-        {urgency === 'urgent' && (
+        {/* Полоска срочности сверху - ТОЛЬКО для новых и поданных */}
+        {isDeadlineRelevant && urgency === 'urgent' && (
           <div className="h-1 bg-gradient-to-r from-red-500 to-orange-500"></div>
         )}
-        {urgency === 'soon' && (
+        {isDeadlineRelevant && urgency === 'soon' && (
           <div className="h-1 bg-gradient-to-r from-yellow-400 to-orange-400"></div>
         )}
-        {urgency === 'normal' && tender.submission_deadline && (
+        {isDeadlineRelevant && urgency === 'normal' && tender.submission_deadline && (
           <div className="h-1 bg-gradient-to-r from-green-400 to-emerald-400"></div>
         )}
-        {urgency === 'expired' && (
+        {isDeadlineRelevant && urgency === 'expired' && (
           <div className="h-1 bg-gray-400"></div>
         )}
 
@@ -145,8 +148,8 @@ const TenderCardModernComponent = ({
             </span>
           </div>
 
-          {/* ДЕДЛАЙН - ГЛАВНОЕ! */}
-          {tender.submission_deadline && daysLeft !== null && (
+          {/* ДЕДЛАЙН - только для новых и поданных */}
+          {isDeadlineRelevant && tender.submission_deadline && daysLeft !== null && (
             <div className={`mb-3 p-2.5 rounded-xl flex items-center gap-2 ${
               urgency === 'urgent' ? 'bg-red-50 border border-red-200' :
               urgency === 'soon' ? 'bg-yellow-50 border border-yellow-200' :
@@ -166,7 +169,7 @@ const TenderCardModernComponent = ({
                   urgency === 'expired' ? 'text-gray-900' :
                   'text-green-900'
                 }`}>
-                  {formatDate(tender.submission_deadline)}
+                  Дедлайн: {formatDate(tender.submission_deadline)}
                 </p>
               </div>
               <div className={`px-2 py-0.5 rounded-md text-xs font-bold ${
@@ -180,16 +183,54 @@ const TenderCardModernComponent = ({
             </div>
           )}
 
-          {/* Информация в 2 колонки */}
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {/* Дата публикации */}
-            <div className="flex items-center gap-1.5 text-gray-600">
-              <Calendar className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
-              <span className="truncate">{formatDate(tender.publication_date)}</span>
+          {/* Дата подачи - для поданных и далее */}
+          {tender.submission_date && tender.status !== 'новый' && (
+            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-blue-50 border border-blue-200">
+              <Calendar className="w-4 h-4 flex-shrink-0 text-blue-600" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-blue-900">
+                  Подано: {formatDate(tender.submission_date)}
+                </p>
+              </div>
             </div>
+          )}
 
-            {/* Цена */}
-            {tender.start_price && (
+          {/* Цена подачи - для поданных и далее */}
+          {tender.submitted_price && tender.status !== 'новый' && (
+            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-purple-50 border border-purple-200">
+              <DollarSign className="w-4 h-4 flex-shrink-0 text-purple-600" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-purple-900">
+                  Цена подачи: {formatPrice(tender.submitted_price)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Цена победы - для победивших */}
+          {tender.win_price && (tender.status === 'победа' || tender.status === 'в работе' || tender.status === 'завершён') && (
+            <div className="mb-3 p-2.5 rounded-xl flex items-center gap-2 bg-green-50 border border-green-200">
+              <DollarSign className="w-4 h-4 flex-shrink-0 text-green-600" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-medium text-green-900">
+                  🏆 Цена победы: {formatPrice(tender.win_price)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Дополнительная информация */}
+          <div className="flex items-center gap-3 text-xs text-gray-600">
+            {/* Регион */}
+            {tender.region && (
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
+                <span className="truncate">{tender.region}</span>
+              </div>
+            )}
+            
+            {/* Начальная цена - только для новых */}
+            {tender.start_price && tender.status === 'новый' && (
               <div className="flex items-center gap-1.5 text-gray-900">
                 <DollarSign className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
                 <span className="font-semibold truncate">
@@ -197,18 +238,10 @@ const TenderCardModernComponent = ({
                 </span>
               </div>
             )}
-
-            {/* Регион */}
-            {tender.region && (
-              <div className="flex items-center gap-1.5 text-gray-600 col-span-2">
-                <MapPin className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-                <span className="truncate">{tender.region}</span>
-              </div>
-            )}
           </div>
 
-          {/* Бейдж СРОЧНО */}
-          {urgency === 'urgent' && (
+          {/* Бейдж СРОЧНО - только для актуальных дедлайнов */}
+          {isDeadlineRelevant && urgency === 'urgent' && (
             <div className="mt-2 flex items-center gap-1.5 text-red-600">
               <AlertCircle className="w-3.5 h-3.5 animate-pulse" />
               <span className="text-xs font-bold">СРОЧНО!</span>
