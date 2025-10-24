@@ -146,68 +146,109 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
               })()}
 
               {/* Заголовок + Статус */}
-              <div className="flex items-start justify-between gap-3">
-                <h2 className="text-xl font-bold text-gray-900 flex-1">
+              <div className="flex items-start justify-between gap-3 mb-3">
+                <h2 className="text-lg font-bold text-gray-900 flex-1">
                   {tender.name}
                 </h2>
-                {tender.status !== 'новый' && (
-                  <span
-                    className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${getStatusColor(
-                      tender.status
-                    )}`}
-                  >
-                    {STATUS_LABELS[tender.status]}
-                  </span>
-                )}
+                <span
+                  className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${getStatusColor(
+                    tender.status
+                  )}`}
+                >
+                  {STATUS_LABELS[tender.status]}
+                </span>
+              </div>
+
+              {/* Прогресс-бар */}
+              <div className="backdrop-blur-xl bg-white/50 rounded-xl p-3 border border-white/20">
+                <div className="flex items-center justify-between mb-2">
+                  {['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'].map((status, index) => {
+                    const statusIndex = ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе', 'завершён'].indexOf(tender.status);
+                    const isActive = index <= statusIndex;
+                    const isCurrent = ['новый', 'подано', 'на рассмотрении', 'победа', 'в работе'][index] === tender.status;
+                    
+                    return (
+                      <div key={status} className="flex-1 flex flex-col items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                          isCurrent ? 'bg-blue-500 text-white scale-110 shadow-lg' :
+                          isActive ? 'bg-blue-200 text-blue-700' :
+                          'bg-gray-200 text-gray-400'
+                        }`}>
+                          {index + 1}
+                        </div>
+                        {index < 4 && (
+                          <div className={`h-0.5 w-full mt-4 absolute transition-all ${
+                            isActive ? 'bg-blue-500' : 'bg-gray-200'
+                          }`} style={{ left: `${(index + 0.5) * 20}%`, width: '20%' }} />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-600 mt-2">
+                  <span>Новый</span>
+                  <span>Подано</span>
+                  <span>Рассм.</span>
+                  <span>Победа</span>
+                  <span>В раб.</span>
+                </div>
               </div>
             </div>
 
             {/* Контент - скроллится */}
             <div className="flex-1 overflow-y-auto px-6 py-4 overscroll-behavior-contain">
-              {/* Компактные карточки с данными */}
-              <div className="space-y-3">
+              {/* Компактные стеклянные карточки */}
+              <div className="space-y-2">
                 {/* Номер закупки */}
                 {tender.purchase_number && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>Номер закупки</span>
-                    </div>
-                    <div className="font-mono text-sm font-medium text-gray-900">
-                      {tender.purchase_number}
+                  <div className="backdrop-blur-xl bg-blue-500/10 rounded-lg p-2 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-blue-600" />
+                      <span className="font-mono text-sm font-semibold text-gray-900">
+                        {tender.purchase_number}
+                      </span>
                     </div>
                   </div>
                 )}
 
                 {/* Регион */}
                 {tender.region && (
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>Регион</span>
+                  <div className="backdrop-blur-xl bg-purple-500/10 rounded-lg p-2 border border-white/20">
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-purple-600" />
+                      <span className="text-sm font-medium text-gray-900">{tender.region}</span>
                     </div>
-                    <div className="font-medium text-gray-900">{tender.region}</div>
                   </div>
                 )}
 
                 {/* Даты */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-gray-50 rounded-xl p-3">
-                    <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Публикация</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="backdrop-blur-xl bg-white/50 rounded-lg p-2 border border-white/20">
+                    <div className="flex items-center gap-1 mb-1">
+                      <Calendar className="w-3.5 h-3.5 text-gray-600" />
+                      <span className="text-xs text-gray-600">Публикация</span>
                     </div>
                     <div className="font-semibold text-sm text-gray-900">
                       {tender.publication_date ? formatDate(tender.publication_date) : '—'}
                     </div>
                   </div>
 
-                  {/* Дата подачи */}
-                  {tender.status !== 'новый' && tender.status !== 'подано' && (
-                    <div className="bg-blue-50 rounded-xl p-3">
-                      <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Дата подачи</span>
+                  {/* Дедлайн для новых */}
+                  {(tender.status === 'новый' || tender.status === 'подано') && tender.submission_deadline ? (
+                    <div className="backdrop-blur-xl bg-red-500/10 rounded-lg p-2 border border-white/20">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Clock className="w-3.5 h-3.5 text-red-600" />
+                        <span className="text-xs text-red-600">Дедлайн</span>
+                      </div>
+                      <div className="font-semibold text-sm text-red-700">
+                        {formatDate(tender.submission_deadline)}
+                      </div>
+                    </div>
+                  ) : tender.status !== 'новый' && tender.status !== 'подано' ? (
+                    <div className="backdrop-blur-xl bg-blue-500/10 rounded-lg p-2 border border-white/20">
+                      <div className="flex items-center gap-1 mb-1">
+                        <Calendar className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-xs text-blue-600">Подача</span>
                       </div>
                       {tender.status === 'на рассмотрении' ? (
                         editingSubmissionDate ? (
@@ -250,12 +291,12 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                         </div>
                       )}
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
                 {/* Цены */}
                 {tender.start_price && (
-                  <div className="bg-green-50 rounded-xl p-3 border border-green-100">
+                  <div className="backdrop-blur-xl bg-green-500/10 rounded-lg p-3 border border-white/20 shadow-sm shadow-green-500/30">
                     <div className="flex items-center gap-2 text-xs text-green-600 mb-1">
                       <DollarSign className="w-3.5 h-3.5" />
                       <span>Начальная цена</span>
@@ -272,7 +313,7 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                   tender.status === 'в работе' ||
                   tender.status === 'завершён' ||
                   tender.status === 'проигрыш') && (
-                  <div className="bg-blue-50 rounded-xl p-3 border border-blue-100">
+                  <div className="backdrop-blur-xl bg-blue-500/10 rounded-lg p-3 border border-white/20 shadow-sm shadow-blue-500/30">
                     <div className="flex items-center gap-2 text-xs text-blue-600 mb-1">
                       <DollarSign className="w-3.5 h-3.5" />
                       <span>Цена подачи</span>
@@ -319,12 +360,12 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                   </div>
                 )}
 
-                {/* Цена победы */}
+                {/* Цена победы + Расходы + Прибыль */}
                 {(tender.status === 'победа' ||
                   tender.status === 'в работе' ||
                   tender.status === 'завершён') &&
                   tender.win_price && (
-                    <div className="bg-yellow-50 rounded-xl p-3 border border-yellow-200">
+                    <div className="backdrop-blur-xl bg-yellow-500/10 rounded-lg p-3 border border-white/20 shadow-sm shadow-yellow-500/30">
                       <div className="flex items-center gap-2 text-xs text-yellow-700 mb-1">
                         <DollarSign className="w-3.5 h-3.5" />
                         <span>Цена победы</span>
@@ -332,6 +373,23 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                       <div className="font-bold text-lg text-yellow-900">
                         {formatPrice(tender.win_price)}
                       </div>
+                      
+                      {/* Расходы и прибыль для в работе */}
+                      {(tender.status === 'в работе' || tender.status === 'завершён') && expenses > 0 && (
+                        <div className="mt-3 pt-3 border-t border-yellow-200">
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-yellow-700">Расходы:</span>
+                            <span className="font-semibold text-yellow-900">{formatPrice(expenses)}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-yellow-700">Прибыль:</span>
+                            <span className="font-bold text-green-600">
+                              {formatPrice(tender.win_price - expenses)}
+                              <span className="text-xs ml-1">({Math.round(((tender.win_price - expenses) / tender.win_price) * 100)}%)</span>
+                            </span>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -341,32 +399,30 @@ export function TenderDetailsModal({ tender, onClose, onUpdate }: TenderDetailsM
                     href={tender.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center justify-between bg-blue-50 rounded-xl p-3 border border-blue-100 hover:bg-blue-100 transition-colors"
+                    className="flex items-center justify-center gap-2 backdrop-blur-xl bg-blue-500/10 rounded-lg p-3 border border-white/20 hover:bg-blue-500/20 transition-colors"
                   >
-                    <div className="flex items-center gap-2 text-sm text-blue-700 font-medium">
-                      <ExternalLink className="w-4 h-4" />
-                      <span>Открыть тендер</span>
-                    </div>
+                    <ExternalLink className="w-4 h-4 text-blue-600" />
+                    <span className="text-sm text-blue-700 font-medium">Открыть тендер</span>
                   </a>
                 )}
               </div>
             </div>
 
-            {/* Футер - sticky */}
-            <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-4">
-              <div className="flex gap-3">
+            {/* Футер - sticky СТЕКЛЯННЫЙ */}
+            <div className="sticky bottom-0 backdrop-blur-xl bg-white/90 border-t border-white/20 px-6 py-3">
+              <div className="flex gap-2">
                 <button
-                  onClick={handleEdit}
-                  className="flex-1 py-3 bg-gradient-to-br from-primary-500 to-secondary-600 text-white font-medium rounded-xl transition-all active:scale-95 flex items-center justify-center gap-2"
+                  onClick={() => router.push(`/m/tenders/edit/${tender.id}`)}
+                  className="flex-1 py-2.5 backdrop-blur-xl bg-blue-500/20 text-blue-700 font-medium rounded-lg transition-all active:scale-95 flex items-center justify-center gap-2 border border-white/20 shadow-sm shadow-blue-500/30"
                 >
                   <Edit className="w-4 h-4" />
-                  Редактировать
+                  Изменить
                 </button>
                 <button
                   onClick={onClose}
-                  className="px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                  className="px-4 py-2.5 backdrop-blur-xl bg-white/50 text-gray-700 font-medium rounded-lg transition-colors border border-white/20"
                 >
-                  Закрыть
+                  ✕
                 </button>
               </div>
             </div>
