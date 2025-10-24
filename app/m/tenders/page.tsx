@@ -227,12 +227,12 @@ export default function TendersPage() {
         </div>
 
         {/* Свайпабельный фильтр - стиль камеры iPhone */}
-        <div className="relative overflow-x-auto overflow-y-visible no-scrollbar py-2">
+        <div className="relative py-2">
+          {/* Невидимая зона для свайпа */}
           <motion.div
             drag="x"
             dragConstraints={{ left: 0, right: 0 }}
             dragElastic={0.1}
-            dragTransition={{ bounceStiffness: 600, bounceDamping: 20 }}
             onDragEnd={(e, { offset, velocity }) => {
               const swipe = Math.abs(offset.x) * velocity.x;
               const currentIndex = statusFilters.findIndex(f => f.value === selectedStatus);
@@ -249,8 +249,11 @@ export default function TendersPage() {
                 }
               }
             }}
-            className="flex items-center justify-start gap-6 px-6 cursor-grab active:cursor-grabbing min-w-max"
-          >
+            className="absolute inset-0 z-20 cursor-grab active:cursor-grabbing"
+          />
+          
+          {/* Фильтры - фиксированные */}
+          <div className="flex items-center justify-center gap-6 px-6 relative z-10">
             {statusFilters.map((filter) => {
               const isActive = filter.value === selectedStatus;
               
@@ -283,14 +286,13 @@ export default function TendersPage() {
               };
               
               return (
-                <motion.button
+                <button
                   key={filter.value}
                   onClick={() => {
                     setSelectedStatus(filter.value);
                     haptics.light();
                   }}
-                  className="relative"
-                  whileTap={{ scale: 0.95 }}
+                  className="relative z-30"
                 >
                   {/* Прозрачная капсула с сиянием */}
                   {isActive && (
@@ -314,10 +316,10 @@ export default function TendersPage() {
                   }`}>
                     {filter.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
                   </span>
-                </motion.button>
+                </button>
               );
             })}
-          </motion.div>
+          </div>
         </div>
       </div>
 
