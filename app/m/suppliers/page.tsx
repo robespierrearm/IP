@@ -116,20 +116,20 @@ export default function SuppliersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Шапка */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Поставщики</h1>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Шапка - КОМПАКТНАЯ СТЕКЛЯННАЯ */}
+      <div className="backdrop-blur-xl bg-white/80 border-b border-white/20 px-4 py-2 sticky top-0 z-30 shadow-lg">
+        <h1 className="text-xl font-bold text-gray-900 mb-2">Поставщики</h1>
 
-        {/* Поиск */}
+        {/* Поиск - КОМПАКТНЫЙ */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск по названию, телефону..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -356,10 +356,10 @@ export default function SuppliersPage() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - СТЕКЛЯННАЯ */}
       <button
         onClick={() => router.push('/m/suppliers/add')}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-transform z-30"
+        className="fixed bottom-24 right-6 w-14 h-14 backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 rounded-full shadow-lg shadow-blue-500/50 flex items-center justify-center active:scale-95 transition-transform z-30"
       >
         <Plus className="w-6 h-6" />
       </button>
