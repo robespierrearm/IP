@@ -93,15 +93,15 @@ const TenderCardAppleComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className={`backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl cursor-pointer select-none relative z-10 active:bg-white/60 transition-colors border-l-4 ${
-          tender.status === 'новый' ? 'border-l-gray-400' :
+        className={`bg-white rounded-xl cursor-pointer select-none relative z-10 border border-gray-200/50 active:bg-gray-50 transition-colors border-l-4 ${
+          tender.status === 'новый' ? 'border-l-gray-300' :
           tender.status === 'подано' ? 'border-l-blue-500' :
           tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
           tender.status === 'победа' ? 'border-l-purple-500' :
           tender.status === 'в работе' ? 'border-l-green-500' :
-          tender.status === 'завершён' ? 'border-l-gray-600' :
+          tender.status === 'завершён' ? 'border-l-gray-500' :
           tender.status === 'проигрыш' ? 'border-l-red-500' :
-          'border-l-gray-400'
+          'border-l-gray-300'
         }`}
       >
         <div className="px-4 py-3">
