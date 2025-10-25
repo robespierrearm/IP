@@ -32,7 +32,7 @@ export default function FilesPage() {
         setFiles(data);
       }
     } catch (error) {
-      console.log('📦 Файлы недоступны офлайн');
+      // Файлы недоступны офлайн
     }
     setIsLoading(false);
   };

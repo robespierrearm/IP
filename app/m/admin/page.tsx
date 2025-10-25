@@ -33,7 +33,7 @@ export default function AdminPage() {
         setUsers(usersData);
       }
     } catch (error) {
-      console.log(' Админка недоступна офлайн');
+      // Админка недоступна офлайн
     }
 
     setIsLoading(false);
