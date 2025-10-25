@@ -67,19 +67,19 @@ export default function DashboardPage() {
   }, [tenders]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Шапка с градиентом */}
-      <div className="bg-gradient-to-br from-primary-500 to-secondary-600 px-6 pt-6 pb-8 rounded-b-3xl">
-        <div className="flex items-center justify-between mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+      {/* Шапка - КОМПАКТНАЯ СТЕКЛЯННАЯ */}
+      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-500/20 border-b border-white/20 px-4 pt-4 pb-6 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-white/80 text-sm mb-1">Добро пожаловать,</p>
-            <h1 className="text-2xl font-bold text-white">
+            <p className="text-gray-600 text-xs mb-1">Добро пожаловать,</p>
+            <h1 className="text-xl font-bold text-gray-900">
               {currentUser?.username || 'Пользователь'}
             </h1>
           </div>
           <div className="text-right">
             <LiveClock />
-            <div className="text-white/70 text-xs">
+            <div className="text-gray-500 text-xs">
               {new Date().toLocaleDateString('ru-RU', {
                 day: 'numeric',
                 month: 'long',
@@ -99,11 +99,11 @@ export default function DashboardPage() {
               haptics.light();
               router.push('/m/tenders?status=в работе');
             }}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors"
+            className="backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl p-3 transition-all shadow-sm shadow-green-500/30"
           >
-            <Briefcase className="w-6 h-6 text-white mb-2" />
-            <div className="text-2xl font-bold text-white mb-1">{stats.inWork}</div>
-            <div className="text-white/80 text-xs">В работе</div>
+            <Briefcase className="w-5 h-5 text-green-600 mb-1" />
+            <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.inWork}</div>
+            <div className="text-gray-600 text-xs">В работе</div>
           </motion.div>
 
           <motion.div
@@ -115,11 +115,11 @@ export default function DashboardPage() {
               haptics.light();
               router.push('/m/tenders?status=на рассмотрении');
             }}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors"
+            className="backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl p-3 transition-all shadow-sm shadow-orange-500/30"
           >
-            <Eye className="w-6 h-6 text-white mb-2" />
-            <div className="text-2xl font-bold text-white mb-1">{stats.underReview}</div>
-            <div className="text-white/80 text-xs">Рассмотрение</div>
+            <Eye className="w-5 h-5 text-orange-600 mb-1" />
+            <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.underReview}</div>
+            <div className="text-gray-600 text-xs">Рассмотрение</div>
           </motion.div>
 
           <motion.div
@@ -131,11 +131,11 @@ export default function DashboardPage() {
               haptics.light();
               setShowRemindersModal(true);
             }}
-            className="bg-white/10 backdrop-blur-sm rounded-2xl p-4 transition-colors relative"
+            className="backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl p-3 transition-all shadow-sm shadow-red-500/30 relative"
           >
-            <Bell className="w-6 h-6 text-white mb-2" />
-            <div className="text-2xl font-bold text-white mb-1">{stats.reminders}</div>
-            <div className="text-white/80 text-xs">Напоминания</div>
+            <Bell className="w-5 h-5 text-red-600 mb-1" />
+            <div className="text-xl font-bold text-gray-900 mb-0.5">{stats.reminders}</div>
+            <div className="text-gray-600 text-xs">Напоминания</div>
             {stats.reminders > 0 && (
               <motion.div
                 initial={{ scale: 0 }}
@@ -170,9 +170,7 @@ export default function DashboardPage() {
             <div
               key={tender.id}
               onClick={() => router.push(`/m/tenders?id=${tender.id}`)}
-              className={`rounded-2xl p-4 shadow-sm active:shadow-md transition-shadow ${
-                tender.status === 'подано' ? 'bg-green-50' : 'bg-white'
-              }`}
+              className="backdrop-blur-xl bg-white/40 border border-white/20 rounded-xl p-3 shadow-sm hover:shadow-md active:shadow-lg transition-all"
             >
               <div className="flex items-start justify-between mb-2">
                 <h3 className="font-semibold text-gray-900 text-sm flex-1 line-clamp-2">
