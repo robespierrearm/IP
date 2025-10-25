@@ -14,7 +14,6 @@ import { TenderStatusChanger } from '@/components/TenderStatusChanger';
 import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
 import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
-import { TendersSkeleton } from '@/components/TendersSkeleton';
 import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
 
@@ -30,7 +29,7 @@ function TendersContent() {
   const [tenders, setTenders] = useState<Tender[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTender, setEditingTender] = useState<Tender | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || 'all');
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all');
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
@@ -44,9 +43,8 @@ function TendersContent() {
     }
   }, [tabParam]);
 
-  // Загрузка тендеров через API
+  // Загрузка тендеров через API (без полноэкранной загрузки)
   const loadTenders = async () => {
-    setIsLoading(true);
     const result = await apiClient.getTenders();
 
     if (result.error) {
@@ -55,7 +53,6 @@ function TendersContent() {
     } else {
       setTenders((result.data as Tender[]) || []);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -260,10 +257,7 @@ function TendersContent() {
 
   const counts = getCounts();
 
-  // Показываем skeleton при загрузке
-  if (isLoading) {
-    return <TendersSkeleton />;
-  }
+  // Не показываем полноэкранный skeleton - сразу показываем интерфейс
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
@@ -327,11 +321,7 @@ function TendersContent() {
         </div>
       )}
 
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      ) : filteredTenders.length === 0 ? (
+      {filteredTenders.length === 0 && !isLoading ? (
         <motion.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}

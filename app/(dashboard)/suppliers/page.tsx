@@ -18,7 +18,6 @@ import { AddSupplierDialog } from '@/components/AddSupplierDialog';
 import { EditSupplierDialog } from '@/components/EditSupplierDialog';
 import { Pencil, Trash2, Search, Phone, Mail, FileText } from 'lucide-react';
 import { formatPhoneForDisplay } from '@/lib/phoneUtils';
-import { SuppliersSkeleton } from '@/components/SuppliersSkeleton';
 
 export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -26,11 +25,10 @@ export default function SuppliersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Загрузка поставщиков через API
   const loadSuppliers = async () => {
-    setIsLoading(true);
     const result = await apiClient.getSuppliers();
 
     if (result.error) {
@@ -39,7 +37,6 @@ export default function SuppliersPage() {
       setFilteredSuppliers([]);
     } else {
       setSuppliers((result.data as Supplier[]) || []);
-      setFilteredSuppliers((result.data as Supplier[]) || []);
     }
     setIsLoading(false);
   };
@@ -108,10 +105,7 @@ export default function SuppliersPage() {
     }
   };
 
-  // Показываем skeleton при загрузке
-  if (isLoading) {
-    return <SuppliersSkeleton />;
-  }
+  // Не показываем полноэкранный skeleton
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
@@ -149,11 +143,7 @@ export default function SuppliersPage() {
       </div>
 
       {/* Table */}
-      {isLoading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
-        </div>
-      ) : filteredSuppliers.length === 0 ? (
+      {filteredSuppliers.length === 0 ? (
         <div className="text-center py-20 bg-white rounded-lg border">
           <p className="text-gray-500 text-lg">
             {searchQuery ? 'Поставщики не найдены' : 'Поставщиков пока нет'}
