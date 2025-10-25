@@ -91,9 +91,6 @@ export default function DashboardPage() {
         {/* Статистика */}
         <div className="grid grid-cols-3 gap-3">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               haptics.light();
@@ -107,9 +104,6 @@ export default function DashboardPage() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               haptics.light();
@@ -123,9 +117,6 @@ export default function DashboardPage() {
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => {
               haptics.light();
