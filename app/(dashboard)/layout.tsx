@@ -19,7 +19,7 @@ export default function DashboardLayout({
       }>
         <AppSidebar />
       </Suspense>
-      <main className="flex-1 overflow-y-auto bg-gray-50 md:ml-0">
+      <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 md:ml-0">
         <div className="pt-16 md:pt-0">
           {children}
         </div>
