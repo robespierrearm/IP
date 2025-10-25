@@ -9,9 +9,6 @@ import { ChevronDown, ChevronUp, Plus, Trash2, TrendingUp, TrendingDown, BarChar
 import { cn } from '@/lib/utils';
 import { TenderDocumentsModal } from '@/components/TenderDocumentsModal';
 import { PlatformButton } from '@/components/PlatformButton';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import html2canvas from 'html2canvas';
 
 interface TenderAccountingProps {
   tender: Tender;
@@ -117,6 +114,12 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
   const modalRef = useRef<HTMLDivElement | null>(null);
 
   const buildPdf = async () => {
+    // Динамически загружаем тяжёлые библиотеки только когда нужны
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([
+      import('jspdf'),
+      import('html2canvas')
+    ]);
+    
     const doc = new jsPDF({ unit: 'pt', format: 'a4' });
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();

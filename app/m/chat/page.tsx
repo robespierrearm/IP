@@ -47,7 +47,7 @@ export default function ChatPage() {
         setMessages(data);
       }
     } catch (error) {
-      console.log('📦 Чат недоступен офлайн');
+      // Чат недоступен офлайн
     }
     setIsLoading(false);
   };
