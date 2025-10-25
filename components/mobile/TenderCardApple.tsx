@@ -93,15 +93,15 @@ const TenderCardAppleComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className={`bg-white rounded-xl cursor-pointer select-none relative z-10 border border-gray-200/50 active:bg-gray-50 transition-colors border-l-4 ${
-          tender.status === 'новый' ? 'border-l-gray-300' :
-          tender.status === 'подано' ? 'border-l-blue-500' :
-          tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
-          tender.status === 'победа' ? 'border-l-purple-500' :
-          tender.status === 'в работе' ? 'border-l-green-500' :
-          tender.status === 'завершён' ? 'border-l-gray-500' :
-          tender.status === 'проигрыш' ? 'border-l-red-500' :
-          'border-l-gray-300'
+        className={`backdrop-blur-xl border border-white/20 rounded-xl shadow-lg cursor-pointer select-none relative z-10 active:bg-white/60 transition-colors border-l-4 ${
+          tender.status === 'новый' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20' :
+          tender.status === 'подано' ? 'bg-gradient-to-r from-blue-500/10 to-transparent border-l-blue-500 shadow-blue-500/30' :
+          tender.status === 'на рассмотрении' ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-l-yellow-500 shadow-yellow-500/30' :
+          tender.status === 'победа' ? 'bg-gradient-to-r from-purple-500/10 to-transparent border-l-purple-500 shadow-purple-500/30' :
+          tender.status === 'в работе' ? 'bg-gradient-to-r from-green-500/10 to-transparent border-l-green-500 shadow-green-500/30' :
+          tender.status === 'завершён' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-600 shadow-gray-500/20' :
+          tender.status === 'проигрыш' ? 'bg-gradient-to-r from-red-500/10 to-transparent border-l-red-500 shadow-red-500/30' :
+          'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20'
         }`}
       >
         <div className="px-4 py-3">

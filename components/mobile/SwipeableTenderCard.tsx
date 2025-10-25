@@ -95,15 +95,15 @@ const SwipeableTenderCardComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className={`rounded-2xl p-4 shadow-sm active:shadow-md cursor-pointer select-none relative z-10 border-l-4 ${
-          tender.status === 'новый' ? 'bg-white border-l-white' :
-          tender.status === 'подано' ? 'bg-white border-l-blue-500' :
-          tender.status === 'на рассмотрении' ? 'bg-white border-l-yellow-500' :
-          tender.status === 'победа' ? 'bg-white border-l-purple-500' :
-          tender.status === 'в работе' ? 'bg-white border-l-green-500' :
-          tender.status === 'завершён' ? 'bg-white border-l-gray-700' :
-          tender.status === 'проигрыш' ? 'bg-white border-l-red-500' :
-          'bg-white border-l-gray-300'
+        className={`backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-lg active:shadow-xl cursor-pointer select-none relative z-10 border-l-4 ${
+          tender.status === 'новый' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20' :
+          tender.status === 'подано' ? 'bg-gradient-to-r from-blue-500/10 to-transparent border-l-blue-500 shadow-blue-500/30' :
+          tender.status === 'на рассмотрении' ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-l-yellow-500 shadow-yellow-500/30' :
+          tender.status === 'победа' ? 'bg-gradient-to-r from-purple-500/10 to-transparent border-l-purple-500 shadow-purple-500/30' :
+          tender.status === 'в работе' ? 'bg-gradient-to-r from-green-500/10 to-transparent border-l-green-500 shadow-green-500/30' :
+          tender.status === 'завершён' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-600 shadow-gray-500/20' :
+          tender.status === 'проигрыш' ? 'bg-gradient-to-r from-red-500/10 to-transparent border-l-red-500 shadow-red-500/30' :
+          'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20'
         }`}
       >
         <div className="flex items-start justify-between mb-2">
