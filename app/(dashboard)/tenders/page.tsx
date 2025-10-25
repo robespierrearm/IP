@@ -268,8 +268,8 @@ function TendersContent() {
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 md:mb-8">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-white mb-0.5">Тендеры</h1>
-          <p className="text-xs text-gray-300">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-0.5">Тендеры</h1>
+          <p className="text-xs text-gray-600">
             Управление тендерами и заявками
           </p>
         </div>
@@ -344,17 +344,17 @@ function TendersContent() {
             return (
             <Card 
               key={tender.id} 
-              className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 backdrop-blur-xl bg-white/10 border border-white/20 shadow-lg ${
-                tender.status === 'новый' ? 'border-l-gray-400' :
+              className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
+                tender.status === 'новый' ? 'border-l-gray-300' :
                 tender.status === 'подано' ? 'border-l-blue-500' :
                 tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
                 tender.status === 'победа' ? 'border-l-purple-500' :
                 tender.status === 'в работе' ? 'border-l-green-500' :
-                tender.status === 'завершён' ? 'border-l-gray-500' :
+                tender.status === 'завершён' ? 'border-l-gray-700' :
                 tender.status === 'проигрыш' ? 'border-l-red-500' :
-                'border-l-gray-400'
+                'border-l-gray-300'
               } ${
-                isUrgent ? 'shadow-[0_0_20px_rgba(239,68,68,0.3)] bg-gradient-to-r from-red-500/20 via-red-500/10 to-transparent' : ''
+                isUrgent ? 'shadow-[0_0_20px_rgba(239,68,68,0.15)] bg-gradient-to-r from-red-50/60 via-red-50/20 to-transparent' : ''
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
@@ -363,8 +363,8 @@ function TendersContent() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
-                      <FileText className="h-4 w-4 text-gray-300 flex-shrink-0" />
-                      <h3 className="font-semibold text-base text-white truncate">{tender.name}</h3>
+                      <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <h3 className="font-semibold text-base text-gray-900 truncate">{tender.name}</h3>
                       <PlatformButton link={tender.link} />
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">

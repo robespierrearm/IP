@@ -231,8 +231,8 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-5 backdrop-blur-xl bg-white/40 border border-white/20 rounded-2xl shadow-lg p-4">
           {/* Заголовок */}
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-white mb-0.5">Общая информация</h1>
-            <p className="text-xs text-gray-300">Обзор ключевых показателей вашего бизнеса</p>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-0.5">Общая информация</h1>
+            <p className="text-xs text-gray-600">Обзор ключевых показателей вашего бизнеса</p>
           </div>
 
           {/* Блок с датой и временем - СТЕКЛЯННЫЙ */}
