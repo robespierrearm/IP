@@ -93,15 +93,15 @@ const TenderCardModernComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className={`bg-white rounded-2xl shadow-sm active:shadow-md cursor-pointer select-none relative z-10 border-l-4 ${
-          tender.status === 'новый' ? 'border-l-gray-300' :
+        className={`backdrop-blur-xl bg-white/40 border border-white/20 rounded-2xl shadow-sm active:shadow-lg cursor-pointer select-none relative z-10 border-l-4 ${
+          tender.status === 'новый' ? 'border-l-gray-400' :
           tender.status === 'подано' ? 'border-l-blue-500' :
           tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
           tender.status === 'победа' ? 'border-l-purple-500' :
           tender.status === 'в работе' ? 'border-l-green-500' :
-          tender.status === 'завершён' ? 'border-l-gray-500' :
+          tender.status === 'завершён' ? 'border-l-gray-600' :
           tender.status === 'проигрыш' ? 'border-l-red-500' :
-          'border-l-gray-300'
+          'border-l-gray-400'
         }`}
       >
 
