@@ -273,19 +273,19 @@ function TendersContent() {
             Управление тендерами и заявками
           </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto">
+        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50">
           Добавить тендер
         </Button>
       </div>
 
-      {/* Фильтры архива (только если активен таб Архив) */}
+      {/* Фильтры архива - СТЕКЛЯННЫЕ */}
       {activeTab === 'archive' && (
-        <div className="mb-4 inline-flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="mb-4 inline-flex items-center gap-1 backdrop-blur-xl bg-white/50 rounded-lg p-1 border border-white/20">
           <button
             onClick={() => setArchiveFilter('all')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               archiveFilter === 'all'
-                ? 'bg-white text-gray-900 shadow-sm'
+                ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 shadow-sm shadow-blue-500/30 border border-white/20'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -295,7 +295,7 @@ function TendersContent() {
             onClick={() => setArchiveFilter('completed')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               archiveFilter === 'completed'
-                ? 'bg-white text-green-700 shadow-sm'
+                ? 'backdrop-blur-xl bg-green-500/20 text-green-700 shadow-sm shadow-green-500/30 border border-white/20'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -308,7 +308,7 @@ function TendersContent() {
             onClick={() => setArchiveFilter('lost')}
             className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
               archiveFilter === 'lost'
-                ? 'bg-white text-red-700 shadow-sm'
+                ? 'backdrop-blur-xl bg-red-500/20 text-red-700 shadow-sm shadow-red-500/30 border border-white/20'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >

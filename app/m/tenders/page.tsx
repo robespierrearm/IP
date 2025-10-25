@@ -180,17 +180,17 @@ export default function TendersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Шапка */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
+      {/* Шапка - СТЕКЛЯННАЯ */}
+      <div className="backdrop-blur-xl bg-white/90 border-b border-white/20 px-6 py-4 sticky top-0 z-30 shadow-lg">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-bold text-gray-900">Тендеры</h1>
           
-          {/* Переключатель стилей */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          {/* Переключатель стилей - СТЕКЛЯННЫЙ */}
+          <div className="flex gap-1 backdrop-blur-xl bg-white/50 p-1 rounded-lg border border-white/20">
             <button
               onClick={() => setCardStyle('modern')}
               className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                cardStyle === 'modern' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                cardStyle === 'modern' ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 shadow-sm shadow-blue-500/30 border border-white/20' : 'text-gray-600'
               }`}
             >
               Modern
@@ -198,7 +198,7 @@ export default function TendersPage() {
             <button
               onClick={() => setCardStyle('apple')}
               className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                cardStyle === 'apple' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                cardStyle === 'apple' ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 shadow-sm shadow-blue-500/30 border border-white/20' : 'text-gray-600'
               }`}
             >
               Apple
@@ -206,7 +206,7 @@ export default function TendersPage() {
             <button
               onClick={() => setCardStyle('original')}
               className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                cardStyle === 'original' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                cardStyle === 'original' ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 shadow-sm shadow-blue-500/30 border border-white/20' : 'text-gray-600'
               }`}
             >
               Old
@@ -214,15 +214,15 @@ export default function TendersPage() {
           </div>
         </div>
 
-        {/* Поиск */}
+        {/* Поиск - СТЕКЛЯННЫЙ */}
         <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-600" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск тендеров..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-3 backdrop-blur-xl bg-white/50 border border-white/20 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm"
           />
         </div>
 
@@ -434,7 +434,7 @@ export default function TendersPage() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - СТЕКЛЯННАЯ */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -442,7 +442,7 @@ export default function TendersPage() {
           haptics.light();
           router.push('/m/tenders/add');
         }}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center z-30"
+        className="fixed bottom-24 right-6 w-14 h-14 backdrop-blur-xl bg-blue-500/20 border border-white/20 text-blue-700 rounded-full shadow-lg shadow-blue-500/50 flex items-center justify-center z-30"
       >
         <Plus className="w-6 h-6" />
       </motion.button>
