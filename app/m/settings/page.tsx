@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { User, Bell, Moon, Sun, LogOut, ChevronRight, Shield, Lock, Mail, Phone, Briefcase, Download, Trash2, Info, MessageSquare } from 'lucide-react';
 import { haptics } from '@/lib/haptics';
 import { toast } from 'sonner';
@@ -9,6 +10,7 @@ import { apiClient } from '@/lib/api-client';
 
 export default function SettingsPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -133,19 +135,38 @@ export default function SettingsPage() {
   const handleClearCache = () => {
     haptics.medium();
     if (confirm('Очистить кэш приложения? Это может помочь решить проблемы с производительностью.')) {
+      // Подсчитываем сколько данных удаляем
+      
+      // 1. React Query кэш
+      const queryCache = queryClient.getQueryCache();
+      const queriesCount = queryCache.getAll().length;
+      
+      // 2. localStorage размер
+      let localStorageSize = 0;
+      for (let key in localStorage) {
+        if (localStorage.hasOwnProperty(key)) {
+          localStorageSize += localStorage[key].length + key.length;
+        }
+      }
+      const localStorageSizeKB = (localStorageSize / 1024).toFixed(2);
+      
+      // Очищаем React Query кэш
+      queryClient.clear();
+      
       // Очищаем localStorage (кроме currentUser)
       const user = localStorage.getItem('currentUser');
       localStorage.clear();
       if (user) localStorage.setItem('currentUser', user);
       
       haptics.success();
-      toast.success('Кэш очищен', {
-        description: 'Приложение будет перезагружено'
+      toast.success('Кэш очищен!', {
+        description: `Удалено: ${queriesCount} запросов + ${localStorageSizeKB} KB данных`,
+        duration: 3000
       });
       
       setTimeout(() => {
         window.location.reload();
-      }, 1500);
+      }, 2000);
     }
   };
 
