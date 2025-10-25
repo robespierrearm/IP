@@ -40,6 +40,7 @@ export default function AddTenderPage() {
     
     const payload = {
       ...formData,
+      publication_date: formData.publication_date || new Date().toISOString().split('T')[0],
       purchase_number: formData.purchase_number || null,
       link: formData.link || null,
       submission_date: formData.submission_date || null,
