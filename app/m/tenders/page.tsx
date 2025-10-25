@@ -180,10 +180,10 @@ export default function TendersPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Шапка */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-30">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold text-gray-900">Тендеры</h1>
+      {/* Шапка - КОМПАКТНАЯ */}
+      <div className="bg-white border-b border-gray-200 px-4 py-2 sticky top-0 z-30">
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-xl font-bold text-gray-900">Тендеры</h1>
           
           {/* Переключатель стилей */}
           <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
@@ -214,20 +214,20 @@ export default function TendersPage() {
           </div>
         </div>
 
-        {/* Поиск */}
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        {/* Поиск - КОМПАКТНЫЙ */}
+        <div className="relative mb-2">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Поиск тендеров..."
-            className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full pl-9 pr-4 py-2 text-sm bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
           />
         </div>
 
-        {/* Свайпабельный фильтр - плавное перетаскивание */}
-        <div className="relative overflow-hidden py-2 h-12">
+        {/* Свайпабельный фильтр - КОМПАКТНЫЙ */}
+        <div className="relative overflow-hidden py-1 h-10">
           {/* Карусель фильтров - можно тянуть */}
           <motion.div
             drag="x"
@@ -314,13 +314,11 @@ export default function TendersPage() {
                         duration: 0.15,
                       },
                     }}
-                    className={`flex-shrink-0 relative pointer-events-auto ${
-                      isCenter ? 'backdrop-blur-xl border border-white/20 rounded-full shadow-lg ' + bgColors[filter.value as keyof typeof bgColors] : ''
-                    }`}
+                    className="flex-shrink-0 relative pointer-events-auto"
                   >
-                    <span className={`px-5 py-2.5 block font-medium text-sm whitespace-nowrap transition-colors duration-150 ${
+                    <span className={`px-4 py-1.5 block font-medium text-sm whitespace-nowrap transition-all duration-150 ${
                       isCenter 
-                        ? `${textColors[filter.value as keyof typeof textColors]} font-semibold` 
+                        ? `${textColors[filter.value as keyof typeof textColors]} font-bold scale-110` 
                         : 'text-gray-400'
                     }`}>
                       {filter.label.replace(/[📋🔥✨💼👀✅]/g, '').trim()}
@@ -434,7 +432,7 @@ export default function TendersPage() {
         )}
       </AnimatePresence>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button - СТЕКЛЯННАЯ */}
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -442,7 +440,7 @@ export default function TendersPage() {
           haptics.light();
           router.push('/m/tenders/add');
         }}
-        className="fixed bottom-24 right-6 w-14 h-14 bg-gradient-to-br from-primary-500 to-secondary-600 text-white rounded-full shadow-lg flex items-center justify-center z-30"
+        className="fixed bottom-24 right-6 w-14 h-14 backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 rounded-full shadow-lg shadow-blue-500/50 flex items-center justify-center z-30"
       >
         <Plus className="w-6 h-6" />
       </motion.button>
