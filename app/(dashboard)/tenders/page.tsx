@@ -13,7 +13,7 @@ import { EditTenderDialog } from '@/components/EditTenderDialog';
 import { TenderStatusChanger } from '@/components/TenderStatusChanger';
 import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
-import { Pencil, Trash2, Calendar, DollarSign, FileText } from 'lucide-react';
+import { Pencil, Trash2, Calendar, DollarSign, FileText, RefreshCw } from 'lucide-react';
 import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
 
@@ -251,15 +251,32 @@ function TendersContent() {
             Управление тендерами и заявками
           </p>
         </div>
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
-            Добавить тендер
-          </Button>
-        </motion.div>
+        <div className="flex gap-2">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button 
+              onClick={() => refetch()} 
+              size="lg" 
+              variant="outline"
+              disabled={isLoading}
+              className="backdrop-blur-xl bg-white/50 hover:bg-white/70 border border-white/20 transition-all duration-300"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
+              Добавить тендер
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
       {/* Фильтры архива - СТЕКЛЯННЫЕ */}

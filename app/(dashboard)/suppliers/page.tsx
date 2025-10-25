@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/table';
 import { AddSupplierDialog } from '@/components/AddSupplierDialog';
 import { EditSupplierDialog } from '@/components/EditSupplierDialog';
-import { Pencil, Trash2, Search, Phone, Mail, FileText } from 'lucide-react';
+import { Pencil, Trash2, Search, Phone, Mail, FileText, RefreshCw } from 'lucide-react';
 import { formatPhoneForDisplay } from '@/lib/phoneUtils';
 
 export default function SuppliersPage() {
@@ -100,15 +100,32 @@ export default function SuppliersPage() {
             Управление базой поставщиков
           </p>
         </div>
-        <motion.div
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          transition={{ duration: 0.2 }}
-        >
-          <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
-            Добавить поставщика
-          </Button>
-        </motion.div>
+        <div className="flex gap-2">
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button 
+              onClick={() => refetch()} 
+              size="lg" 
+              variant="outline"
+              disabled={isLoading}
+              className="backdrop-blur-xl bg-white/50 hover:bg-white/70 border border-white/20 transition-all duration-300"
+            >
+              <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
+              Добавить поставщика
+            </Button>
+          </motion.div>
+        </div>
       </div>
 
       {/* Search */}

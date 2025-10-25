@@ -3,8 +3,8 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
-import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText } from 'lucide-react';
+import { useTenders, useDeleteTender } from '@/hooks/useQueries';
+import { Plus, Search, Filter, Calendar, DollarSign, MapPin, ExternalLink, ArrowRight, AlertTriangle, FileText, RefreshCw } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { getStatusEmoji } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
@@ -26,14 +26,16 @@ type CardStyle = 'original' | 'modern' | 'apple';
 export default function TendersPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tenders, setTenders] = useState<Tender[]>([]);
+  
+  // React Query - автоматическое кэширование!
+  const { data: tenders = [], isLoading, error, refetch } = useTenders();
+  const deleteTenderMutation = useDeleteTender();
+  
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300); // Debounce 300ms
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedTender, setSelectedTender] = useState<Tender | null>(null);
   const [tenderToDelete, setTenderToDelete] = useState<Tender | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [openCardId, setOpenCardId] = useState<number>(-1);
   const [cardStyle, setCardStyle] = useState<CardStyle>('modern'); // Стиль карточек
@@ -44,8 +46,7 @@ export default function TendersPage() {
     if (statusFromUrl) {
       setSelectedStatus(statusFromUrl);
     }
-    loadTenders();
-  }, []);
+  }, [searchParams]);
 
   // Мемоизированная фильтрация тендеров
   const filteredTenders = useMemo(() => {
@@ -78,24 +79,6 @@ export default function TendersPage() {
 
   // Автозакрытие карточки через 3 секунды и при клике вне (оптимизировано)
   useAutoClose(openCardId !== -1, () => setOpenCardId(-1), 3000, '[data-card-id]');
-
-  const loadTenders = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.getTenders();
-      if (response.success && response.data) {
-        setTenders(response.data as Tender[]);
-      } else {
-        throw new Error(response.error || 'Не удалось загрузить тендеры');
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки тендеров:', error);
-      toast.error('Ошибка загрузки', {
-        description: error instanceof Error ? error.message : 'Не удалось загрузить тендеры'
-      });
-    }
-    setIsLoading(false);
-  }, []);
 
   const getStatusColorMobile = useCallback((status: Tender['status']) => {
     switch (status) {
@@ -136,40 +119,26 @@ export default function TendersPage() {
     if (!tenderToDelete) return;
 
     const deletedTender = tenderToDelete;
-    
-    // ОПТИМИСТИЧНОЕ ОБНОВЛЕНИЕ: сразу удаляем из UI
     setDeletingId(deletedTender.id);
     haptics.medium();
     
-    // Анимация исчезновения
-    setTimeout(() => {
-      setTenders(prev => prev.filter(t => t.id !== deletedTender.id));
+    try {
+      await deleteTenderMutation.mutateAsync(deletedTender.id);
+      
+      // Успех
       setTenderToDelete(null);
       setDeletingId(null);
-    }, 300);
-
-    // Показываем toast сразу
-    haptics.success();
-    toast.success('Тендер удалён', {
-      description: 'Тендер успешно удалён из списка'
-    });
-
-    // В фоне отправляем на сервер
-    try {
-      await apiClient.deleteTender(deletedTender.id);
+      haptics.success();
+      toast.success('Тендер удалён', {
+        description: 'Тендер успешно удалён из списка'
+      });
+      // Кэш обновится автоматически!
     } catch (error) {
       console.error('Ошибка удаления тендера:', error);
-      
-      // Если ошибка - возвращаем тендер обратно
-      setTenders(prev => [...prev, deletedTender].sort((a, b) => {
-        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-        return dateB - dateA;
-      }));
-      
+      setDeletingId(null);
       haptics.error();
       toast.error('Ошибка удаления', {
-        description: 'Не удалось удалить тендер. Он был восстановлен.'
+        description: 'Не удалось удалить тендер'
       });
     }
   };
@@ -185,8 +154,18 @@ export default function TendersPage() {
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-xl font-bold text-gray-900">Тендеры</h1>
           
-          {/* Переключатель стилей */}
-          <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+          <div className="flex items-center gap-2">
+            {/* Кнопка обновить */}
+            <button
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg active:scale-95 transition-all disabled:opacity-50"
+            >
+              <RefreshCw className={`w-4 h-4 text-gray-700 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            
+            {/* Переключатель стилей */}
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
             <button
               onClick={() => setCardStyle('modern')}
               className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
@@ -211,6 +190,7 @@ export default function TendersPage() {
             >
               Old
             </button>
+            </div>
           </div>
         </div>
 
@@ -364,7 +344,7 @@ export default function TendersPage() {
       <TenderDetailsModal
         tender={selectedTender}
         onClose={() => setSelectedTender(null)}
-        onUpdate={loadTenders}
+        onUpdate={refetch}
       />
 
       {/* Модальное окно подтверждения удаления */}
@@ -407,17 +387,17 @@ export default function TendersPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteCancel}
-                disabled={isDeleting}
+                disabled={deletingId !== null}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 Отмена
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                disabled={isDeleting}
+                disabled={deletingId !== null}
                 className="flex-1 bg-red-500 text-white py-3 rounded-xl font-medium active:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isDeleting ? (
+                {deletingId !== null ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     Удаление...

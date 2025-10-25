@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FileText, Clock, Download, FolderOpen, Briefcase, Eye, Bell, ChevronRight, AlertCircle, TrendingUp } from 'lucide-react';
+import { FileText, Clock, Download, FolderOpen, Briefcase, Eye, Bell, ChevronRight, AlertCircle, TrendingUp, RefreshCw } from 'lucide-react';
 import { supabase, File, Tender, Expense } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { FilePreviewModal } from '@/components/FilePreviewModal';
@@ -219,14 +219,25 @@ export default function DashboardPage() {
             <p className="text-sm text-gray-500 mt-1">Обзор ключевых показателей вашего бизнеса</p>
           </div>
 
-          {/* Блок с датой и временем - ПРОСТОЙ */}
-          <div className="flex items-center gap-2 text-sm text-gray-500">
-            <Clock className="h-4 w-4" />
-            <span className="font-medium tabular-nums">
-              {formatTime(currentDateTime)}
-            </span>
-            <span>•</span>
-            <span>{formatDate(currentDateTime)}</span>
+          {/* Блок с датой, временем и кнопкой обновить */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Clock className="h-4 w-4" />
+              <span className="font-medium tabular-nums">
+                {formatTime(currentDateTime)}
+              </span>
+              <span>•</span>
+              <span>{formatDate(currentDateTime)}</span>
+            </div>
+            <Button 
+              onClick={() => refetch()} 
+              size="sm"
+              variant="outline"
+              disabled={isLoading}
+              className="backdrop-blur-xl bg-white/50 hover:bg-white/70 border border-white/20 transition-all duration-300"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+            </Button>
           </div>
         </div>
 
