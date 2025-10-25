@@ -144,18 +144,18 @@ export function AppSidebar() {
       {/* Sidebar - СТЕКЛЯННЫЙ */}
       <div
         className={cn(
-          "fixed md:static inset-y-0 left-0 z-40 flex h-screen flex-col border-r bg-gray-50 border-gray-200 shadow-sm transition-all duration-300 md:translate-x-0",
+          "fixed md:static inset-y-0 left-0 z-40 flex h-screen flex-col border-r backdrop-blur-xl bg-white/40 border-white/20 shadow-lg transition-all duration-300 md:translate-x-0",
           isMobileMenuOpen ? "translate-x-0" : "-translate-x-full",
           isCollapsed ? "md:w-20" : "md:w-64",
           "w-64"
         )}
       >
-      {/* Logo - NOTION STYLE */}
-      <div className="flex h-20 items-center border-b bg-white border-gray-200">
+      {/* Logo - СТЕКЛЯННЫЙ */}
+      <div className="flex h-20 items-center border-b backdrop-blur-xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-500/20 border-white/20 shadow-lg shadow-blue-500/30">
         
         <Link
           href="/dashboard"
-          className="flex-1 flex items-center px-5 py-4 hover:bg-gray-100 transition-all duration-200 group"
+          className="flex-1 flex items-center px-5 py-4 hover:bg-white/30 transition-all duration-200 group"
           onClick={closeMobileMenu}
         >
           {!isCollapsed ? (
@@ -164,10 +164,10 @@ export function AppSidebar() {
                 <Logo size={40} />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900 tracking-tight">
+                <h1 className="text-xl font-bold text-blue-700 drop-shadow-lg tracking-tight">
                   TenderCRM
                 </h1>
-                <p className="text-xs text-gray-500">Управление тендерами</p>
+                <p className="text-xs text-blue-600">Управление тендерами</p>
               </div>
             </div>
           ) : (
@@ -179,13 +179,13 @@ export function AppSidebar() {
         
         <button
           onClick={toggleCollapse}
-          className="hidden md:flex items-center justify-center w-14 h-full hover:bg-gray-100 transition-all duration-200 border-l border-gray-200 group"
+          className="hidden md:flex items-center justify-center w-14 h-full hover:bg-white/30 transition-all duration-200 border-l border-white/20 group"
           title={isCollapsed ? "Развернуть меню" : "Свернуть меню"}
         >
           {isCollapsed ? (
-            <PanelLeftOpen className="h-5 w-5 text-gray-600 group-hover:scale-110 transition-transform" />
+            <PanelLeftOpen className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
           ) : (
-            <PanelLeftClose className="h-5 w-5 text-gray-600 group-hover:scale-110 transition-transform" />
+            <PanelLeftClose className="h-5 w-5 text-blue-600 group-hover:scale-110 transition-transform" />
           )}
         </button>
       </div>
@@ -215,10 +215,10 @@ export function AppSidebar() {
                     className={cn(
                         'w-full gap-3 transition-all flex items-center rounded-md text-sm font-medium h-9 px-4',
                         isAllTenders
-                          ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium'
+                          ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-l-4 border-blue-600 shadow-lg shadow-blue-500/50 font-medium'
                           : hasActiveSubtab
-                          ? 'bg-gray-100 text-gray-700'
-                          : 'hover:bg-gray-100 text-gray-700',
+                          ? 'backdrop-blur-md bg-white/30 text-gray-700'
+                          : 'hover:bg-white/50 text-gray-700',
                         isCollapsed && 'justify-center px-2'
                       )}
                     >
@@ -233,9 +233,9 @@ export function AppSidebar() {
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded"
                     >
                       {isTendersOpen ? (
-                        <ChevronDown className="h-4 w-4 text-gray-500" />
+                        <ChevronDown className="h-4 w-4 text-gray-600" />
                       ) : (
-                        <ChevronRight className="h-4 w-4 text-gray-500" />
+                        <ChevronRight className="h-4 w-4 text-gray-600" />
                       )}
                     </button>
                   )}
@@ -243,7 +243,7 @@ export function AppSidebar() {
 
                 {/* Подменю тендеров - СТЕКЛЯННОЕ */}
                 {isTendersOpen && !isCollapsed && (
-                  <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-3">
+                  <div className="ml-4 space-y-1 border-l-2 border-white/30 pl-3">
                     <button
                       onClick={() => {
                         closeMobileMenu();
@@ -252,8 +252,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'new'
-                            ? 'bg-purple-50 text-purple-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-purple-500/20 text-purple-700 font-medium shadow-sm shadow-purple-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
                         Новые
@@ -266,8 +266,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'review'
-                            ? 'bg-orange-50 text-orange-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-orange-500/20 text-orange-700 font-medium shadow-sm shadow-orange-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
                         На рассмотрении
@@ -280,8 +280,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'inwork'
-                            ? 'bg-green-50 text-green-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-green-500/20 text-green-700 font-medium shadow-sm shadow-green-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
                         В работе
@@ -294,8 +294,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'archive'
-                            ? 'bg-gray-100 text-gray-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-gray-500/20 text-gray-700 font-medium shadow-sm shadow-gray-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
                         Архив
@@ -318,8 +318,8 @@ export function AppSidebar() {
                 'flex items-center gap-3 w-full rounded-md text-sm font-medium h-9 px-4 transition-all',
                 isCollapsed ? 'justify-center px-2' : 'justify-start',
                 isActive 
-                  ? 'bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium'
-                  : 'hover:bg-gray-100 text-gray-700'
+                  ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-l-4 border-blue-600 shadow-lg shadow-blue-500/50 font-medium'
+                  : 'hover:bg-white/50 text-gray-700'
               )}
               title={isCollapsed ? item.title : undefined}
             >
@@ -330,12 +330,12 @@ export function AppSidebar() {
         })}
       </nav>
 
-      {/* User info and Logout - NOTION STYLE */}
-      <div className="border-t border-gray-200 p-4 bg-white flex-shrink-0">
+      {/* User info and Logout - СТЕКЛЯННЫЙ */}
+      <div className="border-t border-white/20 p-4 backdrop-blur-xl bg-white/30 flex-shrink-0">
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Имя пользователя */}
-            <div className="flex items-center gap-3 px-3 py-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer">
+            <div className="flex items-center gap-3 px-3 py-2 backdrop-blur-xl bg-white/50 rounded-lg hover:bg-white/70 transition-colors cursor-pointer border border-white/20 shadow-sm">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
                 {currentUser.username?.charAt(0).toUpperCase() || 'U'}
               </div>
@@ -353,7 +353,7 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full gap-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all justify-start px-4"
+              className="w-full gap-2 text-red-600 backdrop-blur-xl bg-red-500/10 hover:bg-red-500/20 hover:text-red-700 transition-all justify-start px-4 border border-white/20 shadow-sm shadow-red-500/30"
             >
               <LogOut className="h-4 w-4" />
               <span className="font-medium">Выход</span>
