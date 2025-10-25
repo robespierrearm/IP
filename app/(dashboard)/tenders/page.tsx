@@ -273,7 +273,7 @@ function TendersContent() {
             Управление тендерами и заявками
           </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50">
+        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
           Добавить тендер
         </Button>
       </div>
