@@ -95,7 +95,7 @@ const SwipeableTenderCardComponent = ({
           stiffness: 400, 
           damping: 35
         }}
-        className={`backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-lg active:shadow-xl cursor-pointer select-none relative z-10 border-l-4 ${
+        className={`bg-white border border-gray-200 rounded-2xl p-4 shadow-lg active:shadow-xl cursor-pointer select-none relative z-10 border-l-4 ${
           tender.status === 'новый' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20' :
           tender.status === 'подано' ? 'bg-gradient-to-r from-blue-500/10 to-transparent border-l-blue-500 shadow-blue-500/30' :
           tender.status === 'на рассмотрении' ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-l-yellow-500 shadow-yellow-500/30' :
