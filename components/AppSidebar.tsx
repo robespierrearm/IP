@@ -73,16 +73,35 @@ export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isTendersOpen, setIsTendersOpen] = useState(true); // Выпадающее меню тендеров
   const [currentUser, setCurrentUser] = useState<{ username?: string; email?: string }>({});
+  const [tenderCounts, setTenderCounts] = useState({ new: 0, review: 0, inwork: 0, archive: 0 });
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
-  // Загружаем данные пользователя только на клиенте
+  // Загружаем данные пользователя и счётчики тендеров
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
       setCurrentUser(user);
+      loadTenderCounts();
     }
   }, []);
+
+  // Загружаем количество тендеров для каждой вкладки
+  const loadTenderCounts = async () => {
+    try {
+      const { data: tenders } = await supabase.from('tenders').select('status');
+      if (tenders) {
+        setTenderCounts({
+          new: tenders.filter(t => t.status === 'новый' || t.status === 'подано').length,
+          review: tenders.filter(t => t.status === 'на рассмотрении').length,
+          inwork: tenders.filter(t => t.status === 'в работе').length,
+          archive: tenders.filter(t => t.status === 'завершён' || t.status === 'проигрыш').length,
+        });
+      }
+    } catch (error) {
+      console.error('Error loading tender counts:', error);
+    }
+  };
 
   // Сворачиваем меню тендеров при переходе на другие страницы
   useEffect(() => {
@@ -256,7 +275,14 @@ export function AppSidebar() {
                             : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
-                        Новые
+                        <span className="flex items-center justify-between w-full">
+                          <span>Новые</span>
+                          {tenderCounts.new > 0 && (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 shadow-sm shadow-purple-500/20">
+                              {tenderCounts.new}
+                            </span>
+                          )}
+                        </span>
                     </button>
                     <button
                       onClick={() => {
@@ -270,7 +296,14 @@ export function AppSidebar() {
                             : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
-                        На рассмотрении
+                        <span className="flex items-center justify-between w-full">
+                          <span>На рассмотрении</span>
+                          {tenderCounts.review > 0 && (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 shadow-sm shadow-orange-500/20">
+                              {tenderCounts.review}
+                            </span>
+                          )}
+                        </span>
                     </button>
                     <button
                       onClick={() => {
@@ -284,7 +317,14 @@ export function AppSidebar() {
                             : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
-                        В работе
+                        <span className="flex items-center justify-between w-full">
+                          <span>В работе</span>
+                          {tenderCounts.inwork > 0 && (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 shadow-sm shadow-green-500/20">
+                              {tenderCounts.inwork}
+                            </span>
+                          )}
+                        </span>
                     </button>
                     <button
                       onClick={() => {
@@ -298,7 +338,14 @@ export function AppSidebar() {
                             : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
                         )}
                       >
-                        Архив
+                        <span className="flex items-center justify-between w-full">
+                          <span>Архив</span>
+                          {tenderCounts.archive > 0 && (
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 shadow-sm shadow-gray-500/20">
+                              {tenderCounts.archive}
+                            </span>
+                          )}
+                        </span>
                     </button>
                   </div>
                 )}
