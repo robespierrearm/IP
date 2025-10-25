@@ -46,6 +46,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
+    // Валидация обязательных полей
+    if (!body.name || !body.url) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: name, url' },
+        { status: 400 }
+      );
+    }
+    
     const { data, error } = await supabase
       .from('files')
       .insert(body)

@@ -38,6 +38,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     
+    // Валидация обязательных полей
+    if (!body.tender_id || !body.category || body.amount === undefined) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: tender_id, category, amount' },
+        { status: 400 }
+      );
+    }
+    
     const { data, error } = await supabase
       .from('expenses')
       .insert(body)
