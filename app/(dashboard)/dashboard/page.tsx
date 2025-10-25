@@ -225,7 +225,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50/30">
+    <div className="min-h-screen">
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Верхняя строка: Заголовок слева, Время справа - СТЕКЛЯННАЯ */}
         <div className="flex items-center justify-between mb-5 backdrop-blur-xl bg-white/40 border border-white/20 rounded-2xl shadow-lg p-4">
