@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileText, Hash, Link as LinkIcon, MapPin, Calendar, Clock, DollarSign, Paperclip } from 'lucide-react';
 import { TenderFilesList } from '@/components/TenderFilesList';
 
@@ -50,15 +51,22 @@ export function EditTenderDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl backdrop-blur-xl bg-white/95 border border-white/20 shadow-2xl">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader className="pb-2">
-            <DialogTitle className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✏️ Редактировать тендер</DialogTitle>
-            <DialogDescription className="text-xs text-gray-600">
-              Измените информацию о тендере
-            </DialogDescription>
-          </DialogHeader>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✏️ Редактировать тендер</DialogTitle>
+          <DialogDescription className="text-xs text-gray-600">
+            Измените информацию о тендере и управляйте файлами
+          </DialogDescription>
+        </DialogHeader>
 
-          <div className="space-y-4 py-3">
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 backdrop-blur-md bg-white/50">
+            <TabsTrigger value="info" className="data-[state=active]:bg-white/90">📋 Информация</TabsTrigger>
+            <TabsTrigger value="files" className="data-[state=active]:bg-white/90">📎 Файлы</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info">
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4 py-3">
             {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -320,35 +328,33 @@ export function EditTenderDialog({
               </motion.div>
             )}
 
-            {/* ФАЙЛЫ */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-indigo-500/10 to-transparent border-l-4 border-indigo-500 rounded-r-lg shadow-sm shadow-indigo-500/20 mb-3">
-                <Paperclip className="h-4 w-4 text-indigo-600" />
-                <h3 className="font-semibold text-sm text-gray-900">Файлы тендера</h3>
               </div>
-              
-              <div className="backdrop-blur-md bg-white/30 rounded-lg p-3 border border-white/20">
-                <TenderFilesList tenderId={tender.id} tenderStatus={tender.status} />
-              </div>
-            </motion.div>
-          </div>
 
-          <DialogFooter className="mt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="backdrop-blur-md bg-white/50 hover:bg-white/70"
+              <DialogFooter className="mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => onOpenChange(false)}
+                  className="backdrop-blur-md bg-white/50 hover:bg-white/70"
+                >
+                  Отмена
+                </Button>
+                <Button type="submit" className="backdrop-blur-md bg-blue-500/90 hover:bg-blue-500 text-white">Сохранить</Button>
+              </DialogFooter>
+            </form>
+          </TabsContent>
+
+          <TabsContent value="files" className="py-3">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="backdrop-blur-md bg-white/30 rounded-lg p-4 border border-white/20"
             >
-              Отмена
-            </Button>
-            <Button type="submit" className="backdrop-blur-md bg-blue-500/90 hover:bg-blue-500 text-white">Сохранить</Button>
-          </DialogFooter>
-        </form>
+              <TenderFilesList tenderId={tender.id} tenderStatus={tender.status} />
+            </motion.div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );
