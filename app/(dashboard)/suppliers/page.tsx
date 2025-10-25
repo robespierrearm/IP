@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Supplier, SupplierInsert } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { Button } from '@/components/ui/button';
@@ -122,9 +123,15 @@ export default function SuppliersPage() {
             Управление базой поставщиков
           </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50">
-          Добавить поставщика
-        </Button>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
+            Добавить поставщика
+          </Button>
+        </motion.div>
       </div>
 
       {/* Search */}
@@ -190,9 +197,19 @@ export default function SuppliersPage() {
 
           {/* Строки данных */}
           <div className="divide-y">
-            {filteredSuppliers.map((supplier) => (
-              <div
+            <AnimatePresence mode="popLayout">
+            {filteredSuppliers.map((supplier, index) => (
+              <motion.div
                 key={supplier.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ 
+                  duration: 0.3,
+                  delay: index * 0.03,
+                  ease: [0.4, 0, 0.2, 1]
+                }}
+                layout
                 className="grid grid-cols-[2.5fr_1.5fr_2fr_2fr_2.5fr_110px] gap-6 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
               >
                 {/* Компания */}
@@ -280,8 +297,9 @@ export default function SuppliersPage() {
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
+              </motion.div>
             ))}
+            </AnimatePresence>
           </div>
         </div>
       )}
