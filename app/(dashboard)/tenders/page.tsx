@@ -374,14 +374,14 @@ function TendersContent() {
                         {STATUS_LABELS[tender.status]}
                       </span>
                       {notification && (
-                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium ${
-                          notification.color === 'red' ? 'bg-red-50 text-red-700' :
-                          notification.color === 'orange' ? 'bg-orange-50 text-orange-700' :
-                          notification.color === 'yellow' ? 'bg-yellow-50 text-yellow-700' :
-                          notification.color === 'blue' ? 'bg-blue-50 text-blue-700' :
-                          notification.color === 'green' ? 'bg-green-50 text-green-700' :
-                          notification.color === 'purple' ? 'bg-purple-50 text-purple-700' :
-                          'bg-gray-50 text-gray-700'
+                        <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border shadow-sm ${
+                          notification.color === 'red' ? 'bg-red-50 text-red-700 border-red-200 shadow-red-500/30' :
+                          notification.color === 'orange' ? 'bg-orange-50 text-orange-700 border-orange-200 shadow-orange-500/30' :
+                          notification.color === 'yellow' ? 'bg-yellow-50 text-yellow-700 border-yellow-200 shadow-yellow-500/30' :
+                          notification.color === 'blue' ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-blue-500/30' :
+                          notification.color === 'green' ? 'bg-green-50 text-green-700 border-green-200 shadow-green-500/30' :
+                          notification.color === 'purple' ? 'bg-purple-50 text-purple-700 border-purple-200 shadow-purple-500/30' :
+                          'bg-gray-50 text-gray-700 border-gray-200 shadow-gray-500/20'
                         }`}>
                           <span className="text-sm">{notification.icon}</span>
                           <span className="font-medium">{notification.message}</span>

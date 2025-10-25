@@ -278,7 +278,7 @@ export function AppSidebar() {
                         <span className="flex items-center justify-between w-full">
                           <span>Новые</span>
                           {tenderCounts.new > 0 && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-purple-100 text-purple-700 shadow-sm shadow-purple-500/20">
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-purple-50 text-purple-700 border border-purple-200 shadow-sm shadow-purple-500/20">
                               {tenderCounts.new}
                             </span>
                           )}
@@ -299,7 +299,7 @@ export function AppSidebar() {
                         <span className="flex items-center justify-between w-full">
                           <span>На рассмотрении</span>
                           {tenderCounts.review > 0 && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-orange-100 text-orange-700 shadow-sm shadow-orange-500/20">
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-orange-50 text-orange-700 border border-orange-200 shadow-sm shadow-orange-500/20">
                               {tenderCounts.review}
                             </span>
                           )}
@@ -320,7 +320,7 @@ export function AppSidebar() {
                         <span className="flex items-center justify-between w-full">
                           <span>В работе</span>
                           {tenderCounts.inwork > 0 && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-700 shadow-sm shadow-green-500/20">
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-green-50 text-green-700 border border-green-200 shadow-sm shadow-green-500/20">
                               {tenderCounts.inwork}
                             </span>
                           )}
@@ -341,7 +341,7 @@ export function AppSidebar() {
                         <span className="flex items-center justify-between w-full">
                           <span>Архив</span>
                           {tenderCounts.archive > 0 && (
-                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gray-100 text-gray-700 shadow-sm shadow-gray-500/20">
+                            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold rounded-full bg-gray-50 text-gray-700 border border-gray-200 shadow-sm shadow-gray-500/20">
                               {tenderCounts.archive}
                             </span>
                           )}
