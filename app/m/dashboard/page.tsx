@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Tender } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
-import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle } from 'lucide-react';
+import { useTenders } from '@/hooks/useQueries';
+import { Briefcase, Eye, Bell, TrendingUp, Clock, ChevronRight, X, AlertCircle, RefreshCw } from 'lucide-react';
 import { formatPrice, formatDate } from '@/lib/utils';
 import { getStatusColor } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
@@ -14,7 +14,11 @@ import { LiveClock } from '@/components/mobile/LiveClock';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [tenders, setTenders] = useState<Tender[]>([]);
+  
+  // React Query - автоматическое кэширование!
+  const { data: allTenders = [], isLoading, error, refetch } = useTenders();
+  const tenders = allTenders.slice(0, 10); // Первые 10 для мобильной
+  
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [showRemindersModal, setShowRemindersModal] = useState(false);
 
@@ -22,22 +26,7 @@ export default function DashboardPage() {
     // Получаем текущего пользователя
     const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
     setCurrentUser(user);
-
-    // Загружаем данные
-    loadData();
   }, []);
-
-  const loadData = async () => {
-    try {
-      const response = await apiClient.getTenders();
-      if (!response.success || !response.data) return;
-      const allTenders = response.data as Tender[];
-      const data = allTenders.slice(0, 10);
-      setTenders(data);
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
-    }
-  };
 
   // Мемоизированная статистика - пересчитывается только при изменении tenders
   const stats = useMemo(() => {
@@ -77,13 +66,24 @@ export default function DashboardPage() {
               {currentUser?.username || 'Пользователь'}
             </h1>
           </div>
-          <div className="text-right">
-            <LiveClock />
-            <div className="text-gray-500 text-xs">
-              {new Date().toLocaleDateString('ru-RU', {
-                day: 'numeric',
-                month: 'long',
-              })}
+          <div className="flex items-center gap-2">
+            {/* Кнопка обновить */}
+            <button
+              onClick={() => refetch()}
+              disabled={isLoading}
+              className="p-2 bg-white/50 hover:bg-white/70 rounded-lg active:scale-95 transition-all disabled:opacity-50 backdrop-blur-xl"
+            >
+              <RefreshCw className={`w-4 h-4 text-gray-700 ${isLoading ? 'animate-spin' : ''}`} />
+            </button>
+            
+            <div className="text-right">
+              <LiveClock />
+              <div className="text-gray-500 text-xs">
+                {new Date().toLocaleDateString('ru-RU', {
+                  day: 'numeric',
+                  month: 'long',
+                })}
+              </div>
             </div>
           </div>
         </div>

@@ -68,8 +68,7 @@ export function useDashboard() {
       
       return result.data;
     },
-    staleTime: 2 * 60 * 1000, // 2 минуты - данные свежие
-    gcTime: 10 * 60 * 1000, // 10 минут - хранить в кэше
+    // Используем глобальные настройки из QueryProvider (5 минут + автообновление)
   });
 }
 
@@ -89,8 +88,7 @@ export function useTenders(filters?: { status?: string; limit?: number; offset?:
       
       return (result.data || []) as Tender[];
     },
-    staleTime: 2 * 60 * 1000, // 2 минуты
-    gcTime: 10 * 60 * 1000,
+    // Используем глобальные настройки из QueryProvider (5 минут + автообновление)
   });
 }
 
@@ -193,8 +191,7 @@ export function useSuppliers(filters?: { search?: string; limit?: number; offset
       
       return (result.data || []) as Supplier[];
     },
-    staleTime: 5 * 60 * 1000, // 5 минут - меняются реже
-    gcTime: 15 * 60 * 1000,
+    // Используем глобальные настройки из QueryProvider (5 минут + автообновление)
   });
 }
 
@@ -277,8 +274,7 @@ export function useExpenses(filters?: { tender_id?: number; limit?: number; offs
       
       return result.data || [];
     },
-    staleTime: 1 * 60 * 1000, // 1 минута
-    gcTime: 5 * 60 * 1000,
+    // Используем глобальные настройки из QueryProvider (5 минут + автообновление)
   });
 }
 

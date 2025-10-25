@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Supplier } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
-import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X } from 'lucide-react';
+import { useSuppliers, useDeleteSupplier } from '@/hooks/useQueries';
+import { Search, Phone, Mail, Building2, User, Plus, AlertTriangle, X, RefreshCw } from 'lucide-react';
 import { SwipeableSupplierCard } from '@/components/mobile/SwipeableSupplierCard';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
@@ -14,20 +14,18 @@ import { useAutoClose } from '@/hooks/useAutoClose';
 
 export default function SuppliersPage() {
   const router = useRouter();
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  
+  // React Query - автоматическое кэширование!
+  const { data: suppliers = [], isLoading, error, refetch } = useSuppliers();
+  const deleteSupplierMutation = useDeleteSupplier();
+  
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [supplierToDelete, setSupplierToDelete] = useState<Supplier | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [openCardId, setOpenCardId] = useState<number>(-1);
-
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
 
   useEffect(() => {
     filterSuppliers();
@@ -35,28 +33,6 @@ export default function SuppliersPage() {
 
   // Автозакрытие карточки (оптимизировано)
   useAutoClose(openCardId !== -1, () => setOpenCardId(-1), 3000, '[data-card-id]');
-
-  const loadSuppliers = async () => {
-    setIsLoading(true);
-    try {
-      const response = await apiClient.getSuppliers();
-      if (response.success && response.data) {
-        const data = response.data as Supplier[];
-        const sorted = data.sort((a, b) => {
-          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
-          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
-          return dateB - dateA;
-        });
-        setSuppliers(sorted);
-      } else {
-        setSuppliers([]);
-      }
-    } catch (error) {
-      console.error('Error loading suppliers:', error);
-      setSuppliers([]);
-    }
-    setIsLoading(false);
-  };
 
   const filterSuppliers = () => {
     if (!debouncedSearchQuery) {
@@ -90,24 +66,23 @@ export default function SuppliersPage() {
   const handleDeleteConfirm = async () => {
     if (!supplierToDelete) return;
 
-    setIsDeleting(true);
     setDeletingId(supplierToDelete.id);
+    haptics.medium();
 
     try {
-      await apiClient.deleteSupplier(supplierToDelete.id);
-
-      // Анимация исчезновения - ждём 300ms перед удалением из state
-      setTimeout(() => {
-        setSuppliers(prev => prev.filter(s => s.id !== supplierToDelete.id));
-        setDeletingId(null);
-        setSupplierToDelete(null);
-        setIsDeleting(false);
-      }, 300);
+      await deleteSupplierMutation.mutateAsync(supplierToDelete.id);
+      
+      toast.success('Поставщик удалён', {
+        description: `${supplierToDelete.name} удалён из списка`
+      });
+      // Кэш обновится автоматически!
     } catch (error) {
-      console.error('Ошибка удаления поставщика:', error);
-      setIsDeleting(false);
+      console.error('Error deleting supplier:', error);
       setDeletingId(null);
-      alert('Не удалось удалить поставщика');
+      haptics.error();
+      toast.error('Ошибка', {
+        description: 'Не удалось удалить поставщика'
+      });
     }
   };
 
@@ -119,7 +94,16 @@ export default function SuppliersPage() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
       {/* Шапка - КОМПАКТНАЯ СТЕКЛЯННАЯ */}
       <div className="backdrop-blur-xl bg-white/80 border-b border-white/20 px-4 py-2 sticky top-0 z-30 shadow-lg">
-        <h1 className="text-xl font-bold text-gray-900 mb-2">Поставщики</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-xl font-bold text-gray-900">Поставщики</h1>
+          <button
+            onClick={() => refetch()}
+            disabled={isLoading}
+            className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg active:scale-95 transition-all disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 text-gray-700 ${isLoading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
 
         {/* Поиск - КОМПАКТНЫЙ */}
         <div className="relative">
@@ -200,17 +184,17 @@ export default function SuppliersPage() {
             <div className="flex gap-3">
               <button
                 onClick={handleDeleteCancel}
-                disabled={isDeleting}
+                disabled={deletingId !== null}
                 className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium active:bg-gray-200 transition-colors disabled:opacity-50"
               >
                 Отмена
               </button>
               <button
                 onClick={handleDeleteConfirm}
-                disabled={isDeleting}
+                disabled={deletingId !== null}
                 className="flex-1 bg-red-500 text-white py-3 rounded-xl font-medium active:bg-red-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {isDeleting ? (
+                {deletingId !== null ? (
                   <>
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                     Удаление...
