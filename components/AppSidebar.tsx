@@ -269,10 +269,10 @@ export function AppSidebar() {
                         router.push('/tenders?tab=new');
                       }}
                       className={cn(
-                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
+                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200',
                           tabParam === 'new'
                             ? 'backdrop-blur-xl bg-purple-500/20 text-purple-700 font-medium shadow-sm shadow-purple-500/30 border border-white/20'
-                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                         )}
                       >
                         <span className="flex items-center justify-between w-full">
@@ -290,10 +290,10 @@ export function AppSidebar() {
                         router.push('/tenders?tab=review');
                       }}
                       className={cn(
-                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
+                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200',
                           tabParam === 'review'
                             ? 'backdrop-blur-xl bg-orange-500/20 text-orange-700 font-medium shadow-sm shadow-orange-500/30 border border-white/20'
-                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                         )}
                       >
                         <span className="flex items-center justify-between w-full">
@@ -311,10 +311,10 @@ export function AppSidebar() {
                         router.push('/tenders?tab=inwork');
                       }}
                       className={cn(
-                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
+                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200',
                           tabParam === 'inwork'
                             ? 'backdrop-blur-xl bg-green-500/20 text-green-700 font-medium shadow-sm shadow-green-500/30 border border-white/20'
-                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                         )}
                       >
                         <span className="flex items-center justify-between w-full">
@@ -332,10 +332,10 @@ export function AppSidebar() {
                         router.push('/tenders?tab=archive');
                       }}
                       className={cn(
-                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
+                          'w-full text-left px-3 py-2 rounded-md text-sm transition-all duration-200',
                           tabParam === 'archive'
                             ? 'backdrop-blur-xl bg-gray-500/20 text-gray-700 font-medium shadow-sm shadow-gray-500/30 border border-white/20'
-                            : 'text-gray-600 hover:backdrop-blur-md hover:bg-white/50'
+                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                         )}
                       >
                         <span className="flex items-center justify-between w-full">
@@ -362,11 +362,11 @@ export function AppSidebar() {
                 router.push(item.href);
               }}
               className={cn(
-                'flex items-center gap-3 w-full rounded-md text-sm font-medium h-9 px-4 transition-all',
+                'flex items-center gap-3 w-full rounded-md text-sm font-medium h-9 px-4 transition-all duration-200',
                 isCollapsed ? 'justify-center px-2' : 'justify-start',
                 isActive 
                   ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 hover:bg-blue-500/30 border-l-4 border-blue-600 shadow-lg shadow-blue-500/50 font-medium'
-                  : 'hover:bg-white/50 text-gray-700'
+                  : 'hover:bg-gray-100 hover:text-gray-900 text-gray-700'
               )}
               title={isCollapsed ? item.title : undefined}
             >
