@@ -184,7 +184,7 @@ export function AddTenderDialog({
                 />
               </motion.div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-4">
                 <motion.div 
                   className="grid gap-1.5"
                   whileHover={{ scale: 1.01, y: -2 }}
@@ -228,33 +228,33 @@ export function AddTenderDialog({
                     required
                   />
                 </motion.div>
-
-                <motion.div 
-                  className="grid gap-1.5"
-                  whileHover={{ scale: 1.01, y: -2 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <Label htmlFor="start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                    <DollarSign className="h-3.5 w-3.5 text-green-500" />
-                    Цена (₽)
-                  </Label>
-                  <Input
-                    id="start_price"
-                    type="number"
-                    value={formData.start_price || ''}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        start_price: e.target.value
-                          ? parseFloat(e.target.value)
-                          : null,
-                      })
-                    }
-                    placeholder="1 000 000"
-                    className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
-                  />
-                </motion.div>
               </div>
+
+              <motion.div 
+                className="grid gap-1.5"
+                whileHover={{ scale: 1.01, y: -2 }}
+                transition={{ duration: 0.2 }}
+              >
+                <Label htmlFor="start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+                  <DollarSign className="h-3.5 w-3.5 text-green-500" />
+                  Цена (₽)
+                </Label>
+                <Input
+                  id="start_price"
+                  type="number"
+                  value={formData.start_price || ''}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      start_price: e.target.value
+                        ? parseFloat(e.target.value)
+                        : null,
+                    })
+                  }
+                  placeholder="1 000 000"
+                  className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
+                />
+              </motion.div>
             </motion.div>
 
             {formData.status === 'победа' && (

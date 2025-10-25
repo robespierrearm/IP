@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Supplier, SupplierInsert } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
+import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from '@/hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,30 +20,16 @@ import { Pencil, Trash2, Search, Phone, Mail, FileText } from 'lucide-react';
 import { formatPhoneForDisplay } from '@/lib/phoneUtils';
 
 export default function SuppliersPage() {
-  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  // React Query - автоматическое кэширование!
+  const { data: suppliers = [], isLoading, error, refetch } = useSuppliers();
+  const createSupplierMutation = useCreateSupplier();
+  const updateSupplierMutation = useUpdateSupplier();
+  const deleteSupplierMutation = useDeleteSupplier();
+  
   const [filteredSuppliers, setFilteredSuppliers] = useState<Supplier[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // Загрузка поставщиков через API
-  const loadSuppliers = async () => {
-    const result = await apiClient.getSuppliers();
-
-    if (result.error) {
-      console.error('Ошибка загрузки поставщиков:', result.error);
-      setSuppliers([]);
-      setFilteredSuppliers([]);
-    } else {
-      setSuppliers((result.data as Supplier[]) || []);
-    }
-    setIsLoading(false);
-  };
-
-  useEffect(() => {
-    loadSuppliers();
-  }, []);
 
   // Поиск
   useEffect(() => {
@@ -63,45 +49,42 @@ export default function SuppliersPage() {
     setFilteredSuppliers(filtered);
   }, [searchQuery, suppliers]);
 
-  // Добавление поставщика через API
+  // Добавление поставщика через React Query mutation
   const handleAddSupplier = async (supplier: SupplierInsert) => {
-    const result = await apiClient.createSupplier(supplier);
-
-    if (result.error) {
-      console.error('Ошибка добавления поставщика:', result.error);
-      alert('Ошибка при добавлении поставщика');
-    } else {
-      loadSuppliers();
+    try {
+      await createSupplierMutation.mutateAsync(supplier);
       setIsAddDialogOpen(false);
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка добавления поставщика:', error);
+      alert('Ошибка при добавлении поставщика');
     }
   };
 
-  // Обновление поставщика через API
+  // Обновление поставщика через React Query mutation
   const handleUpdateSupplier = async (id: number, updates: Partial<Supplier>) => {
-    const result = await apiClient.updateSupplier(id, updates);
-
-    if (result.error) {
-      console.error('Ошибка обновления поставщика:', result.error);
-      alert('Ошибка при обновлении поставщика');
-    } else {
-      loadSuppliers();
+    try {
+      await updateSupplierMutation.mutateAsync({ id, updates });
       setEditingSupplier(null);
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка обновления поставщика:', error);
+      alert('Ошибка при обновлении поставщика');
     }
   };
 
-  // Удаление поставщика через API
+  // Удаление поставщика через React Query mutation
   const handleDeleteSupplier = async (id: number) => {
     if (!confirm('Вы уверены, что хотите удалить этого поставщика?')) {
       return;
     }
 
-    const result = await apiClient.deleteSupplier(id);
-
-    if (result.error) {
-      console.error('Ошибка удаления поставщика:', result.error);
+    try {
+      await deleteSupplierMutation.mutateAsync(id);
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка удаления поставщика:', error);
       alert('Ошибка при удалении поставщика');
-    } else {
-      loadSuppliers();
     }
   };
 

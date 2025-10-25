@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useDashboard } from '@/hooks/useQueries';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Table,
@@ -62,9 +63,14 @@ const formatCompactPrice = (price: number | null) => {
 export default function DashboardPage() {
   const router = useRouter();
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  const [dashboardFiles, setDashboardFiles] = useState<File[]>([]);
-  const [tenders, setTenders] = useState<Tender[]>([]);
-  const [stats, setStats] = useState({
+  
+  // React Query - автоматическое кэширование!
+  const { data: dashboardData, isLoading, error, refetch } = useDashboard();
+  
+  // Вычисляемые значения из кэша
+  const tenders = dashboardData?.tenders || [];
+  const dashboardFiles = dashboardData?.files || [];
+  const stats = dashboardData?.stats || {
     inWork: 0,
     underReview: 0,
     reminders: 0,
@@ -74,9 +80,9 @@ export default function DashboardPage() {
     won: 0,
     lost: 0,
     totalRevenue: 0,
-  });
+  };
+  const reminderTenders = dashboardData?.reminderTenders || [];
   
-  const [reminderTenders, setReminderTenders] = useState<Array<{id: number, name: string, deadline: string}>>([]);
   const [urgentTenders, setUrgentTenders] = useState<Tender[]>([]);
   const [inWorkTenders, setInWorkTenders] = useState<Tender[]>([]);
   const [tenderExpenses, setTenderExpenses] = useState<Record<number, number>>({});
@@ -85,6 +91,7 @@ export default function DashboardPage() {
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
+  // Таймер для часов
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentDateTime(new Date());
@@ -93,74 +100,51 @@ export default function DashboardPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Загрузка данных через API
+  // Вычисляем срочные и активные тендеры из кэша
   useEffect(() => {
-    const loadDashboardData = async () => {
-      try {
-        const response = await fetch('/api/dashboard');
-        const result = await response.json();
-
-        if (result.error) {
-          console.error('Ошибка загрузки данных dashboard:', result.error);
-          setTenders([]);
-          setDashboardFiles([]);
-          return;
+    if (!tenders || tenders.length === 0) return;
+    
+    // Вычисляем срочные тендеры (urgent + high)
+    const urgent = tenders
+      .map((t: Tender) => ({ tender: t, notification: getSmartNotification(t) }))
+      .filter(({ notification }: { notification: any }) => 
+        notification && (notification.priority === 'urgent' || notification.priority === 'high')
+      )
+      .sort((a: any, b: any) => {
+        if (a.notification!.priority === 'urgent' && b.notification!.priority !== 'urgent') return -1;
+        if (a.notification!.priority !== 'urgent' && b.notification!.priority === 'urgent') return 1;
+        return 0;
+      })
+      .slice(0, 3)
+      .map(({ tender }: { tender: Tender }) => tender);
+    setUrgentTenders(urgent);
+    
+    // Вычисляем тендеры в работе (топ-3 по давности)
+    const inWork = tenders
+      .filter((t: Tender) => t.status === 'в работе')
+      .slice(0, 3);
+    setInWorkTenders(inWork);
+    
+    // Загружаем расходы для тендеров в работе
+    if (inWork.length > 0) {
+      const loadExpenses = async () => {
+        const tenderIds = inWork.map((t: Tender) => t.id);
+        const { data: expenses } = await supabase
+          .from('expenses')
+          .select('tender_id, amount')
+          .in('tender_id', tenderIds);
+        
+        if (expenses) {
+          const expenseMap: Record<number, number> = {};
+          expenses.forEach((exp: any) => {
+            expenseMap[exp.tender_id] = (expenseMap[exp.tender_id] || 0) + exp.amount;
+          });
+          setTenderExpenses(expenseMap);
         }
-
-        if (result.data) {
-          const allTenders = result.data.tenders;
-          setTenders(allTenders);
-          setDashboardFiles(result.data.files);
-          setStats(result.data.stats);
-          setReminderTenders(result.data.reminderTenders);
-          
-          // Вычисляем срочные тендеры (urgent + high)
-          const urgent = allTenders
-            .map((t: Tender) => ({ tender: t, notification: getSmartNotification(t) }))
-            .filter(({ notification }: { notification: any }) => 
-              notification && (notification.priority === 'urgent' || notification.priority === 'high')
-            )
-            .sort((a: any, b: any) => {
-              if (a.notification!.priority === 'urgent' && b.notification!.priority !== 'urgent') return -1;
-              if (a.notification!.priority !== 'urgent' && b.notification!.priority === 'urgent') return 1;
-              return 0;
-            })
-            .slice(0, 3)
-            .map(({ tender }: { tender: Tender }) => tender);
-          setUrgentTenders(urgent);
-          
-          // Вычисляем тендеры в работе (топ-3 по давности)
-          const inWork = allTenders
-            .filter((t: Tender) => t.status === 'в работе')
-            .slice(0, 3);
-          setInWorkTenders(inWork);
-          
-          // Загружаем расходы для тендеров в работе
-          if (inWork.length > 0) {
-            const tenderIds = inWork.map((t: Tender) => t.id);
-            const { data: expenses } = await supabase
-              .from('expenses')
-              .select('tender_id, amount')
-              .in('tender_id', tenderIds);
-            
-            if (expenses) {
-              const expenseMap: Record<number, number> = {};
-              expenses.forEach((exp: any) => {
-                expenseMap[exp.tender_id] = (expenseMap[exp.tender_id] || 0) + exp.amount;
-              });
-              setTenderExpenses(expenseMap);
-            }
-          }
-        }
-      } catch (err) {
-        console.error('Критическая ошибка загрузки dashboard:', err);
-        setTenders([]);
-        setDashboardFiles([]);
-      }
-    };
-
-    loadDashboardData();
-  }, []);
+      };
+      loadExpenses();
+    }
+  }, [tenders]);
 
   // Предпросмотр файла
   const handlePreview = async (file: File) => {
@@ -427,7 +411,7 @@ export default function DashboardPage() {
             <CardContent className="p-0">
               {tenders.length > 0 ? (
                 <div className="divide-y">
-                  {tenders.map((tender) => {
+                  {tenders.map((tender: Tender) => {
                     const notification = getSmartNotification(tender);
                     return (
                     <div 
@@ -495,7 +479,7 @@ export default function DashboardPage() {
             <CardContent className="p-2">
               {dashboardFiles.length > 0 ? (
                 <div className="space-y-1.5">
-                  {dashboardFiles.map((file) => (
+                  {dashboardFiles.map((file: File) => (
                     <div
                       key={file.id}
                       className="flex items-center gap-1.5 p-1.5 backdrop-blur-xl bg-white/50 rounded hover:bg-purple-500/20 transition-colors group border border-white/20"

@@ -5,7 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
 import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
-import { apiClient } from '@/lib/api-client';
+import { useTenders, useCreateTender, useUpdateTender, useDeleteTender } from '@/hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AddTenderDialog } from '@/components/AddTenderDialog';
@@ -26,10 +26,14 @@ function TendersContent() {
   const statusParam = searchParams.get('status');
   const editParam = searchParams.get('edit');
   
-  const [tenders, setTenders] = useState<Tender[]>([]);
+  // React Query - автоматическое кэширование!
+  const { data: tenders = [], isLoading, error, refetch } = useTenders();
+  const createTenderMutation = useCreateTender();
+  const updateTenderMutation = useUpdateTender();
+  const deleteTenderMutation = useDeleteTender();
+  
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingTender, setEditingTender] = useState<Tender | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || 'all');
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all');
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
@@ -43,22 +47,6 @@ function TendersContent() {
     }
   }, [tabParam]);
 
-  // Загрузка тендеров через API (без полноэкранной загрузки)
-  const loadTenders = async () => {
-    const result = await apiClient.getTenders();
-
-    if (result.error) {
-      console.error('Ошибка загрузки тендеров:', result.error);
-      setTenders([]);
-    } else {
-      setTenders((result.data as Tender[]) || []);
-    }
-  };
-
-  useEffect(() => {
-    loadTenders();
-  }, []);
-
   // Обработка параметра edit из URL
   useEffect(() => {
     if (editParam && tenders.length > 0) {
@@ -70,7 +58,7 @@ function TendersContent() {
     }
   }, [editParam, tenders]);
 
-  // Добавление тендера через API
+  // Добавление тендера через React Query mutation
   const handleAddTender = async (tender: TenderInsert) => {
     const payload = {
       ...tender,
@@ -83,12 +71,9 @@ function TendersContent() {
       win_price: tender.win_price ?? null,
     };
 
-    const result = await apiClient.createTender(payload);
-
-    if (result.error) {
-      console.error('Ошибка добавления тендера:', result.error);
-      alert(result.error || 'Ошибка при добавлении тендера');
-    } else {
+    try {
+      await createTenderMutation.mutateAsync(payload);
+      
       // Логируем добавление тендера
       await logActivity(
         `Добавлен тендер: ${tender.name}`,
@@ -101,19 +86,19 @@ function TendersContent() {
         }
       );
       
-      loadTenders();
       setIsAddDialogOpen(false);
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка добавления тендера:', error);
+      alert(error?.message || 'Ошибка при добавлении тендера');
     }
   };
 
-  // Обновление тендера через API
+  // Обновление тендера через React Query mutation
   const handleUpdateTender = async (id: number, updates: Partial<Tender>) => {
-    const result = await apiClient.updateTender(id, updates);
-
-    if (result.error) {
-      console.error('Ошибка обновления тендера:', result.error);
-      alert('Ошибка при обновлении тендера');
-    } else {
+    try {
+      await updateTenderMutation.mutateAsync({ id, updates });
+      
       // Логируем редактирование тендера
       await logActivity(
         `Отредактирован тендер: ${updates.name || editingTender?.name || 'ID ' + id}`,
@@ -125,12 +110,15 @@ function TendersContent() {
         }
       );
       
-      loadTenders();
       setEditingTender(null);
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка обновления тендера:', error);
+      alert('Ошибка при обновлении тендера');
     }
   };
 
-  // Удаление тендера через API
+  // Удаление тендера через React Query mutation
   const handleDeleteTender = async (id: number) => {
     const tenderToDelete = tenders.find(t => t.id === id);
     
@@ -138,12 +126,9 @@ function TendersContent() {
       return;
     }
 
-    const result = await apiClient.deleteTender(id);
-
-    if (result.error) {
-      console.error('Ошибка удаления тендера:', result.error);
-      alert('Ошибка при удалении тендера');
-    } else {
+    try {
+      await deleteTenderMutation.mutateAsync(id);
+      
       // Логируем удаление тендера
       await logActivity(
         `Удален тендер: ${tenderToDelete?.name || 'ID ' + id}`,
@@ -155,12 +140,14 @@ function TendersContent() {
           status: tenderToDelete?.status
         }
       );
-      
-      loadTenders();
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка удаления тендера:', error);
+      alert('Ошибка при удалении тендера');
     }
   };
 
-  // Смена статуса тендера
+  // Смена статуса тендера через React Query mutation
   const handleStatusChange = async (
     tenderId: number,
     newStatus: Tender['status'],
@@ -174,30 +161,26 @@ function TendersContent() {
       ...additionalData,
     };
 
-    const result = await apiClient.updateTender(tenderId, updateData);
-
-    if (result.error) {
-      console.error('Ошибка смены статуса:', result.error);
-      throw new Error(result.error);
+    try {
+      await updateTenderMutation.mutateAsync({ id: tenderId, updates: updateData });
+      
+      // Логируем смену статуса
+      await logActivity(
+        `Изменен статус тендера "${tender?.name || 'ID ' + tenderId}": ${oldStatus} → ${newStatus}`,
+        ACTION_TYPES.TENDER_STATUS_CHANGE,
+        { 
+          tender_id: tenderId,
+          tender_name: tender?.name,
+          old_status: oldStatus,
+          new_status: newStatus,
+          additional_data: additionalData
+        }
+      );
+      // Кэш обновится автоматически!
+    } catch (error: any) {
+      console.error('Ошибка смены статуса:', error);
+      throw new Error(error?.message || 'Ошибка смены статуса');
     }
-
-    // Логируем смену статуса
-    await logActivity(
-      `Изменен статус тендера "${tender?.name || 'ID ' + tenderId}": ${oldStatus} → ${newStatus}`,
-      ACTION_TYPES.TENDER_STATUS_CHANGE,
-      { 
-        tender_id: tenderId,
-        tender_name: tender?.name,
-        old_status: oldStatus,
-        new_status: newStatus,
-        additional_data: additionalData
-      }
-    );
-
-    // Автоматическое создание записи в бухгалтерии при переходе в "Победа"
-    // Запись в бухгалтерии будет создана автоматически при добавлении первого расхода
-
-    loadTenders();
   };
 
 
