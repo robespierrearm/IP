@@ -14,7 +14,8 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { FileText, Hash, Link as LinkIcon, MapPin, Calendar, Clock, DollarSign } from 'lucide-react';
+import { FileText, Hash, Link as LinkIcon, MapPin, Calendar, Clock, DollarSign, Paperclip } from 'lucide-react';
+import { TenderFilesList } from '@/components/TenderFilesList';
 
 interface EditTenderDialogProps {
   tender: Tender;
@@ -220,6 +221,31 @@ export function EditTenderDialog({
                   whileHover={{ scale: 1.01, y: -2 }}
                   transition={{ duration: 0.2 }}
                 >
+                  <Label htmlFor="edit-submission_date" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+                    <Calendar className="h-4 w-4 text-purple-500" />
+                    Дата подачи заявки
+                  </Label>
+                  <Input
+                    id="edit-submission_date"
+                    type="date"
+                    value={formData.submission_date || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        submission_date: e.target.value,
+                      })
+                    }
+                    className="h-9 text-sm backdrop-blur-md bg-purple-500/10 border border-purple-200 hover:bg-purple-500/20 focus:bg-purple-500/30 shadow-sm shadow-purple-500/20 transition-all duration-200"
+                  />
+                </motion.div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <motion.div 
+                  className="grid gap-1.5"
+                  whileHover={{ scale: 1.01, y: -2 }}
+                  transition={{ duration: 0.2 }}
+                >
                   <Label htmlFor="edit-submission_deadline" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                     <Clock className="h-4 w-4 text-orange-500" />
                     Дедлайн *
@@ -235,33 +261,33 @@ export function EditTenderDialog({
                     className="h-9 text-sm backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
                   />
                 </motion.div>
-              </div>
 
-              <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01, y: -2 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Label htmlFor="edit-start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <DollarSign className="h-4 w-4 text-green-500" />
-                  Цена (₽)
-                </Label>
-                <Input
-                  id="edit-start_price"
-                  type="number"
-                  value={formData.start_price || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      start_price: e.target.value
-                        ? parseFloat(e.target.value)
-                        : null,
-                    })
-                  }
-                  placeholder="1 000 000"
-                  className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
-                />
-              </motion.div>
+                <motion.div 
+                  className="grid gap-1.5"
+                  whileHover={{ scale: 1.01, y: -2 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Label htmlFor="edit-start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+                    <DollarSign className="h-4 w-4 text-green-500" />
+                    Цена (₽)
+                  </Label>
+                  <Input
+                    id="edit-start_price"
+                    type="number"
+                    value={formData.start_price || ''}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        start_price: e.target.value
+                          ? parseFloat(e.target.value)
+                          : null,
+                      })
+                    }
+                    placeholder="1 000 000"
+                    className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
+                  />
+                </motion.div>
+              </div>
               </div>
             </motion.div>
 
@@ -293,6 +319,22 @@ export function EditTenderDialog({
                 />
               </motion.div>
             )}
+
+            {/* ФАЙЛЫ */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
+              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-indigo-500/10 to-transparent border-l-4 border-indigo-500 rounded-r-lg shadow-sm shadow-indigo-500/20 mb-3">
+                <Paperclip className="h-4 w-4 text-indigo-600" />
+                <h3 className="font-semibold text-sm text-gray-900">Файлы тендера</h3>
+              </div>
+              
+              <div className="backdrop-blur-md bg-white/30 rounded-lg p-3 border border-white/20">
+                <TenderFilesList tenderId={tender.id} tenderStatus={tender.status} />
+              </div>
+            </motion.div>
           </div>
 
           <DialogFooter className="mt-4">
