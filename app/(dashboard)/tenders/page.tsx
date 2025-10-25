@@ -436,23 +436,44 @@ function TendersContent() {
                         onStatusChange={handleStatusChange}
                       />
                     </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setEditingTender(tender)}
-                        className="h-8 w-8 p-0"
+                    <div className="flex gap-2">
+                      {/* Кнопка редактирования */}
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 12 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDeleteTender(tender.id)}
-                        className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setEditingTender(tender)}
+                          className="h-8 w-8 p-0 backdrop-blur-md bg-blue-500/10 hover:bg-blue-500/20 border border-blue-200 shadow-sm hover:shadow-lg hover:shadow-blue-500/40 transition-all duration-200 group relative"
+                        >
+                          <Pencil className="h-4 w-4 text-blue-600 group-hover:rotate-12 transition-transform" />
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            Редактировать
+                          </span>
+                        </Button>
+                      </motion.div>
+                      
+                      {/* Кнопка удаления */}
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: -12 }}
+                        whileTap={{ scale: 0.95 }}
+                        transition={{ duration: 0.2 }}
                       >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteTender(tender.id)}
+                          className="h-8 w-8 p-0 backdrop-blur-md bg-red-500/10 hover:bg-red-500/20 border border-red-200 shadow-sm hover:shadow-lg hover:shadow-red-500/40 transition-all duration-200 group relative"
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600 group-hover:rotate-12 transition-transform" />
+                          <span className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-gray-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                            Удалить
+                          </span>
+                        </Button>
+                      </motion.div>
                     </div>
                   </div>
                 </div>

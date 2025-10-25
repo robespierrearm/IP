@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Logo } from '@/components/Logo';
@@ -397,14 +398,20 @@ export function AppSidebar() {
             </div>
             
             {/* Кнопка выхода */}
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="w-full gap-2 text-red-600 backdrop-blur-xl bg-red-500/10 hover:bg-red-500/20 hover:text-red-700 transition-all justify-start px-4 border border-white/20 shadow-sm shadow-red-500/30"
+            <motion.div
+              whileHover={{ scale: 1.02, x: 2 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ duration: 0.2 }}
             >
-              <LogOut className="h-4 w-4" />
-              <span className="font-medium">Выход</span>
-            </Button>
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="w-full gap-2 text-red-600 backdrop-blur-xl bg-red-500/10 hover:bg-red-500/20 hover:text-red-700 transition-all justify-start px-4 border border-white/20 shadow-sm hover:shadow-md shadow-red-500/30 hover:shadow-red-500/40 group"
+              >
+                <LogOut className="h-4 w-4 group-hover:rotate-12 transition-transform" />
+                <span className="font-medium">Выход</span>
+              </Button>
+            </motion.div>
           </div>
         ) : (
           <div className="space-y-2">
@@ -413,14 +420,20 @@ export function AppSidebar() {
               {currentUser.username?.charAt(0).toUpperCase() || 'U'}
             </div>
             {/* Кнопка выхода в свернутом виде */}
-            <Button
-              variant="ghost"
-              onClick={handleLogout}
-              className="w-full justify-center px-2 text-red-600 hover:bg-red-50 hover:text-red-700 transition-all"
-              title="Выход"
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 12 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.2 }}
             >
-              <LogOut className="h-5 w-5" />
-            </Button>
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="w-full justify-center px-2 backdrop-blur-md bg-red-500/10 hover:bg-red-500/20 text-red-600 hover:text-red-700 border border-red-200 shadow-sm hover:shadow-md hover:shadow-red-500/40 transition-all group relative"
+                title="Выход"
+              >
+                <LogOut className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+              </Button>
+            </motion.div>
           </div>
         )}
       </div>
