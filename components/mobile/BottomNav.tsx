@@ -21,7 +21,7 @@ export function BottomNav() {
   const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-bottom z-40">
+    <nav className="fixed bottom-0 left-0 right-0 backdrop-blur-xl bg-white/80 border-t border-white/20 safe-bottom z-40 shadow-lg">
       <div className="flex items-center justify-around px-2 py-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -54,8 +54,8 @@ export function BottomNav() {
               className={cn(
                 'flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-xl transition-all touch-target',
                 isActive || isPendingThis
-                  ? 'text-primary-600 bg-primary-50'
-                  : 'text-gray-600 hover:text-gray-900 active:bg-gray-100'
+                  ? 'text-blue-600 backdrop-blur-xl bg-blue-500/20 border border-white/20 shadow-sm shadow-blue-500/30'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
               )}
             >
               <Icon

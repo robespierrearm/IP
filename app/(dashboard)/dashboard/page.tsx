@@ -248,8 +248,8 @@ export default function DashboardPage() {
 
         {/* Три основных блока */}
         <div className="grid gap-3 md:grid-cols-3 mb-5">
-          {/* 1. СРОЧНО - NOTION STYLE */}
-          <Card className="transition-all hover:shadow-md bg-white border border-gray-200 shadow-sm h-[240px] border-l-4 border-l-red-500">
+          {/* 1. СРОЧНО - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-red-500/30 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-red-50">
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer border border-gray-200"
+                        className="p-2 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
                       >
                         <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
                           {tender.name}
@@ -303,8 +303,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* 2. В РАБОТЕ - NOTION STYLE */}
-          <Card className="transition-all hover:shadow-md bg-white border border-gray-200 shadow-sm h-[240px] border-l-4 border-l-green-500">
+          {/* 2. В РАБОТЕ - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-green-500/30 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-green-50">
@@ -327,7 +327,7 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer border border-gray-200"
+                        className="p-2 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
                       >
                         <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
                           {tender.name}
@@ -366,8 +366,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* 3. СТАТИСТИКА - NOTION STYLE */}
-          <Card className="transition-all hover:shadow-md bg-white border border-gray-200 shadow-sm h-[240px] border-l-4 border-l-blue-500">
+          {/* 3. СТАТИСТИКА - СТЕКЛЯННАЯ */}
+          <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-blue-500/30 h-[240px]">
             <CardContent className="p-3 h-full flex flex-col">
               <div className="flex items-center gap-2 mb-3 flex-shrink-0">
                 <div className="p-1.5 rounded-lg bg-blue-50">
@@ -413,8 +413,8 @@ export default function DashboardPage() {
 
         {/* Нижние два блока: Последние тендеры (70%) + Файлы (30%) */}
         <div className="grid gap-3 md:grid-cols-3">
-          {/* Последние тендеры - NOTION STYLE */}
-          <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+          {/* Последние тендеры - СТЕКЛЯННАЯ */}
+          <Card className="backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg hover:shadow-xl transition-shadow md:col-span-2">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900">Последние тендеры</h3>
@@ -478,8 +478,8 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
 
-          {/* Файлы - NOTION STYLE */}
-          <Card className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow border-l-4 border-l-purple-500">
+          {/* Файлы - СТЕКЛЯННАЯ */}
+          <Card className="backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-purple-500/30 hover:shadow-xl transition-shadow">
             <div className="border-b px-4 py-1">
               <div className="flex items-center justify-between">
                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
