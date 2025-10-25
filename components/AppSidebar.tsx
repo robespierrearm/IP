@@ -243,9 +243,9 @@ export function AppSidebar() {
                   )}
                 </div>
 
-                {/* Подменю тендеров */}
+                {/* Подменю тендеров - СТЕКЛЯННОЕ */}
                 {isTendersOpen && !isCollapsed && (
-                  <div className="ml-4 space-y-1 border-l-2 border-gray-200 pl-3">
+                  <div className="ml-4 space-y-1 border-l-2 border-white/30 pl-3">
                     <button
                       onClick={() => {
                         closeMobileMenu();
@@ -254,8 +254,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'new'
-                            ? 'backdrop-blur-xl bg-blue-500/20 text-blue-700 font-medium shadow-sm shadow-blue-500/30'
-                            : 'text-gray-600 hover:bg-white/50'
+                            ? 'backdrop-blur-xl bg-purple-500/20 text-purple-700 font-medium shadow-sm shadow-purple-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-xl hover:bg-white/50'
                         )}
                       >
                         Новые
@@ -268,8 +268,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'review'
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-orange-500/20 text-orange-700 font-medium shadow-sm shadow-orange-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-xl hover:bg-white/50'
                         )}
                       >
                         На рассмотрении
@@ -282,8 +282,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'inwork'
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-green-500/20 text-green-700 font-medium shadow-sm shadow-green-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-xl hover:bg-white/50'
                         )}
                       >
                         В работе
@@ -296,8 +296,8 @@ export function AppSidebar() {
                       className={cn(
                           'w-full text-left px-3 py-2 rounded-md text-sm transition-all',
                           tabParam === 'archive'
-                            ? 'bg-blue-50 text-blue-700 font-medium'
-                            : 'text-gray-600 hover:bg-gray-100'
+                            ? 'backdrop-blur-xl bg-gray-500/20 text-gray-700 font-medium shadow-sm shadow-gray-500/30 border border-white/20'
+                            : 'text-gray-600 hover:backdrop-blur-xl hover:bg-white/50'
                         )}
                       >
                         Архив
