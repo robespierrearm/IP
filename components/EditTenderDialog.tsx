@@ -51,41 +51,41 @@ export function EditTenderDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl backdrop-blur-xl bg-white/95 border border-white/20 shadow-2xl">
-        <DialogHeader className="pb-2">
-          <DialogTitle className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✏️ Редактировать тендер</DialogTitle>
-          <DialogDescription className="text-xs text-gray-600">
+        <DialogHeader className="pb-1">
+          <DialogTitle className="text-base font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✏️ Редактировать тендер</DialogTitle>
+          <DialogDescription className="text-[10px] text-gray-600">
             Измените информацию о тендере и управляйте файлами
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="info" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 backdrop-blur-md bg-white/50">
-            <TabsTrigger value="info" className="data-[state=active]:bg-white/90">📋 Информация</TabsTrigger>
-            <TabsTrigger value="files" className="data-[state=active]:bg-white/90">📎 Файлы</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 backdrop-blur-md bg-white/50 h-8">
+            <TabsTrigger value="info" className="data-[state=active]:bg-white/90 text-xs">📋 Информация</TabsTrigger>
+            <TabsTrigger value="files" className="data-[state=active]:bg-white/90 text-xs">📎 Файлы</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="info">
+          <TabsContent value="info" className="mt-2">
             <form onSubmit={handleSubmit}>
-              <div className="space-y-4 py-3">
+              <div className="space-y-3 py-2">
             {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-3">
-                <FileText className="h-4 w-4 text-blue-600" />
-                <h3 className="font-semibold text-sm text-gray-900">Основная информация</h3>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-3 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-2">
+                <FileText className="h-3.5 w-3.5 text-blue-600" />
+                <h3 className="font-semibold text-xs text-gray-900">Основная информация</h3>
               </div>
               
-              <div className="space-y-3">
+              <div className="space-y-2">
               <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01 }}
+                className="grid gap-1"
+                whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="edit-name" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <FileText className="h-4 w-4 text-blue-500" />
+                <Label htmlFor="edit-name" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                  <FileText className="h-3 w-3 text-blue-500" />
                   Название тендера *
                 </Label>
               <Input
@@ -95,24 +95,24 @@ export function EditTenderDialog({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Введите название тендера"
-                className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 required
               />
               </motion.div>
 
               <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01 }}
+                className="grid gap-1"
+                whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="edit-status" className="text-xs font-medium text-gray-700">Статус</Label>
+                <Label htmlFor="edit-status" className="text-[11px] font-medium text-gray-700">Статус</Label>
               <select
                 id="edit-status"
                 value={formData.status || 'новый'}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as Tender['status'] })
                 }
-                className="flex h-9 w-full rounded-md border border-white/20 backdrop-blur-md bg-white/50 hover:bg-white/70 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+                className="flex h-8 w-full rounded-md border border-white/20 backdrop-blur-md bg-white/50 hover:bg-white/70 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
               >
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -123,12 +123,12 @@ export function EditTenderDialog({
               </motion.div>
 
               <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01 }}
+                className="grid gap-1"
+                whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="edit-purchase_number" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <Hash className="h-4 w-4 text-gray-500" />
+                <Label htmlFor="edit-purchase_number" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                  <Hash className="h-3 w-3 text-gray-500" />
                   Номер гос закупки
                 </Label>
               <Input
@@ -138,17 +138,17 @@ export function EditTenderDialog({
                   setFormData({ ...formData, purchase_number: e.target.value })
                 }
                 placeholder="№ 0123456789012345678901"
-                className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
               </motion.div>
 
               <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01 }}
+                className="grid gap-1"
+                whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="edit-link" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <LinkIcon className="h-4 w-4 text-blue-500" />
+                <Label htmlFor="edit-link" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                  <LinkIcon className="h-3 w-3 text-blue-500" />
                   Ссылка на тендер
                 </Label>
               <Input
@@ -159,7 +159,7 @@ export function EditTenderDialog({
                   setFormData({ ...formData, link: e.target.value })
                 }
                 placeholder="https://..."
-                className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
               </motion.div>
               </div>
@@ -171,19 +171,19 @@ export function EditTenderDialog({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-3">
-                <MapPin className="h-4 w-4 text-orange-600" />
-                <h3 className="font-semibold text-sm text-gray-900">Локация и сроки</h3>
+              <div className="flex items-center gap-1.5 px-2 py-0.5 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-3 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-2">
+                <MapPin className="h-3.5 w-3.5 text-orange-600" />
+                <h3 className="font-semibold text-xs text-gray-900">Локация и сроки</h3>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-2">
               <motion.div 
-                className="grid gap-1.5"
-                whileHover={{ scale: 1.01 }}
+                className="grid gap-1"
+                whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="edit-region" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <MapPin className="h-4 w-4 text-orange-500" />
+                <Label htmlFor="edit-region" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                  <MapPin className="h-3 w-3 text-orange-500" />
                   Регион / Адрес
                 </Label>
               <Input
@@ -194,18 +194,18 @@ export function EditTenderDialog({
                   setFormData({ ...formData, region: e.target.value })
                 }
                 placeholder="Москва, Россия"
-                className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
               </motion.div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <motion.div 
-                  className="grid gap-1.5"
-                  whileHover={{ scale: 1.01, y: -2 }}
+                  className="grid gap-1"
+                  whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="edit-publication_date" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                    <Calendar className="h-4 w-4 text-blue-500" />
+                  <Label htmlFor="edit-publication_date" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                    <Calendar className="h-3 w-3 text-blue-500" />
                     Дата публикации
                   </Label>
                 <Input
@@ -219,18 +219,18 @@ export function EditTenderDialog({
                       publication_date: e.target.value,
                     })
                   }
-                    className="h-9 text-sm backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
+                    className="h-8 text-xs backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
                     required
                   />
                 </motion.div>
 
                 <motion.div 
-                  className="grid gap-1.5"
-                  whileHover={{ scale: 1.01, y: -2 }}
+                  className="grid gap-1"
+                  whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="edit-submission_date" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                    <Calendar className="h-4 w-4 text-purple-500" />
+                  <Label htmlFor="edit-submission_date" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                    <Calendar className="h-3 w-3 text-purple-500" />
                     Дата подачи заявки
                   </Label>
                   <Input
@@ -243,19 +243,19 @@ export function EditTenderDialog({
                         submission_date: e.target.value,
                       })
                     }
-                    className="h-9 text-sm backdrop-blur-md bg-purple-500/10 border border-purple-200 hover:bg-purple-500/20 focus:bg-purple-500/30 shadow-sm shadow-purple-500/20 transition-all duration-200"
+                    className="h-8 text-xs backdrop-blur-md bg-purple-500/10 border border-purple-200 hover:bg-purple-500/20 focus:bg-purple-500/30 shadow-sm shadow-purple-500/20 transition-all duration-200"
                   />
                 </motion.div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 <motion.div 
-                  className="grid gap-1.5"
-                  whileHover={{ scale: 1.01, y: -2 }}
+                  className="grid gap-1"
+                  whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="edit-submission_deadline" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                    <Clock className="h-4 w-4 text-orange-500" />
+                  <Label htmlFor="edit-submission_deadline" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                    <Clock className="h-3 w-3 text-orange-500" />
                     Дедлайн *
                   </Label>
                   <Input
@@ -266,17 +266,17 @@ export function EditTenderDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, submission_deadline: e.target.value })
                     }
-                    className="h-9 text-sm backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
+                    className="h-8 text-xs backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
                   />
                 </motion.div>
 
                 <motion.div 
-                  className="grid gap-1.5"
-                  whileHover={{ scale: 1.01, y: -2 }}
+                  className="grid gap-1"
+                  whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="edit-start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                    <DollarSign className="h-4 w-4 text-green-500" />
+                  <Label htmlFor="edit-start_price" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                    <DollarSign className="h-3 w-3 text-green-500" />
                     Цена (₽)
                   </Label>
                   <Input
@@ -292,7 +292,7 @@ export function EditTenderDialog({
                       })
                     }
                     placeholder="1 000 000"
-                    className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
+                    className="h-8 text-xs backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                   />
                 </motion.div>
               </div>
@@ -301,13 +301,13 @@ export function EditTenderDialog({
 
             {formData.status === 'победа' && (
               <motion.div 
-                className="grid gap-1.5"
+                className="grid gap-1"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
               >
-                <Label htmlFor="edit-win_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
-                  <DollarSign className="h-4 w-4 text-green-500" />
+                <Label htmlFor="edit-win_price" className="flex items-center gap-1 text-[11px] font-medium text-gray-700">
+                  <DollarSign className="h-3 w-3 text-green-500" />
                   Цена победы (₽)
                 </Label>
                 <Input
@@ -323,14 +323,14 @@ export function EditTenderDialog({
                     })
                   }
                   placeholder="0"
-                  className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
+                  className="h-8 text-xs backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                 />
               </motion.div>
             )}
 
               </div>
 
-              <DialogFooter className="mt-4">
+              <DialogFooter className="mt-3">
                 <Button
                   type="button"
                   variant="outline"
@@ -344,7 +344,7 @@ export function EditTenderDialog({
             </form>
           </TabsContent>
 
-          <TabsContent value="files" className="py-3">
+          <TabsContent value="files" className="py-2 mt-2">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
