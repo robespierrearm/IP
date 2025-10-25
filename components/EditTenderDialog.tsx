@@ -49,9 +49,9 @@ export function EditTenderDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Редактировать тендер</DialogTitle>
-          <DialogDescription>
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg font-bold">Редактировать тендер</DialogTitle>
+          <DialogDescription className="text-xs text-gray-600">
             Измените информацию о тендере и управляйте файлами
           </DialogDescription>
         </DialogHeader>
@@ -64,9 +64,9 @@ export function EditTenderDialog({
 
           <TabsContent value="info">
             <form onSubmit={handleSubmit}>
-              <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="edit-name">Название тендера *</Label>
+              <div className="grid gap-3 py-3">
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-name" className="text-xs font-medium">Название тендера *</Label>
               <Input
                 id="edit-name"
                 value={formData.name || ''}
@@ -74,19 +74,20 @@ export function EditTenderDialog({
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Введите название тендера"
+                className="h-9"
                 required
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="edit-status">Статус</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-status" className="text-xs font-medium">Статус</Label>
               <select
                 id="edit-status"
                 value={formData.status || 'новый'}
                 onChange={(e) =>
                   setFormData({ ...formData, status: e.target.value as Tender['status'] })
                 }
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               >
                 {Object.entries(STATUS_LABELS).map(([value, label]) => (
                   <option key={value} value={value}>
@@ -96,8 +97,8 @@ export function EditTenderDialog({
               </select>
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="edit-purchase_number">Номер гос закупки</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-purchase_number" className="text-xs font-medium">Номер гос закупки</Label>
               <Input
                 id="edit-purchase_number"
                 value={formData.purchase_number || ''}
@@ -105,11 +106,12 @@ export function EditTenderDialog({
                   setFormData({ ...formData, purchase_number: e.target.value })
                 }
                 placeholder="№ 0123456789012345678901"
+                className="h-9"
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="edit-link">Ссылка на тендер</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-link" className="text-xs font-medium">Ссылка на тендер</Label>
               <Input
                 id="edit-link"
                 type="url"
@@ -118,11 +120,12 @@ export function EditTenderDialog({
                   setFormData({ ...formData, link: e.target.value })
                 }
                 placeholder="https://..."
+                className="h-9"
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label htmlFor="edit-region">Регион / Адрес</Label>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-region" className="text-xs font-medium">Регион / Адрес</Label>
               <Input
                 id="edit-region"
                 type="text"
@@ -131,15 +134,13 @@ export function EditTenderDialog({
                   setFormData({ ...formData, region: e.target.value })
                 }
                 placeholder="Москва, Россия"
+                className="h-9"
               />
-              <p className="text-xs text-gray-500">
-                Укажите регион или адрес доставки
-              </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-publication_date">Дата публикации</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-publication_date" className="text-xs font-medium">Дата публикации</Label>
                 <Input
                   id="edit-publication_date"
                   type="date"
@@ -151,12 +152,13 @@ export function EditTenderDialog({
                       publication_date: e.target.value,
                     })
                   }
+                  className="h-9"
                   required
                 />
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="edit-submission_date">Дата подачи заявки</Label>
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-submission_date" className="text-xs font-medium">Дата подачи заявки</Label>
                 <Input
                   id="edit-submission_date"
                   type="date"
@@ -167,13 +169,14 @@ export function EditTenderDialog({
                       submission_date: e.target.value,
                     })
                   }
+                  className="h-9"
                 />
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="edit-start_price">Начальная цена (₽)</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-start_price" className="text-xs font-medium">Начальная цена (₽)</Label>
                 <Input
                   id="edit-start_price"
                   type="number"
@@ -187,11 +190,12 @@ export function EditTenderDialog({
                     })
                   }
                   placeholder="0"
+                  className="h-9"
                 />
               </div>
 
-              <div className="grid gap-2">
-                <Label htmlFor="edit-submission_deadline">Дедлайн подачи</Label>
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-submission_deadline" className="text-xs font-medium">Дедлайн подачи</Label>
                 <Input
                   id="edit-submission_deadline"
                   type="date"
@@ -200,13 +204,14 @@ export function EditTenderDialog({
                   onChange={(e) =>
                     setFormData({ ...formData, submission_deadline: e.target.value })
                   }
+                  className="h-9"
                 />
               </div>
             </div>
 
             {formData.status === 'победа' && (
-              <div className="grid gap-2">
-                <Label htmlFor="edit-win_price">Цена победы (₽)</Label>
+              <div className="grid gap-1.5">
+                <Label htmlFor="edit-win_price" className="text-xs font-medium">Цена победы (₽)</Label>
                 <Input
                   id="edit-win_price"
                   type="number"
@@ -220,6 +225,7 @@ export function EditTenderDialog({
                     })
                   }
                   placeholder="0"
+                  className="h-9"
                 />
               </div>
             )}
