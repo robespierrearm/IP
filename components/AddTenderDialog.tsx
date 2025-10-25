@@ -69,7 +69,7 @@ export function AddTenderDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto backdrop-blur-xl bg-white/95 border border-white/20 shadow-2xl">
+      <DialogContent className="max-w-4xl backdrop-blur-xl bg-white/95 border border-white/20 shadow-2xl">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✨ Добавить тендер</DialogTitle>
@@ -78,11 +78,11 @@ export function AddTenderDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="grid gap-6 py-6">
-            {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
+            {/* ЛЕВАЯ КОЛОНКА */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
               className="space-y-4"
             >
@@ -153,11 +153,11 @@ export function AddTenderDialog({
               </motion.div>
             </motion.div>
 
-            {/* ЛОКАЦИЯ И СРОКИ */}
+            {/* ПРАВАЯ КОЛОНКА */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
               className="space-y-4"
             >
               <div className="flex items-center gap-2 px-4 py-2 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20">
@@ -188,8 +188,6 @@ export function AddTenderDialog({
                   Укажите регион или адрес доставки
                 </p>
               </motion.div>
-
-              <div className="grid grid-cols-2 gap-4">
                 <motion.div 
                   className="grid gap-2"
                   whileHover={{ scale: 1.01, y: -2 }}
@@ -233,17 +231,8 @@ export function AddTenderDialog({
                     required
                   />
                 </motion.div>
-              </div>
-            </motion.div>
 
-            {/* ФИНАНСЫ */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="space-y-4"
-            >
-              <div className="flex items-center gap-2 px-4 py-2 backdrop-blur-md bg-gradient-to-r from-green-500/10 to-transparent border-l-4 border-green-500 rounded-r-lg shadow-sm shadow-green-500/20">
+              <div className="flex items-center gap-2 px-4 py-2 backdrop-blur-md bg-gradient-to-r from-green-500/10 to-transparent border-l-4 border-green-500 rounded-r-lg shadow-sm shadow-green-500/20 mt-4">
                 <DollarSign className="h-5 w-5 text-green-600" />
                 <h3 className="font-semibold text-gray-900">Финансы</h3>
               </div>
