@@ -85,10 +85,12 @@ export function AddTenderDialog({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20">
+              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-4">
                 <FileText className="h-4 w-4 text-blue-600" />
                 <h3 className="font-semibold text-sm text-gray-900">Основная информация</h3>
               </div>
+              
+              <div className="space-y-4">
               <motion.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
@@ -150,6 +152,7 @@ export function AddTenderDialog({
                   className="h-10 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
               </motion.div>
+              </div>
             </motion.div>
 
             {/* ЛОКАЦИЯ И СРОКИ */}
@@ -158,11 +161,12 @@ export function AddTenderDialog({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20">
+              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-4">
                 <MapPin className="h-4 w-4 text-orange-600" />
                 <h3 className="font-semibold text-sm text-gray-900">Локация и сроки</h3>
               </div>
 
+              <div className="space-y-4">
               <motion.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
@@ -255,6 +259,7 @@ export function AddTenderDialog({
                   className="h-10 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                 />
               </motion.div>
+              </div>
             </motion.div>
 
             {formData.status === 'победа' && (
