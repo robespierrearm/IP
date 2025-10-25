@@ -2,6 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
 import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
 import { apiClient } from '@/lib/api-client';
@@ -273,9 +274,15 @@ function TendersContent() {
             Управление тендерами и заявками
           </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50">
-          Добавить тендер
-        </Button>
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          transition={{ duration: 0.2 }}
+        >
+          <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
+            Добавить тендер
+          </Button>
+        </motion.div>
       </div>
 
       {/* Фильтры архива - СТЕКЛЯННЫЕ */}
@@ -325,25 +332,57 @@ function TendersContent() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
         </div>
       ) : filteredTenders.length === 0 ? (
-        <div className="text-center py-20">
-          <p className="text-gray-500 text-lg">Тендеров пока нет</p>
-          <Button
-            onClick={() => setIsAddDialogOpen(true)}
-            className="mt-4"
-            variant="outline"
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+          className="text-center py-20"
+        >
+          <motion.p 
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="text-gray-500 text-lg"
           >
-            Добавить первый тендер
-          </Button>
-        </div>
+            Тендеров пока нет
+          </motion.p>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              className="mt-4"
+              variant="outline"
+            >
+              Добавить первый тендер
+            </Button>
+          </motion.div>
+        </motion.div>
       ) : (
         <div className="grid gap-4">
-          {filteredTenders.map((tender) => {
+          <AnimatePresence mode="popLayout">
+          {filteredTenders.map((tender, index) => {
             const notification = getSmartNotification(tender);
             const isUrgent = notification && (notification.priority === 'urgent' || notification.priority === 'high');
             
             return (
+            <motion.div
+              key={tender.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ 
+                duration: 0.3,
+                delay: index * 0.05,
+                ease: [0.4, 0, 0.2, 1]
+              }}
+              layout
+            >
             <Card 
-              key={tender.id} 
               className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
                 tender.status === 'новый' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20' :
                 tender.status === 'подано' ? 'bg-gradient-to-r from-blue-500/10 to-transparent border-l-blue-500 shadow-blue-500/30' :
@@ -473,8 +512,10 @@ function TendersContent() {
                 onToggle={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
               />
             </Card>
+            </motion.div>
             );
           })}
+          </AnimatePresence>
         </div>
       )}
 
