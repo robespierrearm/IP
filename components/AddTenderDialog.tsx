@@ -145,21 +145,6 @@ export function AddTenderDialog({
                   required
                 />
               </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="submission_date">Дата подачи заявки</Label>
-                <Input
-                  id="submission_date"
-                  type="date"
-                  value={formData.submission_date || ''}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      submission_date: e.target.value,
-                    })
-                  }
-                />
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
