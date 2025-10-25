@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Tender, STATUS_TRANSITIONS, STATUS_LABELS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
@@ -219,30 +220,40 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
   return (
     <>
       <div className="flex flex-wrap gap-2">
-        {availableTransitions.map((nextStatus) => {
+        {availableTransitions.map((nextStatus, index) => {
           // Современный минималистичный стиль для Победа/Проигрыш
           if (nextStatus === 'победа') {
             return (
-              <button
+              <motion.button
                 key={nextStatus}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleStatusClick(nextStatus)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-green-700 bg-green-50 hover:bg-green-100 border border-green-200 rounded-md transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-green-500/20"
               >
                 <CheckCircle className="h-3.5 w-3.5" />
                 Победа
-              </button>
+              </motion.button>
             );
           }
           if (nextStatus === 'проигрыш') {
             return (
-              <button
+              <motion.button
                 key={nextStatus}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
                 onClick={() => handleStatusClick(nextStatus)}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 bg-red-50 hover:bg-red-100 border border-red-200 rounded-md transition-all duration-200 shadow-sm hover:shadow-md hover:shadow-red-500/20"
               >
                 <XCircle className="h-3.5 w-3.5" />
                 Проигрыш
-              </button>
+              </motion.button>
             );
           }
           // Остальные переходы - современный стиль
@@ -256,17 +267,26 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
             'проигрыш': 'text-red-700 bg-red-50 hover:bg-red-100 border-red-200',
           };
           return (
-            <button
+            <motion.button
               key={nextStatus}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1, duration: 0.3 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => handleStatusClick(nextStatus)}
               className={cn(
-                'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-md transition-colors',
-                colorMap[nextStatus]
+                'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium border rounded-md transition-all duration-200 shadow-sm hover:shadow-md',
+                colorMap[nextStatus],
+                nextStatus === 'подано' && 'hover:shadow-blue-500/20',
+                nextStatus === 'на рассмотрении' && 'hover:shadow-yellow-500/20',
+                nextStatus === 'в работе' && 'hover:shadow-green-500/20',
+                nextStatus === 'завершён' && 'hover:shadow-gray-500/20'
               )}
             >
               {getStatusIcon(nextStatus)}
               {STATUS_LABELS[nextStatus]}
-            </button>
+            </motion.button>
           );
         })}
       </div>
