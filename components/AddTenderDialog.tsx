@@ -71,32 +71,32 @@ export function AddTenderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl backdrop-blur-xl bg-white/95 border border-white/20 shadow-2xl">
         <form onSubmit={handleSubmit}>
-          <DialogHeader className="pb-3">
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✨ Добавить тендер</DialogTitle>
-            <DialogDescription className="text-sm text-gray-600">
+          <DialogHeader className="pb-2">
+            <DialogTitle className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">✨ Добавить тендер</DialogTitle>
+            <DialogDescription className="text-xs text-gray-600">
               Заполните информацию о новом тендере
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-6 py-4">
+          <div className="space-y-4 py-3">
             {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-4">
+              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-3">
                 <FileText className="h-4 w-4 text-blue-600" />
                 <h3 className="font-semibold text-sm text-gray-900">Основная информация</h3>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3">
               <motion.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="name" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <Label htmlFor="name" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                   <FileText className="h-4 w-4 text-blue-500" />
                   Название тендера *
                 </Label>
@@ -107,7 +107,7 @@ export function AddTenderDialog({
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Строительство школы в Москве"
-                  className="h-10 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                  className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                   required
                 />
               </motion.div>
@@ -117,7 +117,7 @@ export function AddTenderDialog({
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="purchase_number" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <Label htmlFor="purchase_number" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                   <Hash className="h-4 w-4 text-gray-500" />
                   Номер гос закупки
                 </Label>
@@ -128,7 +128,7 @@ export function AddTenderDialog({
                     setFormData({ ...formData, purchase_number: e.target.value })
                   }
                   placeholder="№ 0123456789012345678901"
-                  className="h-10 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                  className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
               </motion.div>
 
@@ -137,7 +137,7 @@ export function AddTenderDialog({
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="link" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <Label htmlFor="link" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                   <LinkIcon className="h-4 w-4 text-blue-500" />
                   Ссылка на тендер
                 </Label>
@@ -149,7 +149,7 @@ export function AddTenderDialog({
                     setFormData({ ...formData, link: e.target.value })
                   }
                   placeholder="https://zakupki.gov.ru/..."
-                  className="h-10 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                  className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
               </motion.div>
               </div>
@@ -161,7 +161,7 @@ export function AddTenderDialog({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <div className="flex items-center gap-2 px-3 py-1.5 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-4">
+              <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-3">
                 <MapPin className="h-4 w-4 text-orange-600" />
                 <h3 className="font-semibold text-sm text-gray-900">Локация и сроки</h3>
               </div>
@@ -172,7 +172,7 @@ export function AddTenderDialog({
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="region" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <Label htmlFor="region" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                   <MapPin className="h-4 w-4 text-orange-500" />
                   Регион / Адрес
                 </Label>
@@ -184,17 +184,17 @@ export function AddTenderDialog({
                     setFormData({ ...formData, region: e.target.value })
                   }
                   placeholder="Москва, Россия"
-                  className="h-10 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
+                  className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
               </motion.div>
 
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 <motion.div 
                   className="grid gap-2"
                   whileHover={{ scale: 1.01, y: -2 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="publication_date" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                  <Label htmlFor="publication_date" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                     <Calendar className="h-4 w-4 text-blue-500" />
                     Дата публикации
                   </Label>
@@ -206,7 +206,7 @@ export function AddTenderDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, publication_date: e.target.value })
                     }
-                    className="h-10 text-sm backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
+                    className="h-9 text-sm backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
                     required
                   />
                 </motion.div>
@@ -216,7 +216,7 @@ export function AddTenderDialog({
                   whileHover={{ scale: 1.01, y: -2 }}
                   transition={{ duration: 0.2 }}
                 >
-                  <Label htmlFor="submission_deadline" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                  <Label htmlFor="submission_deadline" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                     <Clock className="h-4 w-4 text-orange-500" />
                     Дедлайн *
                   </Label>
@@ -228,7 +228,7 @@ export function AddTenderDialog({
                     onChange={(e) =>
                       setFormData({ ...formData, submission_deadline: e.target.value })
                     }
-                    className="h-10 text-sm backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
+                    className="h-9 text-sm backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
                     required
                   />
                 </motion.div>
@@ -239,7 +239,7 @@ export function AddTenderDialog({
                 whileHover={{ scale: 1.01, y: -2 }}
                 transition={{ duration: 0.2 }}
               >
-                <Label htmlFor="start_price" className="flex items-center gap-1.5 text-sm font-medium text-gray-700">
+                <Label htmlFor="start_price" className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
                   <DollarSign className="h-4 w-4 text-green-500" />
                   Цена (₽)
                 </Label>
@@ -256,7 +256,7 @@ export function AddTenderDialog({
                     })
                   }
                   placeholder="1 000 000"
-                  className="h-10 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
+                  className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                 />
               </motion.div>
               </div>
