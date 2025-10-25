@@ -273,7 +273,7 @@ function TendersContent() {
             Управление тендерами и заявками
           </p>
         </div>
-        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-sm">
+        <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50">
           Добавить тендер
         </Button>
       </div>
@@ -345,16 +345,14 @@ function TendersContent() {
             <Card 
               key={tender.id} 
               className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${
-                tender.status === 'новый' ? 'border-l-gray-300' :
-                tender.status === 'подано' ? 'border-l-blue-500' :
-                tender.status === 'на рассмотрении' ? 'border-l-yellow-500' :
-                tender.status === 'победа' ? 'border-l-purple-500' :
-                tender.status === 'в работе' ? 'border-l-green-500' :
-                tender.status === 'завершён' ? 'border-l-gray-700' :
-                tender.status === 'проигрыш' ? 'border-l-red-500' :
-                'border-l-gray-300'
-              } ${
-                isUrgent ? 'shadow-[0_0_20px_rgba(239,68,68,0.15)] bg-gradient-to-r from-red-50/60 via-red-50/20 to-transparent' : ''
+                tender.status === 'новый' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20' :
+                tender.status === 'подано' ? 'bg-gradient-to-r from-blue-500/10 to-transparent border-l-blue-500 shadow-blue-500/30' :
+                tender.status === 'на рассмотрении' ? 'bg-gradient-to-r from-yellow-500/10 to-transparent border-l-yellow-500 shadow-yellow-500/30' :
+                tender.status === 'победа' ? 'bg-gradient-to-r from-purple-500/10 to-transparent border-l-purple-500 shadow-purple-500/30' :
+                tender.status === 'в работе' ? 'bg-gradient-to-r from-green-500/10 to-transparent border-l-green-500 shadow-green-500/30' :
+                tender.status === 'завершён' ? 'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-600 shadow-gray-500/20' :
+                tender.status === 'проигрыш' ? 'bg-gradient-to-r from-red-500/10 to-transparent border-l-red-500 shadow-red-500/30' :
+                'bg-gradient-to-r from-gray-500/10 to-transparent border-l-gray-400 shadow-gray-500/20'
               }`}
               onClick={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
             >
