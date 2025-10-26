@@ -32,7 +32,7 @@ export function AddTenderDialog({
     purchase_number: '',
     link: '',
     region: '',
-    publication_date: '',
+    publication_date: new Date().toISOString().split('T')[0], // Текущая дата по умолчанию
     submission_date: '',
     submission_deadline: '',
     start_price: null,
@@ -46,6 +46,11 @@ export function AddTenderDialog({
 
     if (!formData.name.trim()) {
       alert('Введите название тендера');
+      return;
+    }
+
+    if (!formData.publication_date) {
+      alert('Укажите дату публикации');
       return;
     }
 
