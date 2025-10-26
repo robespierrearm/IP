@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, Tender, Expense } from '@/lib/supabase';
 import { TenderAccounting } from '@/components/TenderAccounting';
-import { TenderAccountingVariant1 } from '@/components/TenderAccountingVariant1';
-import { TenderAccountingVariant2 } from '@/components/TenderAccountingVariant2';
+import { TenderAccountingGlass } from '@/components/TenderAccountingGlass';
+import { TenderAccountingModern } from '@/components/TenderAccountingModern';
 
 interface TenderWithExpenses {
   tender: Tender;
@@ -89,13 +89,13 @@ export default function AccountingVariantsPage() {
             </div>
           </div>
 
-          {/* ВАРИАНТ 1 - УЛЬТРА */}
+          {/* ВАРИАНТ 1 - СТЕКЛЯННЫЙ */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-900">⚡ ВАРИАНТ 1: УЛЬТРА-КОМПАКТНЫЙ</h2>
-              <span className="text-sm text-gray-500">Стиль как карточки тендеров</span>
+              <h2 className="text-xl font-semibold text-gray-900">✨ ВАРИАНТ 1: GLASSMORPHISM</h2>
+              <span className="text-sm text-gray-500">Стеклянный премиум-стиль</span>
             </div>
-            <TenderAccountingVariant1
+            <TenderAccountingGlass
               tender={firstTender.tender}
               expenses={firstTender.expenses}
               onExpenseAdded={load}
@@ -104,22 +104,22 @@ export default function AccountingVariantsPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
               <p className="font-medium mb-1">Особенности:</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>Максимально компактно (минимум вертикального пространства)</li>
-                <li>Финансы одной строкой</li>
-                <li>Компактный список расходов</li>
-                <li>✅ Нет дублирования</li>
-                <li>✅ Всё важное видно сразу</li>
+                <li>🔮 Стеклянные прозрачные элементы с blur-эффектом</li>
+                <li>🎨 Градиентные акценты и тени</li>
+                <li>✨ Современный премиум-вид (как macOS Big Sur)</li>
+                <li>✅ ВЕСЬ функционал сохранён (кнопки, модалки, редактирование)</li>
+                <li>✅ Воздушный дизайн, приятный глазу</li>
               </ul>
             </div>
           </div>
 
-          {/* ВАРИАНТ 2 - МОЁ ВИДЕНИЕ */}
+          {/* ВАРИАНТ 2 - MODERN DASHBOARD */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-900">💎 ВАРИАНТ 2: МОЁ ВИДЕНИЕ</h2>
-              <span className="text-sm text-gray-500">Акцент на важном + группировка</span>
+              <h2 className="text-xl font-semibold text-gray-900">🎯 ВАРИАНТ 2: MODERN DASHBOARD</h2>
+              <span className="text-sm text-gray-500">Профессиональный минималистичный</span>
             </div>
-            <TenderAccountingVariant2
+            <TenderAccountingModern
               tender={firstTender.tender}
               expenses={firstTender.expenses}
               onExpenseAdded={load}
@@ -128,12 +128,12 @@ export default function AccountingVariantsPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-900">
               <p className="font-medium mb-1">Особенности:</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>Акцент на чистой прибыли (крупно в заголовке)</li>
-                <li>3 цветные карточки (Доход, Расходы, Налог)</li>
-                <li>Расходы сгруппированы по категориям</li>
-                <li>✅ Визуальная иерархия (важное крупнее)</li>
-                <li>✅ Нет дублирования</li>
-                <li>✅ Удобная навигация</li>
+                <li>🎯 АКЦЕНТ на чистой прибыли (крупно с иконкой)</li>
+                <li>📊 4 цветные карточки финансов</li>
+                <li>📁 Расходы сгруппированы по категориям</li>
+                <li>✅ ВЕСЬ функционал сохранён (кнопки, модалки, редактирование)</li>
+                <li>✅ Четкая визуальная иерархия</li>
+                <li>✅ Удобная навигация и быстрый доступ</li>
               </ul>
             </div>
           </div>
@@ -142,9 +142,9 @@ export default function AccountingVariantsPage() {
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-3">🗳️ Какой вариант тебе нравится больше?</h3>
             <div className="space-y-2 text-sm">
-              <p><strong>ТЕКУЩИЙ:</strong> Функционален, но много повторов</p>
-              <p><strong>ВАРИАНТ 1 (УЛЬТРА):</strong> Супер компактный, минимализм</p>
-              <p><strong>ВАРИАНТ 2 (ВИДЕНИЕ):</strong> Красивый, с акцентами, группировка</p>
+              <p><strong>ТЕКУЩИЙ:</strong> Функционален, но повторы и много места</p>
+              <p><strong>ВАРИАНТ 1 (GLASS):</strong> Стеклянный премиум-стиль, современный</p>
+              <p><strong>ВАРИАНТ 2 (MODERN):</strong> Четкий dashboard, акцент на важном, группировка</p>
             </div>
             <p className="mt-4 text-sm text-gray-700">
               👉 <strong>Скажи номер варианта</strong> и я заменю текущий компонент!
