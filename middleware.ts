@@ -38,19 +38,17 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard', request.url));
     }
     
-    // Если нет токена и это мобильное устройство на /login - редирект на /m/login
-    if (isMobile && path === '/login') {
-      return NextResponse.redirect(new URL('/m/login', request.url));
+    // Новая страница /login полностью адаптивная, редирект не нужен
+    // Если зашли на /m/login - редирект на единую /login
+    if (path === '/m/login') {
+      return NextResponse.redirect(new URL('/login', request.url));
     }
     
     return NextResponse.next();
   }
 
-  // Если нет токена - редирект на логин
+  // Если нет токена - редирект на логин (единая адаптивная страница)
   if (!token) {
-    if (isMobile) {
-      return NextResponse.redirect(new URL('/m/login', request.url));
-    }
     return NextResponse.redirect(new URL('/login', request.url));
   }
 

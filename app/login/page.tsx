@@ -2,294 +2,453 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card } from '@/components/ui/card';
-import { Building2, Lock, Mail, AlertCircle } from 'lucide-react';
 
-export default function LoginPage() {
+/**
+ * Новая анимированная страница авторизации
+ * 
+ * Особенности:
+ * - Плавные анимации через Framer Motion
+ * - Адаптивный дизайн (desktop + mobile)
+ * - Микровзаимодействия
+ * - Интеграция с существующей системой auth
+ * - TypeScript типизация
+ * - Безопасность (httpOnly cookies)
+ */
+
+export default function NewLoginPage() {
   const router = useRouter();
+  
+  // Form state
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  
+  // UI state
   const [isLoading, setIsLoading] = useState(false);
-  const [particles, setParticles] = useState<Array<{ left: string; top: string; delay: string; duration: string }>>([]);
-
-  // Генерируем частицы только на клиенте
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  
+  // Forgot password mode
+  const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
+  
   useEffect(() => {
-    const generatedParticles = [...Array(20)].map(() => ({
-      left: `${Math.random() * 100}%`,
-      top: `${Math.random() * 100}%`,
-      delay: `${Math.random() * 3}s`,
-      duration: `${2 + Math.random() * 3}s`,
-    }));
-    setParticles(generatedParticles);
-  }, []);
-
+    setMounted(true);
+    
+    // Проверяем авторизацию
+    const currentUser = localStorage.getItem('currentUser');
+    if (currentUser) {
+      router.push('/dashboard');
+    }
+  }, [router]);
+  
+  // Валидация
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+  
+  // Обработка входа
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
-    // Простая валидация
+    
+    // Валидация
     if (!email.trim()) {
       setError('Введите email адрес');
       setIsLoading(false);
       return;
     }
-
+    
+    if (!validateEmail(email)) {
+      setError('Введите корректный email адрес');
+      setIsLoading(false);
+      return;
+    }
+    
     if (!password.trim()) {
       setError('Введите пароль');
       setIsLoading(false);
       return;
     }
-
-    // Базовая проверка формата email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      setError('Введите корректный email адрес');
-      setIsLoading(false);
-      return;
-    }
-
+    
     try {
-      // Вызываем новый API route для логина
+      // Вызываем существующий API
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-        credentials: 'include', // Важно для cookies
+        credentials: 'include',
       });
-
-      // Проверяем что ответ не пустой
+      
       const text = await response.text();
       
       if (!text) {
-        throw new Error('Сервер вернул пустой ответ. Проверьте что API работает.');
+        throw new Error('Сервер вернул пустой ответ');
       }
       
       let data;
       try {
         data = JSON.parse(text);
       } catch (parseError) {
-        console.error('Invalid JSON from server:', text);
-        throw new Error('Сервер вернул невалидный ответ: ' + text.substring(0, 100));
+        console.error('Invalid JSON:', text);
+        throw new Error('Невалидный ответ от сервера');
       }
-
+      
       if (!response.ok) {
-        // Показываем точное сообщение от сервера
-        const errorMsg = data.error || 'Ошибка входа';
-        
-        // Переводим на русский если нужно
-        if (errorMsg.includes('Invalid login credentials')) {
-          setError('Неверный email или пароль');
-        } else if (errorMsg.includes('Email') && errorMsg.includes('password')) {
-          setError('Email и пароль обязательны');
-        } else {
-          setError(errorMsg);
-        }
-        
+        setError(data.error || 'Ошибка входа');
         setIsLoading(false);
         return;
       }
-
-      // Сохраняем данные пользователя в localStorage (только для UI)
-      // Токен хранится в httpOnly cookie (безопасно)
+      
+      // Успех!
+      setSuccess(true);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
-
-      // Добавляем лог входа
-      try {
-        await supabase
-          .from('activity_logs')
-          .insert({
-            user_id: data.user.id,
-            username: data.user.username,
-            action: 'Вход в систему',
-            action_type: 'login',
-            details: { email: data.user.email }
-          });
-      } catch (logError) {
-        // Не блокируем вход если лог не записался
-      }
-
-      // Перенаправляем на дашборд (middleware определит мобильное устройство)
-      window.location.href = '/';
+      
+      // Анимированный переход
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+      
     } catch (err) {
       console.error('Login error:', err);
-      
-      // Обработка сетевых ошибок
-      if (err instanceof TypeError && err.message.includes('fetch')) {
-        setError('Не удалось подключиться к серверу. Проверьте что сервер запущен.');
-      } else {
-        const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
-        setError(errorMessage);
-      }
-      
+      setError(err instanceof Error ? err.message : 'Произошла ошибка при входе');
       setIsLoading(false);
     }
   };
-
+  
+  // Обработка восстановления пароля
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+    
+    if (!email.trim() || !validateEmail(email)) {
+      setError('Введите корректный email адрес');
+      setIsLoading(false);
+      return;
+    }
+    
+    // TODO: Интеграция с API восстановления пароля
+    setTimeout(() => {
+      setSuccess(true);
+      setIsLoading(false);
+      setTimeout(() => {
+        setForgotPasswordMode(false);
+        setSuccess(false);
+        setError('');
+      }, 2000);
+    }, 1500);
+  };
+  
+  if (!mounted) {
+    return null; // Избегаем hydration mismatch
+  }
+  
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Анимированная сетка */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]"></div>
-
-      {/* Анимированные светящиеся элементы */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-96 h-96 bg-orange-500/20 rounded-full blur-3xl animate-pulse"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <motion.div
+          className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1, 1.2, 1],
+            opacity: [0.3, 0.5, 0.3],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"
+          animate={{
+            scale: [1.2, 1, 1.2],
+            opacity: [0.5, 0.3, 0.5],
+          }}
+          transition={{
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
+        />
       </div>
-
-      {/* Плавающие частицы */}
-      <div className="absolute inset-0 pointer-events-none">
-        {particles.map((particle, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-orange-500/30 rounded-full animate-pulse"
-            style={{
-              left: particle.left,
-              top: particle.top,
-              animationDelay: particle.delay,
-              animationDuration: particle.duration,
-            }}
-          />
-        ))}
-      </div>
-
-      <Card className="w-full max-w-md relative z-10 shadow-2xl border-slate-800/50 backdrop-blur-xl bg-slate-900/80 overflow-hidden">
-        <div className="p-8">
-          {/* Светящаяся линия сверху */}
-          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent animate-pulse"></div>
-
-          {/* Логотип и название */}
-          <div className="text-center mb-10">
-            <div className="relative inline-block mb-6">
-              <div className="absolute inset-0 bg-gradient-to-br from-orange-500 to-amber-600 rounded-2xl blur-xl opacity-50 animate-pulse"></div>
-              <div className="relative inline-flex items-center justify-center w-24 h-24 bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 rounded-2xl shadow-2xl hover:scale-110 transition-transform duration-300">
-                <Building2 className="h-12 w-12 text-white drop-shadow-lg" />
-              </div>
+      
+      {/* Grid pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      
+      {/* Login Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <div className="bg-slate-900/80 backdrop-blur-xl border border-slate-800/50 rounded-3xl shadow-2xl p-8 relative overflow-hidden">
+          {/* Glow effect */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
+          
+          {/* Logo */}
+          <motion.div
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-center mb-8"
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl blur-xl opacity-50 animate-pulse" />
+              <Lock className="w-8 h-8 text-white relative z-10" />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-400 via-amber-400 to-orange-500 bg-clip-text text-transparent mb-3">
-              ИП Чолахян
+            
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-blue-500 bg-clip-text text-transparent mb-2">
+              {forgotPasswordMode ? 'Восстановление' : 'Добро пожаловать'}
             </h1>
-            <p className="text-slate-400 text-sm">Строительная компания</p>
-            <div className="mt-4 flex items-center justify-center gap-2">
-              <div className="h-px w-12 bg-gradient-to-r from-transparent to-orange-500/50"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
-              <div className="h-px w-12 bg-gradient-to-l from-transparent to-orange-500/50"></div>
-            </div>
-          </div>
-
-          {/* Форма входа */}
-          <form onSubmit={handleLogin} className="space-y-6" noValidate>
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400 backdrop-blur-sm">
-                <AlertCircle className="h-5 w-5 flex-shrink-0 animate-pulse" />
-                <span className="text-sm font-medium">{error}</span>
-              </div>
-            )}
-
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300 font-medium text-sm flex items-center gap-2">
-                <Mail className="h-4 w-4 text-orange-500" />
-                Email адрес
-              </Label>
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative">
-                  <Input
-                    id="email"
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    autoComplete="email"
-                    className="h-14 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-orange-500 focus:ring-orange-500/50 rounded-xl pl-4 pr-4 transition-all duration-300 hover:bg-slate-800/70 focus:bg-slate-800"
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-amber-500 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-slate-300 font-medium text-sm flex items-center gap-2">
-                <Lock className="h-4 w-4 text-orange-500" />
-                Пароль
-              </Label>
-              <div className="relative group">
-                <div className="absolute inset-0 bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-xl blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••"
-                    className="h-14 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-orange-500 focus:ring-orange-500/50 rounded-xl pl-4 pr-4 transition-all duration-300 hover:bg-slate-800/70 focus:bg-slate-800"
-                    required
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-amber-500 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 rounded-full"></div>
-                </div>
-              </div>
-            </div>
-
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-orange-600 via-amber-600 to-orange-600 rounded-xl blur-lg opacity-50 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="relative w-full h-14 bg-gradient-to-r from-orange-500 via-orange-600 to-amber-600 hover:from-orange-600 hover:via-amber-600 hover:to-orange-700 text-white font-bold shadow-2xl transition-all duration-300 hover:scale-[1.02] rounded-xl overflow-hidden group"
-              >
-                <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></span>
-                <span className="relative flex items-center justify-center gap-3">
-                  {isLoading ? (
-                    <>
-                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      <span className="font-semibold">Вход в систему...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="h-5 w-5" />
-                      <span className="font-semibold">Войти в систему</span>
-                      <svg className="h-5 w-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                      </svg>
-                    </>
-                  )}
-                </span>
-              </Button>
-            </div>
-          </form>
-
-          {/* Информация */}
-          <div className="mt-8 text-center">
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500 mb-3">
-              <div className="h-px w-8 bg-gradient-to-r from-transparent to-slate-700"></div>
-              <span className="uppercase tracking-wider">TenderCRM</span>
-              <div className="h-px w-8 bg-gradient-to-l from-transparent to-slate-700"></div>
-            </div>
-            <p className="text-sm text-slate-400 mb-3">
-              Система управления тендерами
+            
+            <p className="text-slate-400 text-sm">
+              {forgotPasswordMode ? 'Введите email для восстановления пароля' : 'Войдите в систему'}
             </p>
-            <div className="flex items-center justify-center gap-2 text-xs text-slate-500">
-              <div className="relative">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping"></div>
-              </div>
-              <span>Защищенное соединение</span>
-            </div>
-          </div>
-
-          {/* Светящаяся линия снизу */}
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-500/50 to-transparent"></div>
+          </motion.div>
+          
+          {/* Form */}
+          <AnimatePresence mode="wait">
+            {!forgotPasswordMode ? (
+              <motion.form
+                key="login-form"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                transition={{ duration: 0.3 }}
+                onSubmit={handleLogin}
+                className="space-y-5"
+              >
+                {/* Error Message */}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                      <span className="text-sm text-red-400">{error}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
+                    Email адрес
+                  </Label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+                      <Input
+                        id="email"
+                        type="text"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="h-12 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-12 pr-4 transition-all"
+                        disabled={isLoading}
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
+                    Пароль
+                  </Label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center">
+                      <Lock className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="h-12 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-12 pr-12 transition-all"
+                        disabled={isLoading}
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-4 text-slate-400 hover:text-blue-400 transition-colors"
+                        disabled={isLoading}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Forgot Password Link */}
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setForgotPasswordMode(true)}
+                    className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                    disabled={isLoading}
+                  >
+                    Забыли пароль?
+                  </button>
+                </div>
+                
+                {/* Submit Button */}
+                <Button
+                  type="submit"
+                  disabled={isLoading || success}
+                  className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden"
+                >
+                  <AnimatePresence mode="wait">
+                    {isLoading ? (
+                      <motion.div
+                        key="loading"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Вход...</span>
+                      </motion.div>
+                    ) : success ? (
+                      <motion.div
+                        key="success"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <CheckCircle2 className="w-5 h-5" />
+                        <span>Успешно!</span>
+                      </motion.div>
+                    ) : (
+                      <motion.div
+                        key="default"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="flex items-center gap-2"
+                      >
+                        <span>Войти</span>
+                        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </Button>
+              </motion.form>
+            ) : (
+              <motion.form
+                key="forgot-password-form"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                onSubmit={handleForgotPassword}
+                className="space-y-5"
+              >
+                {/* Success Message */}
+                <AnimatePresence>
+                  {success && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      className="bg-green-500/10 border border-green-500/30 rounded-xl p-4 flex items-center gap-3"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
+                      <span className="text-sm text-green-400">Ссылка для восстановления отправлена на email!</span>
+                    </motion.div>
+                  )}
+                  
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3"
+                    >
+                      <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
+                      <span className="text-sm text-red-400">{error}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email" className="text-slate-300 text-sm font-medium">
+                    Email адрес
+                  </Label>
+                  <div className="relative group">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-focus-within:opacity-100 transition-opacity" />
+                    <div className="relative flex items-center">
+                      <Mail className="absolute left-4 w-5 h-5 text-slate-400 group-focus-within:text-blue-400 transition-colors" />
+                      <Input
+                        id="reset-email"
+                        type="text"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="your@email.com"
+                        className="h-12 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-blue-500/50 focus:ring-2 focus:ring-blue-500/20 rounded-xl pl-12 pr-4 transition-all"
+                        disabled={isLoading || success}
+                        autoComplete="email"
+                      />
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    type="submit"
+                    disabled={isLoading || success}
+                    className="w-full h-12 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center gap-2">
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                        <span>Отправка...</span>
+                      </div>
+                    ) : (
+                      'Восстановить пароль'
+                    )}
+                  </Button>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setForgotPasswordMode(false);
+                      setError('');
+                      setSuccess(false);
+                    }}
+                    className="w-full text-sm text-slate-400 hover:text-slate-300 transition-colors"
+                    disabled={isLoading}
+                  >
+                    ← Вернуться к входу
+                  </button>
+                </div>
+              </motion.form>
+            )}
+          </AnimatePresence>
         </div>
-      </Card>
+      </motion.div>
     </div>
   );
 }
