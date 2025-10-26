@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { logAuth, logger } from '@/lib/logger';
 import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
@@ -11,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (token) {
       try {
         // Декодируем токен чтобы получить userId
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
+        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; email: string };
         
         // Обновляем статус пользователя
         await supabase
@@ -21,9 +22,11 @@ export async function POST(request: NextRequest) {
             last_activity: new Date().toISOString()
           })
           .eq('id', decoded.userId);
+        
+        logAuth.logout(decoded.email);
       } catch (error) {
         // Токен невалидный, но это ок - всё равно выходим
-        console.log('Token invalid during logout, continuing...');
+        logger.debug('Token invalid during logout, continuing...', { error: error instanceof Error ? error.message : 'Unknown' });
       }
     }
 
@@ -33,7 +36,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Logout error:', error);
+    logger.error('Logout API error', { error: error instanceof Error ? error.message : 'Unknown error' });
     // Даже при ошибке удаляем cookie
     const response = NextResponse.json({ success: true });
     response.cookies.delete('auth-token');

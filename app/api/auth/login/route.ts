@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { logAuth, logger } from '@/lib/logger';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
     // Приводим email к нижнему регистру для поиска
     const normalizedEmail = email.toLowerCase().trim();
 
-    console.log('🔐 Попытка входа:', normalizedEmail);
+    logAuth.login(normalizedEmail, false); // Will update to true if successful
 
     // 1. Находим пользователя (регистронезависимый поиск)
     const { data: user, error } = await supabase
@@ -31,52 +32,52 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error || !user) {
-      console.error('❌ Пользователь не найден:', error);
+      logger.warn('Login failed: user not found', { email: normalizedEmail, error: error?.message });
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
         { status: 401 }
       );
     }
 
-    console.log('✅ Пользователь найден:', user.email);
+    logger.debug('User found', { email: user.email, userId: user.id });
 
     // 2. Проверяем пароль
     // Проверяем, захеширован ли пароль в базе
     const isBcryptHash = user.password.startsWith('$2a$') || user.password.startsWith('$2b$');
     
-    console.log('🔑 Пароль захеширован:', isBcryptHash);
+    logger.debug('Password hash check', { isBcryptHash, userId: user.id });
     
     let isValidPassword = false;
     if (isBcryptHash) {
       // Пароль захеширован - используем bcrypt
       isValidPassword = await bcrypt.compare(password, user.password);
-      console.log('🔐 Проверка bcrypt:', isValidPassword);
+      logger.debug('Password verification (bcrypt)', { userId: user.id, valid: isValidPassword });
     } else {
       // Пароль не захеширован - прямое сравнение (для обратной совместимости)
       isValidPassword = password === user.password;
-      console.log('🔓 Прямое сравнение:', isValidPassword);
+      logger.warn('Password verification (plain text - legacy)', { userId: user.id, valid: isValidPassword });
       
       // Автоматически хешируем пароль при успешном входе
       if (isValidPassword) {
-        console.log('💾 Хеширую пароль...');
+        logger.info('Auto-hashing plain text password', { userId: user.id });
         const hashedPassword = await bcrypt.hash(password, 10);
         await supabase
           .from('users')
           .update({ password: hashedPassword })
           .eq('id', user.id);
-        console.log('✅ Пароль захеширован');
+        logger.info('Password hashed successfully', { userId: user.id });
       }
     }
     
     if (!isValidPassword) {
-      console.error('❌ Неверный пароль');
+      logger.warn('Login failed: invalid password', { email: normalizedEmail, userId: user.id });
       return NextResponse.json(
         { error: 'Неверный email или пароль' },
         { status: 401 }
       );
     }
 
-    console.log('🎉 Вход успешен!');
+    logAuth.login(user.email, true); // Success!
 
     // 3. Создаём JWT токен
     const token = jwt.sign(
@@ -118,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     return response;
   } catch (error) {
-    console.error('Login error:', error);
+    logger.error('Login API error', { error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
     return NextResponse.json(
       { error: 'Ошибка сервера при входе' },
       { status: 500 }
