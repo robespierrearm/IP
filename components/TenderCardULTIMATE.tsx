@@ -395,8 +395,12 @@ export function TenderCardULTIMATE({ tender, onEdit, onDelete, onStatusChange }:
                         <span className="text-gray-600">Расходы</span>
                         <span className="font-medium text-red-700">{formatPrice(expenses)}</span>
                       </div>
+                      <div className="flex justify-between py-1.5 border-b border-gray-100">
+                        <span className="text-gray-600 text-sm">+ Налог УСН 7%</span>
+                        <span className="font-medium text-orange-700">{formatPrice(tax)}</span>
+                      </div>
                       <div className="flex justify-between py-1.5 border-b border-gray-200">
-                        <span className="text-gray-900 font-semibold">Прибыль</span>
+                        <span className="text-gray-900 font-semibold">Чистая прибыль</span>
                         <span className={`font-bold text-lg ${profit > 0 ? 'text-green-700' : 'text-red-700'}`}>
                           {formatPrice(profit)}
                           {tender.win_price > 0 && (

@@ -14,6 +14,7 @@ interface TenderFinancialModalProps {
 export function TenderFinancialModal({ open, onOpenChange, tender }: TenderFinancialModalProps) {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -113,36 +114,50 @@ export function TenderFinancialModal({ open, onOpenChange, tender }: TenderFinan
             </div>
           </div>
 
-          {/* Детализация расходов */}
+          {/* Детализация расходов - сворачиваемая */}
           {expenses.length > 0 && (
             <div className="bg-white rounded-lg border">
-              <div className="p-4 border-b">
-                <h3 className="font-medium text-gray-900">Детализация расходов</h3>
+              <div className="p-4 border-b flex items-center justify-between">
+                <h3 className="font-medium text-gray-900">Детализация расходов ({expenses.length})</h3>
+                <button
+                  onClick={() => setShowDetails(!showDetails)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {showDetails ? 'Скрыть' : 'Подробнее'}
+                </button>
               </div>
-              <div className="max-h-64 overflow-auto">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50 text-gray-600 sticky top-0">
-                    <tr>
-                      <th className="text-left p-3">Описание</th>
-                      <th className="text-left p-3">Категория</th>
-                      <th className="text-right p-3">Сумма</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {expenses.map((expense) => (
-                      <tr key={expense.id} className="border-t hover:bg-gray-50">
-                        <td className="p-3">{expense.description || '—'}</td>
-                        <td className="p-3">
-                          <span className="inline-flex px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
-                            {expense.category}
-                          </span>
-                        </td>
-                        <td className="p-3 text-right font-medium">{formatAmount(expense.amount)}</td>
+              {showDetails && (
+                <div className="max-h-64 overflow-auto">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50 text-gray-600 sticky top-0">
+                      <tr>
+                        <th className="text-left p-3">Тип</th>
+                        <th className="text-left p-3">Категория</th>
+                        <th className="text-left p-3">Описание</th>
+                        <th className="text-right p-3">Сумма</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {expenses.map((expense) => (
+                        <tr key={expense.id} className="border-t hover:bg-gray-50">
+                          <td className="p-3">
+                            <span className={`inline-flex px-2 py-0.5 rounded text-xs font-medium ${expense.is_cash ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                              {expense.is_cash ? '💵 Нал' : '💳 Безнал'}
+                            </span>
+                          </td>
+                          <td className="p-3">
+                            <span className="inline-flex px-2 py-0.5 rounded-full text-xs bg-gray-100 text-gray-700">
+                              {expense.category}
+                            </span>
+                          </td>
+                          <td className="p-3 text-gray-600">{expense.description || '—'}</td>
+                          <td className="p-3 text-right font-medium">{formatAmount(expense.amount)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 

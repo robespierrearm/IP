@@ -303,22 +303,22 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
               <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 text-xl leading-none">&times;</button>
             </div>
             <div className="space-y-2">
-              {/* Доход и Чистая прибыль рядом */}
+              {/* Прибыль и Доход рядом (ПОМЕНЯЛИ МЕСТАМИ) */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="text-xs text-green-700 mb-1">Доход</div>
-                  <div className="text-xl font-bold text-green-900">{fmt(formattedSummary.income)}</div>
-                </div>
                 <div className={cn("border rounded-lg p-3", formattedSummary.netProfit > 0 ? "bg-blue-50 border-blue-200" : "bg-orange-50 border-orange-200")}>
                   <div className="flex items-center justify-between mb-1">
                     <div className={cn("text-xs", formattedSummary.netProfit > 0 ? "text-blue-700" : "text-orange-700")}>
-                      {formattedSummary.netProfit > 0 ? 'Чистая' : 'Убыток'}
+                      {formattedSummary.netProfit > 0 ? 'Прибыль' : 'Убыток'}
                     </div>
                     <div className={cn("text-xs", formattedSummary.netProfit > 0 ? "text-blue-600" : "text-orange-600")}>
                       {formattedSummary.netProfit > 0 ? '+' : ''}{((Math.abs(formattedSummary.netProfit) / (formattedSummary.income || 1)) * 100).toFixed(1)}%
                     </div>
                   </div>
                   <div className={cn("text-xl font-bold", formattedSummary.netProfit > 0 ? "text-blue-900" : "text-orange-900")}>{fmt(Math.abs(formattedSummary.netProfit))}</div>
+                </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="text-xs text-green-700 mb-1">Цена победы</div>
+                  <div className="text-xl font-bold text-green-900">{fmt(formattedSummary.income)}</div>
                 </div>
               </div>
 
