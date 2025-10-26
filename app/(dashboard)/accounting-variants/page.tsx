@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { supabase, Tender, Expense } from '@/lib/supabase';
 import { TenderAccounting } from '@/components/TenderAccounting';
-import { TenderAccountingGlass } from '@/components/TenderAccountingGlass';
-import { TenderAccountingModern } from '@/components/TenderAccountingModern';
+import { TenderAccountingV1 } from '@/components/TenderAccountingV1';
+import { TenderAccountingV2 } from '@/components/TenderAccountingV2';
 
 interface TenderWithExpenses {
   tender: Tender;
@@ -89,13 +89,13 @@ export default function AccountingVariantsPage() {
             </div>
           </div>
 
-          {/* ВАРИАНТ 1 - СТЕКЛЯННЫЙ */}
+          {/* ВАРИАНТ 1 - SPLIT VIEW ТАБЛИЦА */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-900">✨ ВАРИАНТ 1: GLASSMORPHISM</h2>
-              <span className="text-sm text-gray-500">Стеклянный премиум-стиль</span>
+              <h2 className="text-xl font-semibold text-gray-900">📊 ВАРИАНТ 1: SPLIT-VIEW ТАБЛИЦА</h2>
+              <span className="text-sm text-gray-500">Совершенно другой подход</span>
             </div>
-            <TenderAccountingGlass
+            <TenderAccountingV1
               tender={firstTender.tender}
               expenses={firstTender.expenses}
               onExpenseAdded={load}
@@ -104,22 +104,23 @@ export default function AccountingVariantsPage() {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-900">
               <p className="font-medium mb-1">Особенности:</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>🔮 Стеклянные прозрачные элементы с blur-эффектом</li>
-                <li>🎨 Градиентные акценты и тени</li>
-                <li>✨ Современный премиум-вид (как macOS Big Sur)</li>
-                <li>✅ ВЕСЬ функционал сохранён (кнопки, модалки, редактирование)</li>
-                <li>✅ Воздушный дизайн, приятный глазу</li>
+                <li>📊 ГОРИЗОНТАЛЬНЫЙ split: финансы слева, расходы справа</li>
+                <li>📋 ТАБЛИЦА расходов (как в Excel/CRM)</li>
+                <li>✏️ Inline редактирование (кликнул - сразу редактируешь)</li>
+                <li>⚡ Быстрое добавление (строка в таблице)</li>
+                <li>✅ Компактно - всё на одном экране</li>
+                <li>✅ Привычный формат для бухгалтера</li>
               </ul>
             </div>
           </div>
 
-          {/* ВАРИАНТ 2 - MODERN DASHBOARD */}
+          {/* ВАРИАНТ 2 - КОМПАКТНЫЙ ОРИГИНАЛ */}
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <h2 className="text-xl font-semibold text-gray-900">🎯 ВАРИАНТ 2: MODERN DASHBOARD</h2>
-              <span className="text-sm text-gray-500">Профессиональный минималистичный</span>
+              <h2 className="text-xl font-semibold text-gray-900">✂️ ВАРИАНТ 2: КОМПАКТНЫЙ</h2>
+              <span className="text-sm text-gray-500">Как оригинал, но аккуратный</span>
             </div>
-            <TenderAccountingModern
+            <TenderAccountingV2
               tender={firstTender.tender}
               expenses={firstTender.expenses}
               onExpenseAdded={load}
@@ -128,12 +129,12 @@ export default function AccountingVariantsPage() {
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-sm text-green-900">
               <p className="font-medium mb-1">Особенности:</p>
               <ul className="list-disc list-inside space-y-1 text-xs">
-                <li>🎯 АКЦЕНТ на чистой прибыли (крупно с иконкой)</li>
-                <li>📊 4 цветные карточки финансов</li>
-                <li>📁 Расходы сгруппированы по категориям</li>
-                <li>✅ ВЕСЬ функционал сохранён (кнопки, модалки, редактирование)</li>
-                <li>✅ Четкая визуальная иерархия</li>
-                <li>✅ Удобная навигация и быстрый доступ</li>
+                <li>✂️ КОМПАКТНЫЙ - убраны повторы, меньше места</li>
+                <li>🎯 Финансы в 2 колонки (не растянуто)</li>
+                <li>⚡ Форма добавления в 3 колонки (быстро заполнить)</li>
+                <li>📝 Кнопки в одну строку (не раскиданы)</li>
+                <li>✅ Тот же функционал, что у тебя сейчас</li>
+                <li>✅ Удобно для бухгалтера - быстро добавить расход</li>
               </ul>
             </div>
           </div>
@@ -142,9 +143,9 @@ export default function AccountingVariantsPage() {
           <div className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-lg p-6">
             <h3 className="text-xl font-bold text-gray-900 mb-3">🗳️ Какой вариант тебе нравится больше?</h3>
             <div className="space-y-2 text-sm">
-              <p><strong>ТЕКУЩИЙ:</strong> Функционален, но повторы и много места</p>
-              <p><strong>ВАРИАНТ 1 (GLASS):</strong> Стеклянный премиум-стиль, современный</p>
-              <p><strong>ВАРИАНТ 2 (MODERN):</strong> Четкий dashboard, акцент на важном, группировка</p>
+              <p><strong>ТЕКУЩИЙ:</strong> Твой оригинал (много повторов, растянут)</p>
+              <p><strong>ВАРИАНТ 1 (SPLIT-VIEW):</strong> Таблица как в CRM, горизонтальный, inline редактирование</p>
+              <p><strong>ВАРИАНТ 2 (КОМПАКТНЫЙ):</strong> Как твой, но аккуратный и удобный для добавления расходов</p>
             </div>
             <p className="mt-4 text-sm text-gray-700">
               👉 <strong>Скажи номер варианта</strong> и я заменю текущий компонент!
