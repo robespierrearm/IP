@@ -36,6 +36,7 @@ export function TenderCardULTIMATE({ tender, onEdit, onDelete, onStatusChange }:
   const [financialModalOpen, setFinancialModalOpen] = useState(false);
   const [docCounts, setDocCounts] = useState({ docs: 0, closing: 0 });
   const [expenses, setExpenses] = useState(0);
+  const [bankExpenses, setBankExpenses] = useState(0);
 
   const notification = getSmartNotification(tender);
 
@@ -44,7 +45,7 @@ export function TenderCardULTIMATE({ tender, onEdit, onDelete, onStatusChange }:
       Promise.all([
         supabase.from('files').select('document_type').eq('tender_id', tender.id),
         supabase.from('tender_links').select('document_type').eq('tender_id', tender.id),
-        supabase.from('expenses').select('amount').eq('tender_id', tender.id),
+        supabase.from('expenses').select('amount, is_cash').eq('tender_id', tender.id),
       ]).then(([files, links, exp]) => {
         let docs = 0, closing = 0;
         [...(files.data || []), ...(links.data || [])].forEach(item => {
@@ -52,7 +53,10 @@ export function TenderCardULTIMATE({ tender, onEdit, onDelete, onStatusChange }:
           else if (item.document_type === 'закрывающие документы') closing++;
         });
         setDocCounts({ docs, closing });
-        setExpenses(exp.data?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0);
+        const totalExp = exp.data?.reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        const bankExp = exp.data?.filter(e => !e.is_cash).reduce((sum, e) => sum + (e.amount || 0), 0) || 0;
+        setExpenses(totalExp);
+        setBankExpenses(bankExp);
       });
     }
   }, [isExpanded, tender.id]);
@@ -62,8 +66,11 @@ export function TenderCardULTIMATE({ tender, onEdit, onDelete, onStatusChange }:
     ? { amount: tender.start_price - tender.submitted_price, pct: ((tender.start_price - tender.submitted_price) / tender.start_price) * 100 }
     : null;
   
-  const profit = (tender.win_price || 0) - expenses;
-  const profitPct = tender.win_price ? (profit / tender.win_price) * 100 : 0;
+  const income = tender.win_price || 0;
+  const taxableProfit = income - bankExpenses;
+  const tax = taxableProfit > 0 ? taxableProfit * 0.07 : 0;
+  const profit = income - expenses - tax;
+  const profitPct = income ? (profit / income) * 100 : 0;
 
   // Умные метрики (как в NEW версии)
   const getMetrics = () => {
