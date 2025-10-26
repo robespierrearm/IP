@@ -297,49 +297,45 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ position: 'fixed' }}>
           <div className="absolute inset-0 bg-black/60" onClick={() => setIsModalOpen(false)} />
-          <div ref={modalRef} className="relative backdrop-blur-2xl bg-white/95 border border-white/40 rounded-2xl shadow-2xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Финансовая сводка — {tender.name}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 text-2xl leading-none">&times;</button>
+          <div ref={modalRef} className="relative backdrop-blur-2xl bg-white/95 border border-white/40 rounded-2xl shadow-2xl w-full max-w-xl p-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-base font-semibold text-gray-900">Финансовая сводка — {tender.name}</h3>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-500 hover:text-gray-700 text-xl leading-none">&times;</button>
             </div>
-            <div className="space-y-3">
-              {/* Доход */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <div className="text-sm text-green-700 mb-1">Доход</div>
-                <div className="text-2xl font-bold text-green-900">{fmt(formattedSummary.income)}</div>
-                <div className="text-xs text-green-600 mt-1">Цена победы</div>
+            <div className="space-y-2">
+              {/* Доход и Чистая прибыль рядом */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="text-xs text-green-700 mb-1">Доход</div>
+                  <div className="text-xl font-bold text-green-900">{fmt(formattedSummary.income)}</div>
+                </div>
+                <div className={cn("border rounded-lg p-3", formattedSummary.netProfit > 0 ? "bg-blue-50 border-blue-200" : "bg-orange-50 border-orange-200")}>
+                  <div className="flex items-center justify-between mb-1">
+                    <div className={cn("text-xs", formattedSummary.netProfit > 0 ? "text-blue-700" : "text-orange-700")}>
+                      {formattedSummary.netProfit > 0 ? 'Чистая' : 'Убыток'}
+                    </div>
+                    <div className={cn("text-xs", formattedSummary.netProfit > 0 ? "text-blue-600" : "text-orange-600")}>
+                      {formattedSummary.netProfit > 0 ? '+' : ''}{((Math.abs(formattedSummary.netProfit) / (formattedSummary.income || 1)) * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                  <div className={cn("text-xl font-bold", formattedSummary.netProfit > 0 ? "text-blue-900" : "text-orange-900")}>{fmt(Math.abs(formattedSummary.netProfit))}</div>
+                </div>
               </div>
 
-              {/* Расходы с разбивкой */}
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <div className="text-sm text-red-700 mb-2 font-medium">Расходы</div>
-                <div className="space-y-1 text-xs">
+              {/* Расходы компактно */}
+              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                <div className="text-xs text-red-700 mb-1.5 font-medium">Расходы</div>
+                <div className="space-y-0.5 text-xs">
                   <div className="flex justify-between"><span className="text-red-600">💳 Безнал:</span><span className="font-medium text-red-900">{fmt(formattedSummary.bankExpenses)}</span></div>
                   <div className="flex justify-between"><span className="text-red-600">💵 Наличка:</span><span className="font-medium text-red-900">{fmt(formattedSummary.cashExpenses)}</span></div>
-                  <div className="flex justify-between"><span className="text-orange-600">🏛️ Налог УСН 7%:</span><span className="font-medium text-orange-900">{fmt(formattedSummary.tax)}</span></div>
-                  <div className="border-t border-red-200 pt-1 mt-1 flex justify-between"><span className="font-medium text-red-700">Всего расходов:</span><span className="text-lg font-bold text-red-900">{fmt(formattedSummary.totalExpenses + formattedSummary.tax)}</span></div>
-                </div>
-              </div>
-
-              {/* Чистая прибыль */}
-              <div className={cn("border rounded-lg p-4", formattedSummary.netProfit > 0 ? "bg-blue-50 border-blue-200" : "bg-orange-50 border-orange-200")}>
-                <div className="flex items-center justify-between mb-1">
-                  <div className={cn("text-sm", formattedSummary.netProfit > 0 ? "text-blue-700" : "text-orange-700")}>
-                    {formattedSummary.netProfit > 0 ? 'Чистая прибыль' : 'Убыток'}
-                  </div>
-                  <div className={cn("text-xs", formattedSummary.netProfit > 0 ? "text-blue-600" : "text-orange-600")}>
-                    {formattedSummary.netProfit > 0 ? '+' : ''}{((formattedSummary.netProfit / (formattedSummary.income || 1)) * 100).toFixed(1)}%
-                  </div>
-                </div>
-                <div className={cn("text-3xl font-bold", formattedSummary.netProfit > 0 ? "text-blue-900" : "text-orange-900")}>{fmt(Math.abs(formattedSummary.netProfit))}</div>
-                <div className="text-xs text-gray-600 mt-2">
-                  {fmt(formattedSummary.income)} - {fmt(formattedSummary.totalExpenses)} - {fmt(formattedSummary.tax)} = {fmt(formattedSummary.netProfit)}
+                  <div className="flex justify-between"><span className="text-orange-600">🏛️ Налог 7%:</span><span className="font-medium text-orange-900">{fmt(formattedSummary.tax)}</span></div>
+                  <div className="border-t border-red-200 pt-1 mt-1 flex justify-between"><span className="font-medium text-red-700">Всего:</span><span className="font-bold text-red-900">{fmt(formattedSummary.totalExpenses + formattedSummary.tax)}</span></div>
                 </div>
               </div>
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Детализация расходов</h4>
+                <h4 className="text-sm font-semibold text-gray-900 mb-1.5">Детализация расходов</h4>
                 {expenses.length === 0 ? <p className="text-sm text-gray-500">Расходы не добавлены</p> : (
-                  <div className="max-h-64 overflow-auto bg-white border border-gray-200 rounded-lg">
+                  <div className="max-h-52 overflow-auto bg-white border border-gray-200 rounded-lg">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
@@ -367,9 +363,9 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
                   </div>
                 )}
               </div>
-              <div className="flex gap-3 justify-end pt-2">
-                <Button onClick={handleDownloadPdf} variant="default">Скачать PDF</Button>
-                <Button onClick={handleSharePdf} variant="outline" disabled={isSharing}>{isSharing ? 'Подготовка…' : 'Переслать'}</Button>
+              <div className="flex gap-2 justify-end pt-1">
+                <Button onClick={handleDownloadPdf} variant="default" size="sm">Скачать PDF</Button>
+                <Button onClick={handleSharePdf} variant="outline" size="sm" disabled={isSharing}>{isSharing ? 'Подготовка…' : 'Переслать'}</Button>
               </div>
             </div>
           </div>
