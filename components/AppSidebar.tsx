@@ -118,28 +118,38 @@ export function AppSidebar() {
   // Функция выхода
   const handleLogout = async () => {
     try {
-      // Логируем выход
-      await logActivity('Выход из системы', ACTION_TYPES.LOGOUT);
+      // Пытаемся залогировать выход (не критично если упадёт)
+      try {
+        await logActivity('Выход из системы', ACTION_TYPES.LOGOUT);
+      } catch (logError) {
+        console.warn('Failed to log activity (non-critical):', logError);
+      }
 
       // Вызываем API logout (удаляет httpOnly cookie и обновляет статус)
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      try {
+        await fetch('/api/auth/logout', {
+          method: 'POST',
+          credentials: 'include',
+        });
+      } catch (fetchError) {
+        console.warn('Logout API failed (continuing anyway):', fetchError);
+      }
 
-      // Очищаем localStorage
-      localStorage.clear();
+      // Очищаем ТОЛЬКО auth данные (не всё localStorage!)
+      localStorage.removeItem('currentUser');
+      
+      // Уведомляем AuthProvider об изменении
+      window.dispatchEvent(new Event('auth-change'));
 
-      // Очищаем sessionStorage
-      sessionStorage.clear();
-
-      // Перенаправляем на страницу входа
-      router.push('/login');
+      // ГАРАНТИРОВАННЫЙ редирект (не router.push!)
+      window.location.href = '/login';
     } catch (error) {
       console.error('Ошибка при выходе:', error);
-      // Даже при ошибке очищаем и редиректим
-      localStorage.clear();
-      router.push('/login');
+      
+      // КРИТИЧНО: Даже при любой ошибке - ВСЕГДА выходим!
+      localStorage.removeItem('currentUser');
+      window.dispatchEvent(new Event('auth-change'));
+      window.location.href = '/login';
     }
   };
   const toggleCollapse = () => setIsCollapsed(!isCollapsed);
