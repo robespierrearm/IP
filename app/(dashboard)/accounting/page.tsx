@@ -110,8 +110,16 @@ export default function AccountingPage() {
   const totalExpenses = filteredData.reduce((sum, item) => 
     sum + item.expenses.reduce((expSum, exp) => expSum + exp.amount, 0), 0
   );
+  
+  // УСН: только безнал расходы уменьшают налоговую базу!
+  const bankExpenses = filteredData.reduce((sum, item) => 
+    sum + item.expenses.filter(e => !e.is_cash).reduce((expSum, exp) => expSum + exp.amount, 0), 0
+  );
+  const cashExpenses = totalExpenses - bankExpenses;
+  
   const grossProfit = totalIncome - totalExpenses;
-  const totalTax = grossProfit > 0 ? grossProfit * 0.07 : 0;
+  const taxableProfit = totalIncome - bankExpenses; // база для УСН (только безнал!)
+  const totalTax = taxableProfit > 0 ? taxableProfit * 0.07 : 0;
   const netProfit = grossProfit - totalTax;
 
   // Форматирование суммы
@@ -276,9 +284,10 @@ export default function AccountingPage() {
                 <div className="flex-1">
                   <p className="text-sm text-gray-600">Общие расходы</p>
                   <p className="text-2xl font-bold text-red-600">{formatAmount(totalExpenses)}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Налог УСН: <span className="font-medium text-orange-600">{formatAmount(totalTax)}</span>
-                  </p>
+                  <div className="flex gap-3 mt-1 text-xs">
+                    <span className="text-gray-600">💳 Безнал: <span className="font-medium">{formatAmount(bankExpenses)}</span></span>
+                    <span className="text-gray-600">💵 Наличка: <span className="font-medium">{formatAmount(cashExpenses)}</span></span>
+                  </div>
                 </div>
                 <TrendingDown className="h-8 w-8 text-red-600" />
               </div>
@@ -290,6 +299,9 @@ export default function AccountingPage() {
                   <p className="text-sm text-gray-600">Чистая прибыль</p>
                   <p className={`text-2xl font-bold ${netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : 'text-gray-600'}`}>
                     {formatAmount(netProfit)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    УСН 7%: <span className="font-medium text-orange-600">{formatAmount(totalTax)}</span>
                   </p>
                 </div>
                 <DollarSign className={`h-8 w-8 ${netProfit > 0 ? 'text-green-600' : netProfit < 0 ? 'text-red-600' : 'text-gray-600'}`} />
