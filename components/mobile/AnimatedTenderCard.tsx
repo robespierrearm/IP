@@ -54,15 +54,20 @@ export const AnimatedTenderCard = memo(function AnimatedTenderCard({
       }}
       exit={{ 
         opacity: 0, 
-        scale: 0.9, 
-        x: -100,
+        scale: 0.95, 
+        y: -20,
         transition: { duration: 0.2 }
       }}
       transition={{ 
-        duration: 0.3,
-        delay: index * 0.05, // Каскадное появление
-        ease: [0.4, 0, 0.2, 1],
-        layout: { duration: 0.3 }
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        delay: index * 0.03, // Каскадное появление (быстрее)
+        layout: { 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 30 
+        }
       }}
     >
       <CardComponent

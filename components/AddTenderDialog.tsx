@@ -88,7 +88,7 @@ export function AddTenderDialog({
             <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.05 }}
             >
               <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-blue-500/10 to-transparent border-l-4 border-blue-500 rounded-r-lg shadow-sm shadow-blue-500/20 mb-3">
                 <FileText className="h-4 w-4 text-blue-600" />
@@ -164,7 +164,7 @@ export function AddTenderDialog({
             <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20, delay: 0.1 }}
             >
               <div className="flex items-center gap-2 px-3 py-1 backdrop-blur-md bg-gradient-to-r from-orange-500/10 to-transparent border-l-4 border-orange-500 rounded-r-lg shadow-sm shadow-orange-500/20 mb-3">
                 <MapPin className="h-4 w-4 text-orange-600" />

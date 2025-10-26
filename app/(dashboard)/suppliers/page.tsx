@@ -199,13 +199,14 @@ export default function SuppliersPage() {
             {filteredSuppliers.map((supplier, index) => (
               <motion.div
                 key={supplier.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
                 transition={{ 
-                  duration: 0.3,
-                  delay: index * 0.03,
-                  ease: [0.4, 0, 0.2, 1]
+                  type: "spring",
+                  stiffness: 260,
+                  damping: 20,
+                  delay: index * 0.03
                 }}
                 layout
                 className="grid grid-cols-[2.5fr_1.5fr_2fr_2fr_2.5fr_110px] gap-6 px-6 py-4 hover:bg-gray-50 transition-colors items-center"

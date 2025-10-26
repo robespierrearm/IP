@@ -377,13 +377,14 @@ function TendersContent() {
               return (
                 <m.div
                   key={tender.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, x: -100 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
                   transition={{ 
-                    duration: 0.3,
-                    delay: index * 0.05,
-                    ease: [0.4, 0, 0.2, 1]
+                    type: "spring",
+                    stiffness: 260,
+                    damping: 20,
+                    delay: index * 0.03
                   }}
                   layout
                 >
@@ -401,13 +402,14 @@ function TendersContent() {
             return (
             <m.div
               key={tender.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, x: -100 }}
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
               transition={{ 
-                duration: 0.3,
-                delay: index * 0.05,
-                ease: [0.4, 0, 0.2, 1]
+                type: "spring",
+                stiffness: 260,
+                damping: 20,
+                delay: index * 0.03
               }}
               layout
             >
