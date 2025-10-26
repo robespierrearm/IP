@@ -51,6 +51,16 @@ const menuItems = [
     icon: DollarSign,
   },
   {
+    title: '🧪 Бухгалтерия ТЕСТ-1',
+    href: '/accounting-test-1',
+    icon: DollarSign,
+  },
+  {
+    title: '🧪 Бухгалтерия ТЕСТ-2',
+    href: '/accounting-test-2',
+    icon: DollarSign,
+  },
+  {
     title: 'Чат',
     href: '/chat',
     icon: MessageSquare,

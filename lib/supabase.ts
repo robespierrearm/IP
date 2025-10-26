@@ -196,6 +196,7 @@ export interface Expense {
   category: string;
   amount: number;
   description: string | null;
+  is_cash?: boolean; // Наличка или безнал
   created_at?: string;
   updated_at?: string;
 }
