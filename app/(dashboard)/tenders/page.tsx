@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
+import dynamic from 'next/dynamic';
 import { useSearchParams } from 'next/navigation';
 import { m, AnimatePresence } from 'framer-motion';
 import { Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
@@ -8,8 +9,6 @@ import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
 import { useTenders, useCreateTender, useUpdateTender, useDeleteTender } from '@/hooks/useQueries';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { AddTenderDialog } from '@/components/AddTenderDialog';
-import { EditTenderDialog } from '@/components/EditTenderDialog';
 import { TenderStatusChanger } from '@/components/TenderStatusChanger';
 import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
@@ -20,6 +19,15 @@ import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
 import { extractDomain } from '@/lib/url-utils';
 import { useCardVersion } from '@/contexts/CardVersionContext';
+
+// Lazy load heavy modals - they're only needed when user clicks
+const AddTenderDialog = dynamic(() => import('@/components/AddTenderDialog').then(mod => ({ default: mod.AddTenderDialog })), {
+  loading: () => null,
+});
+
+const EditTenderDialog = dynamic(() => import('@/components/EditTenderDialog').then(mod => ({ default: mod.EditTenderDialog })), {
+  loading: () => null,
+});
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';

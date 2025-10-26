@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Supplier, SupplierInsert } from '@/lib/supabase';
 import { useSuppliers, useCreateSupplier, useUpdateSupplier, useDeleteSupplier } from '@/hooks/useQueries';
@@ -14,10 +15,17 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { AddSupplierDialog } from '@/components/AddSupplierDialog';
-import { EditSupplierDialog } from '@/components/EditSupplierDialog';
 import { Pencil, Trash2, Search, Phone, Mail, FileText, RefreshCw } from 'lucide-react';
 import { formatPhoneForDisplay } from '@/lib/phoneUtils';
+
+// Lazy load modals
+const AddSupplierDialog = dynamic(() => import('@/components/AddSupplierDialog').then(mod => ({ default: mod.AddSupplierDialog })), {
+  loading: () => null,
+});
+
+const EditSupplierDialog = dynamic(() => import('@/components/EditSupplierDialog').then(mod => ({ default: mod.EditSupplierDialog })), {
+  loading: () => null,
+});
 
 export default function SuppliersPage() {
   // React Query - автоматическое кэширование!
