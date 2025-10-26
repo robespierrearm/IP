@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase, User, UserInsert, ActivityLog } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -23,8 +24,15 @@ import {
   FolderOpen,
   Send
 } from 'lucide-react';
-import { FilesPanel } from '@/components/FilesPanel';
-import { TelegramPanel } from '@/components/TelegramPanel';
+
+// Lazy load heavy admin panels
+const FilesPanel = dynamic(() => import('@/components/FilesPanel').then(mod => ({ default: mod.FilesPanel })), {
+  loading: () => <div className="p-4 text-center text-gray-500">Загрузка...</div>,
+});
+
+const TelegramPanel = dynamic(() => import('@/components/TelegramPanel').then(mod => ({ default: mod.TelegramPanel })), {
+  loading: () => <div className="p-4 text-center text-gray-500">Загрузка...</div>,
+});
 
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);

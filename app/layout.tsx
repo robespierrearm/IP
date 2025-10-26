@@ -18,7 +18,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "TenderCRM - Система управления тендерами",
-  description: "ИП Чолахян - Строительная компания",
+  description: "Профессиональная CRM-система для управления тендерами, поставщиками и бухгалтерией. ИП Чолахян - Строительная компания.",
+  keywords: ["crm", "тендеры", "управление тендерами", "строительство", "поставщики", "бухгалтерия"],
+  authors: [{ name: "ИП Чолахян" }],
+  robots: {
+    index: false, // Приватная CRM - не индексировать
+    follow: false,
+  },
   icons: {
     icon: [
       { url: "/icon-static.svg", type: "image/svg+xml" },
@@ -26,7 +32,7 @@ export const metadata: Metadata = {
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/icon-static.svg", sizes: "180x180", type: "image/svg+xml" }, // Fallback
+      { url: "/icon-static.svg", sizes: "180x180", type: "image/svg+xml" },
     ],
   },
   manifest: "/manifest.json",
@@ -34,6 +40,12 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "default",
     title: "TenderCRM",
+  },
+  openGraph: {
+    type: "website",
+    title: "TenderCRM - Система управления тендерами",
+    description: "Профессиональная CRM для управления тендерами и поставщиками",
+    siteName: "TenderCRM",
   },
 };
 
@@ -53,6 +65,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
+      <head>
+        {/* Preconnect to external resources for faster loading */}
+        <link rel="preconnect" href="https://qqoqbhnffyxdejwuxqrp.supabase.co" />
+        <link rel="dns-prefetch" href="https://qqoqbhnffyxdejwuxqrp.supabase.co" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
