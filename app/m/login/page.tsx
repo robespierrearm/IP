@@ -31,7 +31,28 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
-    try {
+    // Простая валидация (username = email в мобильной версии)
+    if (!username.trim()) {
+      setError('Введите email адрес');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password.trim()) {
+      setError('Введите пароль');
+      setIsLoading(false);
+      return;
+    }
+
+    // Базовая проверка формата email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(username)) {
+      setError('Введите корректный email адрес');
+      setIsLoading(false);
+      return;
+    }
+
+    try{
       // Вызываем тот же API route что и десктопная версия
       const response = await fetch('/api/auth/login', {
         method: 'POST',
@@ -43,7 +64,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Ошибка входа');
+        // Показываем точное сообщение от сервера
+        const errorMsg = data.error || 'Ошибка входа';
+        
+        // Переводим на русский если нужно
+        if (errorMsg.includes('Invalid login credentials')) {
+          setError('Неверный email или пароль');
+        } else if (errorMsg.includes('Email') && errorMsg.includes('password')) {
+          setError('Email и пароль обязательны');
+        } else {
+          setError(errorMsg);
+        }
+        
         setIsLoading(false);
         return;
       }
@@ -71,8 +103,15 @@ export default function LoginPage() {
       router.push('/m/dashboard');
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
-      setError(errorMessage);
+      
+      // Обработка сетевых ошибок
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Не удалось подключиться к серверу');
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
+        setError(errorMessage);
+      }
+      
       setIsLoading(false);
     }
   };

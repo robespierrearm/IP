@@ -33,6 +33,27 @@ export default function LoginPage() {
     setError('');
     setIsLoading(true);
 
+    // Простая валидация
+    if (!email.trim()) {
+      setError('Введите email адрес');
+      setIsLoading(false);
+      return;
+    }
+
+    if (!password.trim()) {
+      setError('Введите пароль');
+      setIsLoading(false);
+      return;
+    }
+
+    // Базовая проверка формата email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError('Введите корректный email адрес');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Вызываем новый API route для логина
       const response = await fetch('/api/auth/login', {
@@ -45,7 +66,18 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || 'Ошибка входа');
+        // Показываем точное сообщение от сервера
+        const errorMsg = data.error || 'Ошибка входа';
+        
+        // Переводим на русский если нужно
+        if (errorMsg.includes('Invalid login credentials')) {
+          setError('Неверный email или пароль');
+        } else if (errorMsg.includes('Email') && errorMsg.includes('password')) {
+          setError('Email и пароль обязательны');
+        } else {
+          setError(errorMsg);
+        }
+        
         setIsLoading(false);
         return;
       }
@@ -73,8 +105,15 @@ export default function LoginPage() {
       window.location.href = '/';
     } catch (err) {
       console.error('Login error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
-      setError(errorMessage);
+      
+      // Обработка сетевых ошибок
+      if (err instanceof TypeError && err.message.includes('fetch')) {
+        setError('Не удалось подключиться к серверу. Проверьте что сервер запущен.');
+      } else {
+        const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
+        setError(errorMessage);
+      }
+      
       setIsLoading(false);
     }
   };
@@ -132,7 +171,7 @@ export default function LoginPage() {
           </div>
 
           {/* Форма входа */}
-          <form onSubmit={handleLogin} className="space-y-6">
+          <form onSubmit={handleLogin} className="space-y-6" noValidate>
             {error && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-center gap-3 text-red-400 backdrop-blur-sm">
                 <AlertCircle className="h-5 w-5 flex-shrink-0 animate-pulse" />
@@ -150,12 +189,12 @@ export default function LoginPage() {
                 <div className="relative">
                   <Input
                     id="email"
-                    type="email"
+                    type="text"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="your@email.com"
+                    autoComplete="email"
                     className="h-14 bg-slate-800/50 border-slate-700/50 text-white placeholder:text-slate-500 focus:border-orange-500 focus:ring-orange-500/50 rounded-xl pl-4 pr-4 transition-all duration-300 hover:bg-slate-800/70 focus:bg-slate-800"
-                    required
                   />
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-orange-500 to-amber-500 scale-x-0 group-focus-within:scale-x-100 transition-transform duration-300 rounded-full"></div>
                 </div>
