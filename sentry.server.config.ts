@@ -1,17 +1,28 @@
 import * as Sentry from "@sentry/nextjs";
 
-Sentry.init({
-  dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
+const dsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// ТОЛЬКО инициализируем если DSN настроен
+if (dsn && isProduction) {
+  console.log('[Sentry Init] Initializing...', {
+    dsn: dsn.substring(0, 30) + '...',
+    env: process.env.NODE_ENV,
+  });
   
-  // Трассировка производительности
-  tracesSampleRate: 1.0,
+  Sentry.init({
+    dsn,
+    tracesSampleRate: 1.0,
+    profilesSampleRate: 1.0,
+    environment: process.env.NODE_ENV,
+    enabled: true,
+  });
   
-  // Профилирование
-  profilesSampleRate: 1.0,
-  
-  // Окружение
-  environment: process.env.NODE_ENV,
-  
-  // Включаем только в production
-  enabled: process.env.NODE_ENV === 'production',
-});
+  console.log('[Sentry Init] ✅ Initialized successfully');
+} else {
+  if (!dsn) {
+    console.warn('[Sentry Init] ⚠️  Skipped: NEXT_PUBLIC_SENTRY_DSN not configured');
+  } else {
+    console.log('[Sentry Init] Skipped: not production environment');
+  }
+}

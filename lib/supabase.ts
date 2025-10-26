@@ -1,14 +1,31 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Проверка для development (на production переменные настроены в Vercel)
-if (process.env.NODE_ENV === 'development' && (!supabaseUrl || !supabaseAnonKey)) {
-  console.error('❌ ОШИБКА: Supabase credentials не настроены в .env.local');
-  console.error('Создайте .env.local и добавьте:');
-  console.error('  - NEXT_PUBLIC_SUPABASE_URL');
-  console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY');
+// Логирование для диагностики (только первые символы, безопасно)
+if (typeof window === 'undefined') { // Только на сервере
+  console.log('[Supabase Init]', {
+    env: process.env.NODE_ENV,
+    url: supabaseUrl ? `${supabaseUrl.substring(0, 25)}...` : '❌ MISSING',
+    key: supabaseAnonKey ? `SET (${supabaseAnonKey.length} chars)` : '❌ MISSING',
+  });
+}
+
+// КРИТИЧЕСКАЯ ПРОВЕРКА для всех окружений
+if (!supabaseUrl || !supabaseAnonKey) {
+  const errorMessage = 
+    `❌ CRITICAL: Supabase credentials не настроены!\n` +
+    `URL: ${supabaseUrl ? '✓ SET' : '✗ MISSING'}\n` +
+    `KEY: ${supabaseAnonKey ? '✓ SET' : '✗ MISSING'}\n` +
+    `Environment: ${process.env.NODE_ENV}\n\n` +
+    `Для Vercel: Settings → Environment Variables\n` +
+    `Для локалки: Создайте .env.local`;
+  
+  console.error(errorMessage);
+  
+  // Fail fast - не создаём broken client
+  throw new Error('Supabase credentials не настроены. См. консоль.');
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
