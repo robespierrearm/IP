@@ -1,7 +1,15 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ КРИТИЧЕСКАЯ ОШИБКА: Supabase credentials не настроены!');
+  console.error('Установите в Vercel Environment Variables:');
+  console.error('  - NEXT_PUBLIC_SUPABASE_URL');
+  console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  throw new Error('Supabase credentials не настроены. Проверьте Environment Variables в Vercel.');
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
