@@ -70,8 +70,9 @@ export default function LoginPage() {
       // Используем router.push вместо window.location для избежания полной перезагрузки
       router.push('/m/dashboard');
     } catch (err) {
-      setError('Произошла ошибка при входе');
-    } finally {
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

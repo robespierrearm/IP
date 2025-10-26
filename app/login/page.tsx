@@ -72,8 +72,9 @@ export default function LoginPage() {
       // Перенаправляем на дашборд (middleware определит мобильное устройство)
       window.location.href = '/';
     } catch (err) {
-      setError('Произошла ошибка при входе');
-    } finally {
+      console.error('Login error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Произошла ошибка при входе';
+      setError(errorMessage);
       setIsLoading(false);
     }
   };

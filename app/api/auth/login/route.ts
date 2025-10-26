@@ -9,9 +9,15 @@ const JWT_EXPIRES_IN = '7d'; // Токен живёт 7 дней
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, password } = await request.json();
+    logger.debug('Login API called');
+    
+    const body = await request.json();
+    logger.debug('Request body parsed', { hasEmail: !!body.email, hasPassword: !!body.password });
+    
+    const { email, password } = body;
 
     if (!email || !password) {
+      logger.warn('Login failed: missing credentials');
       return NextResponse.json(
         { error: 'Email и пароль обязательны' },
         { status: 400 }
@@ -20,6 +26,7 @@ export async function POST(request: NextRequest) {
 
     // Приводим email к нижнему регистру для поиска
     const normalizedEmail = email.toLowerCase().trim();
+    logger.debug('Normalized email', { normalizedEmail });
 
     logAuth.login(normalizedEmail, false); // Will update to true if successful
 
@@ -80,6 +87,7 @@ export async function POST(request: NextRequest) {
     logAuth.login(user.email, true); // Success!
 
     // 3. Создаём JWT токен
+    logger.debug('Creating JWT token', { userId: user.id });
     const token = jwt.sign(
       {
         userId: user.id,
@@ -89,15 +97,24 @@ export async function POST(request: NextRequest) {
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
+    logger.debug('JWT token created');
 
     // 4. Обновляем статус пользователя
-    await supabase
+    logger.debug('Updating user status', { userId: user.id });
+    const { error: updateError } = await supabase
       .from('users')
       .update({
         is_online: true,
         last_activity: new Date().toISOString(),
       })
       .eq('id', user.id);
+    
+    if (updateError) {
+      logger.warn('Failed to update user status (non-critical)', { error: updateError.message, userId: user.id });
+      // Не блокируем вход, если не удалось обновить статус
+    } else {
+      logger.debug('User status updated', { userId: user.id });
+    }
 
     // 5. Устанавливаем httpOnly cookie
     const response = NextResponse.json({
@@ -117,6 +134,7 @@ export async function POST(request: NextRequest) {
       path: '/',
     });
 
+    logger.info('Login successful', { userId: user.id, email: user.email, username: user.username });
     return response;
   } catch (error) {
     logger.error('Login API error', { error: error instanceof Error ? error.message : 'Unknown error', stack: error instanceof Error ? error.stack : undefined });
