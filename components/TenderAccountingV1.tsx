@@ -183,12 +183,14 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
                 </div>
                 <div className="backdrop-blur-xl bg-gradient-to-br from-white/70 to-white/50 border border-white/40 rounded-xl p-4 shadow-lg space-y-2 text-sm">
                   <div className="flex justify-between"><span className="text-gray-700">Доход:</span><span className="font-semibold text-green-700">{fmt(income)}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-700">Расходы:</span><span className="font-semibold text-red-700">{fmt(totalExpenses)}</span></div>
-                  <div className="flex justify-between text-xs pl-3"><span className="text-gray-600">💳 Безнал:</span><span className="text-gray-700">{fmt(bankExpenses)}</span></div>
-                  <div className="flex justify-between text-xs pl-3"><span className="text-gray-600">💵 Наличка:</span><span className="text-gray-700">{fmt(cashExpenses)}</span></div>
-                  <div className="border-t border-white/30 pt-2 flex justify-between"><span className="text-gray-700">Прибыль:</span><span className={cn("font-semibold", profit > 0 ? "text-green-700" : "text-red-700")}>{fmt(profit)}</span></div>
-                  <div className="flex justify-between text-xs"><span className="text-gray-600">УСН 7%:</span><span className="text-orange-700">{fmt(tax)}</span></div>
-                  <div className="border-t border-white/30 pt-2 flex justify-between"><span className="font-bold text-gray-900">Чистая:</span><span className={cn("font-bold", netProfit > 0 ? "text-green-700" : "text-red-700")}>{fmt(netProfit)}</span></div>
+                  <div className="border-t border-white/30 pt-2 mt-2">
+                    <div className="flex justify-between mb-1"><span className="text-gray-700 font-medium">Расходы:</span></div>
+                    <div className="flex justify-between text-xs pl-3"><span className="text-gray-600">💳 Безнал:</span><span className="text-gray-700">{fmt(bankExpenses)}</span></div>
+                    <div className="flex justify-between text-xs pl-3"><span className="text-gray-600">💵 Наличка:</span><span className="text-gray-700">{fmt(cashExpenses)}</span></div>
+                    <div className="flex justify-between text-xs pl-3"><span className="text-gray-600">🏛️ Налог УСН 7%:</span><span className="text-orange-700">{fmt(tax)}</span></div>
+                    <div className="flex justify-between text-xs pl-3 pt-1 border-t border-white/20 mt-1"><span className="text-gray-700 font-medium">Всего расходов:</span><span className="font-semibold text-red-700">{fmt(totalExpenses + tax)}</span></div>
+                  </div>
+                  <div className="border-t border-white/30 pt-2 flex justify-between"><span className="font-bold text-gray-900">Чистая прибыль:</span><span className={cn("font-bold text-lg", netProfit > 0 ? "text-green-700" : "text-red-700")}>{fmt(netProfit)}</span></div>
                 </div>
               </div>
 
