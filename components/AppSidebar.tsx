@@ -51,6 +51,11 @@ const menuItems = [
     icon: DollarSign,
   },
   {
+    title: '🧪 Финансы ТЕСТ',
+    href: '/finance-test',
+    icon: DollarSign,
+  },
+  {
     title: 'Чат',
     href: '/chat',
     icon: MessageSquare,
