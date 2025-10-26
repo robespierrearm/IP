@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useMemo } from 'react';
 import { supabase, Tender, Expense } from '@/lib/supabase';
-import { TenderAccounting } from '@/components/TenderAccounting';
+import { TenderAccountingV1 } from '@/components/TenderAccountingV1';
 import { TrendingUp, TrendingDown, DollarSign, FileText, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -352,7 +352,7 @@ export default function AccountingPage() {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">Детализация по тендерам</h2>
             {filteredData.map((item) => (
-              <TenderAccounting
+              <TenderAccountingV1
                 key={item.tender.id}
                 tender={item.tender}
                 expenses={item.expenses}

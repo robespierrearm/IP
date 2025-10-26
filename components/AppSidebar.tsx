@@ -51,11 +51,6 @@ const menuItems = [
     icon: DollarSign,
   },
   {
-    title: '🎨 Варианты дизайна',
-    href: '/accounting-variants',
-    icon: DollarSign,
-  },
-  {
     title: 'Чат',
     href: '/chat',
     icon: MessageSquare,
