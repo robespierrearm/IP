@@ -5,7 +5,7 @@ import { Tender, Expense, ExpenseInsert, supabase, DocumentType } from '@/lib/su
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { ChevronDown, ChevronUp, Plus, Trash2, TrendingUp, TrendingDown, BarChart3, FileText, Receipt } from 'lucide-react';
+import { ChevronDown, ChevronUp, Plus, Trash2, TrendingUp, TrendingDown, BarChart3, FileText, Receipt, Edit } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { TenderDocumentsModal } from '@/components/TenderDocumentsModal';
 import { PlatformButton } from '@/components/PlatformButton';
@@ -22,6 +22,7 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isAddingExpense, setIsAddingExpense] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [documentsModalOpen, setDocumentsModalOpen] = useState(false);
   const [selectedDocType, setSelectedDocType] = useState<DocumentType>('тендерная документация');
   const [materialCounts, setMaterialCounts] = useState({
@@ -33,22 +34,29 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
     category: '',
     amount: 0,
     description: '',
+    is_cash: false,
   });
 
   // Расчёты
   const income = tender.win_price || 0;
   const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+  // УСН: только безнал расходы уменьшают базу!
+  const bankExpenses = expenses.filter(exp => !exp.is_cash).reduce((sum, exp) => sum + exp.amount, 0);
+  const cashExpenses = expenses.filter(exp => exp.is_cash).reduce((sum, exp) => sum + exp.amount, 0);
   const profit = income - totalExpenses;
+  const taxableProfit = income - bankExpenses; // база для УСН
   const taxRate = 0.07; // 7% налог
-  const tax = profit > 0 ? profit * taxRate : 0;
+  const tax = taxableProfit > 0 ? taxableProfit * taxRate : 0;
   const netProfit = profit - tax;
   const formattedSummary = useMemo(() => ({
     income,
     totalExpenses,
+    bankExpenses,
+    cashExpenses,
     profit,
     tax,
     netProfit,
-  }), [income, totalExpenses, profit, tax, netProfit]);
+  }), [income, totalExpenses, bankExpenses, cashExpenses, profit, tax, netProfit]);
 
   // Форматирование суммы
   const formatAmount = (amount: number) => {
@@ -290,10 +298,78 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
         category: '',
         amount: 0,
         description: '',
+        is_cash: false,
       });
       setIsAddingExpense(false);
       onExpenseAdded();
     }
+  };
+
+  // Редактирование расхода
+  const handleUpdateExpense = async () => {
+    if (!editingExpense) return;
+
+    if (!newExpense.category.trim()) {
+      alert('Введите категорию расхода');
+      return;
+    }
+
+    if (newExpense.amount <= 0) {
+      alert('Сумма расхода должна быть больше 0');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('expenses')
+      .update({
+        category: newExpense.category,
+        amount: newExpense.amount,
+        description: newExpense.description,
+        is_cash: newExpense.is_cash,
+      })
+      .eq('id', editingExpense.id);
+
+    if (error) {
+      console.error('Ошибка обновления расхода:', error);
+      alert('Ошибка при обновлении расхода');
+    } else {
+      setNewExpense({
+        tender_id: tender.id,
+        category: '',
+        amount: 0,
+        description: '',
+        is_cash: false,
+      });
+      setEditingExpense(null);
+      setIsAddingExpense(false);
+      onExpenseAdded();
+    }
+  };
+
+  // Начать редактирование
+  const startEditing = (expense: Expense) => {
+    setEditingExpense(expense);
+    setNewExpense({
+      tender_id: tender.id,
+      category: expense.category,
+      amount: expense.amount,
+      description: expense.description || '',
+      is_cash: expense.is_cash || false,
+    });
+    setIsAddingExpense(true);
+  };
+
+  // Отменить редактирование
+  const cancelEditing = () => {
+    setEditingExpense(null);
+    setNewExpense({
+      tender_id: tender.id,
+      category: '',
+      amount: 0,
+      description: '',
+      is_cash: false,
+    });
+    setIsAddingExpense(false);
   };
 
   // Удаление расхода
@@ -419,8 +495,16 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
                   <span className="font-medium text-green-600">{formatAmount(income)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Расходы:</span>
+                  <span className="text-gray-600">Расходы всего:</span>
                   <span className="font-medium text-red-600">{formatAmount(totalExpenses)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-4">
+                  <span className="text-gray-500">💳 Безнал:</span>
+                  <span className="text-gray-700">{formatAmount(bankExpenses)}</span>
+                </div>
+                <div className="flex justify-between text-sm pl-4">
+                  <span className="text-gray-500">💵 Наличка:</span>
+                  <span className="text-gray-700">{formatAmount(cashExpenses)}</span>
                 </div>
                 <div className="flex justify-between pt-2 border-t">
                   <span className="text-gray-600">Прибыль:</span>
@@ -453,7 +537,15 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
             <div className="flex items-center justify-between mb-3">
               <h4 className="font-semibold text-gray-900">Расходы</h4>
               <Button
-                onClick={() => setIsAddingExpense(!isAddingExpense)}
+                onClick={() => {
+                  if (isAddingExpense && !editingExpense) {
+                    setIsAddingExpense(false);
+                  } else if (editingExpense) {
+                    cancelEditing();
+                  } else {
+                    setIsAddingExpense(true);
+                  }
+                }}
                 size="sm"
                 variant={isAddingExpense ? "outline" : "default"}
               >
@@ -462,9 +554,14 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
               </Button>
             </div>
 
-            {/* Форма добавления расхода */}
+            {/* Форма добавления/редактирования расхода */}
             {isAddingExpense && (
               <div className="mb-4 p-3 bg-gray-50 rounded-lg border space-y-3">
+                {editingExpense && (
+                  <div className="text-sm text-blue-600 font-medium mb-2">
+                    Редактирование расхода
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div>
                     <Label htmlFor="category">Категория</Label>
@@ -495,8 +592,24 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
                     />
                   </div>
                 </div>
-                <Button onClick={handleAddExpense} size="sm" className="w-full">
-                  Сохранить расход
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="is_cash"
+                    checked={newExpense.is_cash}
+                    onChange={(e) => setNewExpense({ ...newExpense, is_cash: e.target.checked })}
+                    className="h-4 w-4 rounded border-gray-300"
+                  />
+                  <Label htmlFor="is_cash" className="cursor-pointer">
+                    💵 Наличка (не учитывается в УСН)
+                  </Label>
+                </div>
+                <Button 
+                  onClick={editingExpense ? handleUpdateExpense : handleAddExpense} 
+                  size="sm" 
+                  className="w-full"
+                >
+                  {editingExpense ? 'Обновить расход' : 'Сохранить расход'}
                 </Button>
               </div>
             )}
@@ -513,14 +626,23 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2">
+                        <span className="text-lg">{expense.is_cash ? '💵' : '💳'}</span>
                         <span className="font-medium text-gray-900">{expense.category}</span>
                         {expense.description && (
                           <span className="text-sm text-gray-500">— {expense.description}</span>
                         )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <span className="font-semibold text-red-600">{formatAmount(expense.amount)}</span>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => startEditing(expense)}
+                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -532,9 +654,19 @@ export function TenderAccounting({ tender, expenses, onExpenseAdded, onExpenseDe
                     </div>
                   </div>
                 ))}
-                <div className="flex justify-between pt-2 border-t">
-                  <span className="font-semibold text-gray-900">Итого расходов:</span>
-                  <span className="font-bold text-red-600">{formatAmount(totalExpenses)}</span>
+                <div className="space-y-1 pt-2 border-t">
+                  <div className="flex justify-between">
+                    <span className="font-semibold text-gray-900">Итого расходов:</span>
+                    <span className="font-bold text-red-600">{formatAmount(totalExpenses)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">💳 Безнал:</span>
+                    <span className="text-gray-700">{formatAmount(bankExpenses)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">💵 Наличка:</span>
+                    <span className="text-gray-700">{formatAmount(cashExpenses)}</span>
+                  </div>
                 </div>
               </div>
             )}
