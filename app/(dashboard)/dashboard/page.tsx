@@ -115,14 +115,14 @@ export default function DashboardPage() {
         if (a.notification!.priority !== 'urgent' && b.notification!.priority === 'urgent') return 1;
         return 0;
       })
-      .slice(0, 3)
+      .slice(0, 6)
       .map(({ tender }: { tender: Tender }) => tender);
     setUrgentTenders(urgent);
     
-    // Вычисляем тендеры в работе (топ-3 по давности)
+    // Вычисляем тендеры в работе (топ-6 по давности)
     const inWork = tenders
       .filter((t: Tender) => t.status === 'в работе')
-      .slice(0, 3);
+      .slice(0, 6);
     setInWorkTenders(inWork);
     
     // Загружаем расходы для тендеров в работе
@@ -245,32 +245,27 @@ export default function DashboardPage() {
         <div className="grid gap-3 md:grid-cols-3 mb-5">
           {/* 1. СРОЧНО - СТЕКЛЯННАЯ */}
           <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-red-500/30 h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-red-50">
-                  <AlertCircle className="h-4 w-4 text-red-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">Срочно</h3>
-                  <p className="text-3xl font-bold text-gray-900">{urgentTenders.length}</p>
-                </div>
+            <CardContent className="p-2 h-full flex flex-col">
+              <div className="flex items-center gap-1.5 mb-2 px-1 flex-shrink-0">
+                <AlertCircle className="h-3.5 w-3.5 text-red-600" />
+                <h3 className="text-xs font-semibold text-red-600">Срочно ({urgentTenders.length})</h3>
               </div>
             
               {urgentTenders.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-0.5">
                   {urgentTenders.map((tender) => {
                     const notification = getSmartNotification(tender);
                     return (
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
+                        className="p-1.5 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
                       >
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
+                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
                           {tender.name}
                         </p>
                         {notification && (
-                          <p className={`text-xs font-medium ${
+                          <p className={`text-[10px] font-medium ${
                             notification.color === 'red' ? 'text-red-600' :
                             notification.color === 'orange' ? 'text-orange-600' :
                             'text-gray-600'
@@ -289,30 +284,25 @@ export default function DashboardPage() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-red-600 hover:text-red-700 h-7 text-xs px-2 mt-2" 
+                className="text-red-600 hover:text-red-700 h-6 text-[10px] px-2 mt-1" 
                 onClick={() => router.push('/tenders')}
               >
                 Все срочные
-                <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+                <ChevronRight className="h-3 w-3 ml-0.5" />
               </Button>
             </CardContent>
           </Card>
 
           {/* 2. В РАБОТЕ - СТЕКЛЯННАЯ */}
           <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-green-500/30 h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-green-50">
-                  <Briefcase className="h-4 w-4 text-green-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">В работе</h3>
-                  <p className="text-3xl font-bold text-gray-900">{stats.inWork}</p>
-                </div>
+            <CardContent className="p-2 h-full flex flex-col">
+              <div className="flex items-center gap-1.5 mb-2 px-1 flex-shrink-0">
+                <Briefcase className="h-3.5 w-3.5 text-green-600" />
+                <h3 className="text-xs font-semibold text-green-600">В работе ({stats.inWork})</h3>
               </div>
             
               {inWorkTenders.length > 0 ? (
-                <div className="space-y-2 overflow-y-auto flex-1 pr-1">
+                <div className="space-y-1.5 overflow-y-auto flex-1 pr-0.5">
                   {inWorkTenders.map((tender) => {
                     const notification = getSmartNotification(tender);
                     const expenses = tenderExpenses[tender.id] || 0;
@@ -322,22 +312,22 @@ export default function DashboardPage() {
                       <div
                         key={tender.id}
                         onClick={() => navigateToTender(tender.id)}
-                        className="p-2 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
+                        className="p-1.5 rounded-lg backdrop-blur-md bg-white/50 hover:bg-white/70 transition-colors cursor-pointer border border-white/20"
                       >
-                        <p className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
+                        <p className="text-xs font-medium text-gray-900 line-clamp-1 mb-0.5">
                           {tender.name}
                         </p>
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="text-gray-600">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-gray-600 truncate">
                             {notification?.shortMessage || 'В работе'}
                           </span>
                           {expenses > 0 ? (
-                            <span className="font-semibold text-green-600">
-                              💰 {formatCompactPrice(profit)} (из {formatCompactPrice(contractPrice)})
+                            <span className="font-semibold text-green-600 ml-1">
+                              💰 {formatCompactPrice(profit)}
                             </span>
                           ) : (
-                            <span className="font-semibold text-green-600">
-                              {formatPrice(contractPrice)}
+                            <span className="font-semibold text-green-600 ml-1">
+                              {formatCompactPrice(contractPrice)}
                             </span>
                           )}
                         </div>
@@ -352,54 +342,72 @@ export default function DashboardPage() {
               <Button 
                 variant="ghost" 
                 size="sm" 
-                className="text-green-600 hover:text-green-700 h-7 text-xs px-2 mt-2" 
+                className="text-green-600 hover:text-green-700 h-6 text-[10px] px-2 mt-1" 
                 onClick={() => navigateToTenders('inwork')}
               >
                 Все проекты
-                <ChevronRight className="h-3.5 w-3.5 ml-0.5" />
+                <ChevronRight className="h-3 w-3 ml-0.5" />
               </Button>
             </CardContent>
           </Card>
 
-          {/* 3. СТАТИСТИКА - СТЕКЛЯННАЯ */}
+          {/* 3. ВОРОНКА ПРОДАЖ - СТЕКЛЯННАЯ */}
           <Card className="transition-all hover:shadow-xl backdrop-blur-xl bg-white/40 border border-white/20 shadow-lg shadow-blue-500/30 h-[240px]">
-            <CardContent className="p-3 h-full flex flex-col">
-              <div className="flex items-center gap-2 mb-3 flex-shrink-0">
-                <div className="p-1.5 rounded-lg bg-blue-50">
-                  <TrendingUp className="h-4 w-4 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium text-gray-600">Статистика</h3>
-                  <p className="text-lg font-bold text-gray-900">За месяц</p>
-                </div>
+            <CardContent className="p-2 h-full flex flex-col">
+              <div className="flex items-center gap-1.5 mb-2 px-1 flex-shrink-0">
+                <TrendingUp className="h-3.5 w-3.5 text-blue-600" />
+                <h3 className="text-xs font-semibold text-blue-600">Воронка продаж</h3>
               </div>
             
-              <div className="space-y-2 flex-1">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Новых:</span>
-                  <span className="font-semibold text-gray-900">{stats.new}</span>
+              <div className="space-y-2.5 flex-1 px-1">
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-gray-600">Новых</span>
+                    <span className="font-bold text-gray-900">{stats.new}</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-1.5">
+                    <div className="bg-gray-500 h-1.5 rounded-full" style={{ width: '100%' }} />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Поданных:</span>
-                  <span className="font-semibold text-gray-900">{stats.submitted}</span>
+
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-gray-600">Подано</span>
+                    <span className="font-bold text-blue-600">{stats.submitted}</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-1.5">
+                    <div className="bg-blue-500 h-1.5 rounded-full transition-all" style={{ width: stats.new > 0 ? `${(stats.submitted / stats.new) * 100}%` : '0%' }} />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Рассмотрение:</span>
-                  <span className="font-semibold text-gray-900">{stats.underReview}</span>
+
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-gray-600">На рассмотрении</span>
+                    <span className="font-bold text-yellow-600">{stats.underReview}</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-1.5">
+                    <div className="bg-yellow-500 h-1.5 rounded-full transition-all" style={{ width: stats.submitted > 0 ? `${(stats.underReview / stats.submitted) * 100}%` : '0%' }} />
+                  </div>
                 </div>
-                <div className="h-px bg-gray-200 my-2"></div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Побед:</span>
-                  <span className="font-semibold text-green-600">{stats.won}</span>
+
+                <div>
+                  <div className="flex justify-between text-[10px] mb-0.5">
+                    <span className="text-gray-600">Побед</span>
+                    <span className="font-bold text-green-600">{stats.won}</span>
+                  </div>
+                  <div className="bg-gray-200 rounded-full h-1.5">
+                    <div className="bg-green-500 h-1.5 rounded-full transition-all" style={{ width: stats.underReview > 0 ? `${(stats.won / stats.underReview) * 100}%` : '0%' }} />
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Проигрышей:</span>
-                  <span className="font-semibold text-red-600">{stats.lost}</span>
-                </div>
-                <div className="h-px bg-gray-200 my-2"></div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Выручка:</span>
-                  <span className="font-semibold text-blue-600">{formatPrice(stats.totalRevenue)}</span>
+
+                <div className="pt-2 border-t border-gray-200">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[10px] text-gray-600">Конверсия</span>
+                    <span className="text-lg font-bold text-blue-600">
+                      {stats.new > 0 ? Math.round((stats.won / stats.new) * 100) : 0}%
+                    </span>
+                  </div>
+                  <p className="text-[9px] text-gray-500 mt-0.5">новых → побед</p>
                 </div>
               </div>
             </CardContent>
