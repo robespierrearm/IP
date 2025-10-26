@@ -61,7 +61,20 @@ export default function LoginPage() {
         credentials: 'include', // Важно для cookies
       });
 
-      const data = await response.json();
+      // Проверяем что ответ не пустой
+      const text = await response.text();
+      
+      if (!text) {
+        throw new Error('Сервер вернул пустой ответ');
+      }
+      
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        console.error('Invalid JSON from server:', text);
+        throw new Error('Невалидный ответ от сервера');
+      }
 
       if (!response.ok) {
         // Показываем точное сообщение от сервера
