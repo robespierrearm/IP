@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -155,7 +155,7 @@ export default function NewLoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-blue-950 to-slate-950 flex items-center justify-center p-4 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <motion.div
+        <m.div
           className="absolute -top-40 -right-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
@@ -167,7 +167,7 @@ export default function NewLoginPage() {
             ease: "easeInOut",
           }}
         />
-        <motion.div
+        <m.div
           className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
@@ -186,7 +186,7 @@ export default function NewLoginPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
       
       {/* Login Card */}
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
@@ -197,7 +197,7 @@ export default function NewLoginPage() {
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-blue-500 to-transparent" />
           
           {/* Logo */}
-          <motion.div
+          <m.div
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.5 }}
@@ -215,12 +215,12 @@ export default function NewLoginPage() {
             <p className="text-slate-400 text-sm">
               {forgotPasswordMode ? 'Введите email для восстановления пароля' : 'Войдите в систему'}
             </p>
-          </motion.div>
+          </m.div>
           
           {/* Form */}
           <AnimatePresence mode="wait">
             {!forgotPasswordMode ? (
-              <motion.form
+              <m.form
                 key="login-form"
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -232,7 +232,7 @@ export default function NewLoginPage() {
                 {/* Error Message */}
                 <AnimatePresence>
                   {error && (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -240,7 +240,7 @@ export default function NewLoginPage() {
                     >
                       <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                       <span className="text-sm text-red-400">{error}</span>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
                 
@@ -318,7 +318,7 @@ export default function NewLoginPage() {
                 >
                   <AnimatePresence mode="wait">
                     {isLoading ? (
-                      <motion.div
+                      <m.div
                         key="loading"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -327,9 +327,9 @@ export default function NewLoginPage() {
                       >
                         <Loader2 className="w-5 h-5 animate-spin" />
                         <span>Вход...</span>
-                      </motion.div>
+                      </m.div>
                     ) : success ? (
-                      <motion.div
+                      <m.div
                         key="success"
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -338,9 +338,9 @@ export default function NewLoginPage() {
                       >
                         <CheckCircle2 className="w-5 h-5" />
                         <span>Успешно!</span>
-                      </motion.div>
+                      </m.div>
                     ) : (
-                      <motion.div
+                      <m.div
                         key="default"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -349,13 +349,13 @@ export default function NewLoginPage() {
                       >
                         <span>Войти</span>
                         <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                      </motion.div>
+                      </m.div>
                     )}
                   </AnimatePresence>
                 </Button>
-              </motion.form>
+              </m.form>
             ) : (
-              <motion.form
+              <m.form
                 key="forgot-password-form"
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -367,7 +367,7 @@ export default function NewLoginPage() {
                 {/* Success Message */}
                 <AnimatePresence>
                   {success && (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.9 }}
@@ -375,11 +375,11 @@ export default function NewLoginPage() {
                     >
                       <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
                       <span className="text-sm text-green-400">Ссылка для восстановления отправлена на email!</span>
-                    </motion.div>
+                    </m.div>
                   )}
                   
                   {error && (
-                    <motion.div
+                    <m.div
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
@@ -387,7 +387,7 @@ export default function NewLoginPage() {
                     >
                       <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0" />
                       <span className="text-sm text-red-400">{error}</span>
-                    </motion.div>
+                    </m.div>
                   )}
                 </AnimatePresence>
                 
@@ -444,11 +444,11 @@ export default function NewLoginPage() {
                     ← Вернуться к входу
                   </button>
                 </div>
-              </motion.form>
+              </m.form>
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </m.div>
     </div>
   );
 }
