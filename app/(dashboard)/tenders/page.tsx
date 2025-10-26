@@ -2,7 +2,7 @@
 
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { m, AnimatePresence } from 'framer-motion';
 import { Tender, TenderInsert, STATUS_LABELS } from '@/lib/supabase';
 import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
 import { useTenders, useCreateTender, useUpdateTender, useDeleteTender } from '@/hooks/useQueries';
@@ -13,9 +13,13 @@ import { EditTenderDialog } from '@/components/EditTenderDialog';
 import { TenderStatusChanger } from '@/components/TenderStatusChanger';
 import { PlatformButton } from '@/components/PlatformButton';
 import { TenderCardExpanded } from '@/components/TenderCardExpanded';
-import { Pencil, Trash2, Calendar, DollarSign, FileText, RefreshCw } from 'lucide-react';
+import { TenderCardExpandedNEW } from '@/components/TenderCardExpandedNEW';
+import { TenderCardULTIMATE } from '@/components/TenderCardULTIMATE';
+import { Pencil, Trash2, Calendar, DollarSign, FileText, RefreshCw, MapPin, ExternalLink } from 'lucide-react';
 import { getStatusColor, formatPrice, formatDate } from '@/lib/tender-utils';
 import { getSmartNotification } from '@/lib/tender-notifications';
+import { extractDomain } from '@/lib/url-utils';
+import { useCardVersion } from '@/contexts/CardVersionContext';
 
 type TabType = 'all' | 'new' | 'review' | 'inwork' | 'archive';
 type ArchiveFilter = 'all' | 'completed' | 'lost';
@@ -37,6 +41,7 @@ function TendersContent() {
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || 'all');
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all');
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
+  const { cardVersion } = useCardVersion(); // Из контекста
 
   // Обновляем activeTab при изменении URL
   useEffect(() => {
@@ -252,7 +257,7 @@ function TendersContent() {
           </p>
         </div>
         <div className="flex gap-2">
-          <motion.div
+          <m.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.2 }}
@@ -266,8 +271,8 @@ function TendersContent() {
             >
               <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             </Button>
-          </motion.div>
-          <motion.div
+          </m.div>
+          <m.div
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             transition={{ duration: 0.2 }}
@@ -275,7 +280,7 @@ function TendersContent() {
             <Button onClick={() => setIsAddDialogOpen(true)} size="lg" className="w-full md:w-auto backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300">
               Добавить тендер
             </Button>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
@@ -322,21 +327,21 @@ function TendersContent() {
       )}
 
       {filteredTenders.length === 0 && !isLoading ? (
-        <motion.div 
+        <m.div 
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
           className="text-center py-20"
         >
-          <motion.p 
+          <m.p 
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="text-gray-500 text-lg"
           >
             Тендеров пока нет
-          </motion.p>
-          <motion.div
+          </m.p>
+          <m.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
@@ -350,8 +355,8 @@ function TendersContent() {
             >
               Добавить первый тендер
             </Button>
-          </motion.div>
-        </motion.div>
+          </m.div>
+        </m.div>
       ) : (
         <div className="grid gap-4">
           <AnimatePresence mode="popLayout">
@@ -359,8 +364,34 @@ function TendersContent() {
             const notification = getSmartNotification(tender);
             const isUrgent = notification && (notification.priority === 'urgent' || notification.priority === 'high');
             
+            // ULTIMATE версия - рендерим свой компонент
+            if (cardVersion === 'ultimate') {
+              return (
+                <m.div
+                  key={tender.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, x: -100 }}
+                  transition={{ 
+                    duration: 0.3,
+                    delay: index * 0.05,
+                    ease: [0.4, 0, 0.2, 1]
+                  }}
+                  layout
+                >
+                  <TenderCardULTIMATE
+                    tender={tender}
+                    onEdit={() => setEditingTender(tender)}
+                    onDelete={() => handleDeleteTender(tender.id)}
+                    onStatusChange={handleStatusChange}
+                  />
+                </m.div>
+              );
+            }
+            
+            // Оригинал и NEW - стандартный рендеринг
             return (
-            <motion.div
+            <m.div
               key={tender.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -392,7 +423,27 @@ function TendersContent() {
                     <div className="flex items-center gap-2 mb-2 flex-wrap">
                       <FileText className="h-4 w-4 text-gray-400 flex-shrink-0" />
                       <h3 className="font-semibold text-base text-gray-900 truncate">{tender.name}</h3>
-                      <PlatformButton link={tender.link} />
+                    </div>
+                    {/* Ссылка + Регион - компактно в одну строку */}
+                    <div className="flex items-center gap-2 mb-2 flex-wrap text-xs">
+                      {tender.link && (
+                        <a
+                          href={tender.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-md border border-blue-200 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          <span className="font-medium">{extractDomain(tender.link)}</span>
+                        </a>
+                      )}
+                      {tender.region && (
+                        <div className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-50 text-gray-700 rounded-md border border-gray-200">
+                          <MapPin className="h-3 w-3 text-gray-500" />
+                          <span>{tender.region}</span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       <span
@@ -428,7 +479,7 @@ function TendersContent() {
                     </div>
                     <div className="flex gap-2">
                       {/* Кнопка редактирования */}
-                      <motion.div
+                      <m.div
                         whileHover={{ scale: 1.1, rotate: 12 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.2 }}
@@ -444,10 +495,10 @@ function TendersContent() {
                             Редактировать
                           </span>
                         </Button>
-                      </motion.div>
+                      </m.div>
                       
                       {/* Кнопка удаления */}
-                      <motion.div
+                      <m.div
                         whileHover={{ scale: 1.1, rotate: -12 }}
                         whileTap={{ scale: 0.95 }}
                         transition={{ duration: 0.2 }}
@@ -463,7 +514,7 @@ function TendersContent() {
                             Удалить
                           </span>
                         </Button>
-                      </motion.div>
+                      </m.div>
                     </div>
                   </div>
                 </div>
@@ -516,14 +567,23 @@ function TendersContent() {
                 </div>
               </div>
 
-              {/* Раскрывающееся меню */}
-              <TenderCardExpanded
-                tender={tender}
-                isExpanded={expandedTenderId === tender.id}
-                onToggle={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
-              />
+              {/* Раскрывающееся меню - условный рендеринг версий */}
+              {cardVersion === 'original' && (
+                <TenderCardExpanded
+                  tender={tender}
+                  isExpanded={expandedTenderId === tender.id}
+                  onToggle={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
+                />
+              )}
+              {cardVersion === 'new' && (
+                <TenderCardExpandedNEW
+                  tender={tender}
+                  isExpanded={expandedTenderId === tender.id}
+                  onToggle={() => setExpandedTenderId(expandedTenderId === tender.id ? null : tender.id)}
+                />
+              )}
             </Card>
-            </motion.div>
+            </m.div>
             );
           })}
           </AnimatePresence>

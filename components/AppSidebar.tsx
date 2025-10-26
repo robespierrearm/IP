@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import Link from 'next/link';
 import { usePathname, useSearchParams, useRouter } from 'next/navigation';
 import { Logo } from '@/components/Logo';
@@ -27,6 +27,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useCardVersion } from '@/contexts/CardVersionContext';
 
 const menuItems = [
   {
@@ -75,6 +76,7 @@ export function AppSidebar() {
   const [isTendersOpen, setIsTendersOpen] = useState(true); // Выпадающее меню тендеров
   const [currentUser, setCurrentUser] = useState<{ username?: string; email?: string }>({});
   const [tenderCounts, setTenderCounts] = useState({ new: 0, review: 0, inwork: 0, archive: 0 });
+  const { cardVersion, setCardVersion } = useCardVersion();
 
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
@@ -383,22 +385,62 @@ export function AppSidebar() {
         {!isCollapsed ? (
           <div className="space-y-3">
             {/* Имя пользователя */}
-            <div className="flex items-center gap-3 px-3 py-2 backdrop-blur-xl bg-white/50 rounded-lg hover:bg-white/70 transition-colors cursor-pointer border border-white/20 shadow-sm">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
-                {currentUser.username?.charAt(0).toUpperCase() || 'U'}
+            <div className="px-3 py-2 backdrop-blur-xl bg-white/50 rounded-lg border border-white/20 shadow-sm space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold shadow-md">
+                  {currentUser.username?.charAt(0).toUpperCase() || 'U'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">
+                    {currentUser.username || 'Пользователь'}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate">
+                    {currentUser.email || ''}
+                  </p>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 truncate">
-                  {currentUser.username || 'Пользователь'}
-                </p>
-                <p className="text-xs text-gray-500 truncate">
-                  {currentUser.email || ''}
-                </p>
+              
+              {/* Переключатель версий карточек */}
+              <div className="flex items-center gap-1 pt-1 border-t border-gray-200">
+                <span className="text-[10px] text-gray-500 mr-1">Версия:</span>
+                <button
+                  onClick={() => setCardVersion('original')}
+                  className={`flex-1 py-1 text-[10px] font-bold rounded transition-all ${
+                    cardVersion === 'original'
+                      ? 'bg-gray-500 text-white shadow-sm'
+                      : 'bg-white/50 text-gray-600 hover:bg-white'
+                  }`}
+                  title="Original"
+                >
+                  O
+                </button>
+                <button
+                  onClick={() => setCardVersion('new')}
+                  className={`flex-1 py-1 text-[10px] font-bold rounded transition-all ${
+                    cardVersion === 'new'
+                      ? 'bg-green-500 text-white shadow-sm'
+                      : 'bg-white/50 text-gray-600 hover:bg-white'
+                  }`}
+                  title="NEW"
+                >
+                  N
+                </button>
+                <button
+                  onClick={() => setCardVersion('ultimate')}
+                  className={`flex-1 py-1 text-[10px] font-bold rounded transition-all ${
+                    cardVersion === 'ultimate'
+                      ? 'bg-purple-500 text-white shadow-sm'
+                      : 'bg-white/50 text-gray-600 hover:bg-white'
+                  }`}
+                  title="ULTIMATE"
+                >
+                  U
+                </button>
               </div>
             </div>
             
             {/* Кнопка выхода */}
-            <motion.div
+            <m.div
               whileHover={{ scale: 1.02, x: 2 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
@@ -411,7 +453,7 @@ export function AppSidebar() {
                 <LogOut className="h-4 w-4 group-hover:rotate-12 transition-transform" />
                 <span className="font-medium">Выход</span>
               </Button>
-            </motion.div>
+            </m.div>
           </div>
         ) : (
           <div className="space-y-2">
@@ -420,7 +462,7 @@ export function AppSidebar() {
               {currentUser.username?.charAt(0).toUpperCase() || 'U'}
             </div>
             {/* Кнопка выхода в свернутом виде */}
-            <motion.div
+            <m.div
               whileHover={{ scale: 1.1, rotate: 12 }}
               whileTap={{ scale: 0.95 }}
               transition={{ duration: 0.2 }}
@@ -433,7 +475,7 @@ export function AppSidebar() {
               >
                 <LogOut className="h-5 w-5 group-hover:rotate-12 transition-transform" />
               </Button>
-            </motion.div>
+            </m.div>
           </div>
         )}
       </div>

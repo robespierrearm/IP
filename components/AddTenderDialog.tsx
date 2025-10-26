@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { TenderInsert } from '@/lib/supabase';
 import { FileText, Hash, Link as LinkIcon, MapPin, Calendar, DollarSign, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -80,7 +80,7 @@ export function AddTenderDialog({
 
           <div className="space-y-4 py-3">
             {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -91,7 +91,7 @@ export function AddTenderDialog({
               </div>
               
               <div className="space-y-3">
-              <motion.div 
+              <m.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -110,9 +110,9 @@ export function AddTenderDialog({
                   className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                   required
                 />
-              </motion.div>
+              </m.div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -130,9 +130,9 @@ export function AddTenderDialog({
                   placeholder="№ 0123456789012345678901"
                   className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
-              </motion.div>
+              </m.div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -151,12 +151,12 @@ export function AddTenderDialog({
                   placeholder="https://zakupki.gov.ru/..."
                   className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
-              </motion.div>
+              </m.div>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* ЛОКАЦИЯ И СРОКИ */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -167,7 +167,7 @@ export function AddTenderDialog({
               </div>
 
               <div className="space-y-4">
-              <motion.div 
+              <m.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.2 }}
@@ -186,10 +186,10 @@ export function AddTenderDialog({
                   placeholder="Москва, Россия"
                   className="h-9 text-sm backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 />
-              </motion.div>
+              </m.div>
 
               <div className="grid grid-cols-2 gap-4">
-                <motion.div 
+                <m.div 
                   className="grid gap-2"
                   whileHover={{ scale: 1.01, y: -2 }}
                   transition={{ duration: 0.2 }}
@@ -209,9 +209,9 @@ export function AddTenderDialog({
                     className="h-9 text-sm backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
                     required
                   />
-                </motion.div>
+                </m.div>
 
-                <motion.div 
+                <m.div 
                   className="grid gap-2"
                   whileHover={{ scale: 1.01, y: -2 }}
                   transition={{ duration: 0.2 }}
@@ -231,10 +231,10 @@ export function AddTenderDialog({
                     className="h-9 text-sm backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
                     required
                   />
-                </motion.div>
+                </m.div>
               </div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-2"
                 whileHover={{ scale: 1.01, y: -2 }}
                 transition={{ duration: 0.2 }}
@@ -258,9 +258,9 @@ export function AddTenderDialog({
                   placeholder="1 000 000"
                   className="h-9 text-sm backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                 />
-              </motion.div>
+              </m.div>
               </div>
-            </motion.div>
+            </m.div>
 
             {formData.status === 'победа' && (
               <div className="grid gap-2">
@@ -284,7 +284,7 @@ export function AddTenderDialog({
           </div>
 
           <DialogFooter className="gap-2 pt-3">
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            <m.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button
                 type="button"
                 variant="outline"
@@ -293,15 +293,15 @@ export function AddTenderDialog({
               >
                 Отмена
               </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+            </m.div>
+            <m.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Button 
                 type="submit"
                 className="backdrop-blur-xl bg-blue-500/20 hover:bg-blue-500/30 text-blue-700 border border-white/20 shadow-lg shadow-blue-500/50 transition-all duration-300"
               >
                 ✅ Добавить тендер
               </Button>
-            </motion.div>
+            </m.div>
           </DialogFooter>
         </form>
       </DialogContent>

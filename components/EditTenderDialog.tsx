@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
@@ -68,7 +68,7 @@ export function EditTenderDialog({
             <form onSubmit={handleSubmit}>
               <div className="space-y-3 py-2">
             {/* ОСНОВНАЯ ИНФОРМАЦИЯ */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
@@ -79,7 +79,7 @@ export function EditTenderDialog({
               </div>
               
               <div className="space-y-2">
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
@@ -98,9 +98,9 @@ export function EditTenderDialog({
                 className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
                 required
               />
-              </motion.div>
+              </m.div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
@@ -120,9 +120,9 @@ export function EditTenderDialog({
                   </option>
                 ))}
               </select>
-              </motion.div>
+              </m.div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
@@ -140,9 +140,9 @@ export function EditTenderDialog({
                 placeholder="№ 0123456789012345678901"
                 className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
-              </motion.div>
+              </m.div>
 
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
@@ -161,12 +161,12 @@ export function EditTenderDialog({
                 placeholder="https://..."
                 className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
-              </motion.div>
+              </m.div>
               </div>
-            </motion.div>
+            </m.div>
 
             {/* ЛОКАЦИЯ И СРОКИ */}
-            <motion.div
+            <m.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -177,7 +177,7 @@ export function EditTenderDialog({
               </div>
 
               <div className="space-y-2">
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 whileHover={{ scale: 1.005 }}
                 transition={{ duration: 0.2 }}
@@ -196,10 +196,10 @@ export function EditTenderDialog({
                 placeholder="Москва, Россия"
                 className="h-8 text-xs backdrop-blur-md bg-white/50 border border-white/20 hover:bg-white/70 focus:bg-white/90 shadow-sm transition-all duration-200"
               />
-              </motion.div>
+              </m.div>
 
               <div className="grid grid-cols-2 gap-2">
-                <motion.div 
+                <m.div 
                   className="grid gap-1"
                   whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
@@ -222,9 +222,9 @@ export function EditTenderDialog({
                     className="h-8 text-xs backdrop-blur-md bg-blue-500/10 border border-blue-200 hover:bg-blue-500/20 focus:bg-blue-500/30 shadow-sm shadow-blue-500/20 transition-all duration-200"
                     required
                   />
-                </motion.div>
+                </m.div>
 
-                <motion.div 
+                <m.div 
                   className="grid gap-1"
                   whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
@@ -245,11 +245,11 @@ export function EditTenderDialog({
                     }
                     className="h-8 text-xs backdrop-blur-md bg-purple-500/10 border border-purple-200 hover:bg-purple-500/20 focus:bg-purple-500/30 shadow-sm shadow-purple-500/20 transition-all duration-200"
                   />
-                </motion.div>
+                </m.div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
-                <motion.div 
+                <m.div 
                   className="grid gap-1"
                   whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
@@ -268,9 +268,9 @@ export function EditTenderDialog({
                     }
                     className="h-8 text-xs backdrop-blur-md bg-orange-500/10 border border-orange-200 hover:bg-orange-500/20 focus:bg-orange-500/30 shadow-sm shadow-orange-500/20 transition-all duration-200"
                   />
-                </motion.div>
+                </m.div>
 
-                <motion.div 
+                <m.div 
                   className="grid gap-1"
                   whileHover={{ scale: 1.005, y: -1 }}
                   transition={{ duration: 0.2 }}
@@ -294,13 +294,13 @@ export function EditTenderDialog({
                     placeholder="1 000 000"
                     className="h-8 text-xs backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                   />
-                </motion.div>
+                </m.div>
               </div>
               </div>
-            </motion.div>
+            </m.div>
 
             {formData.status === 'победа' && (
-              <motion.div 
+              <m.div 
                 className="grid gap-1"
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
@@ -325,7 +325,7 @@ export function EditTenderDialog({
                   placeholder="0"
                   className="h-8 text-xs backdrop-blur-md bg-green-500/10 border border-green-200 hover:bg-green-500/20 focus:bg-green-500/30 shadow-sm shadow-green-500/20 transition-all duration-200"
                 />
-              </motion.div>
+              </m.div>
             )}
 
               </div>
@@ -345,14 +345,14 @@ export function EditTenderDialog({
           </TabsContent>
 
           <TabsContent value="files" className="py-2 mt-2">
-            <motion.div
+            <m.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
               className="backdrop-blur-md bg-white/30 rounded-lg p-4 border border-white/20"
             >
               <TenderFilesList tenderId={tender.id} tenderStatus={tender.status} />
-            </motion.div>
+            </m.div>
           </TabsContent>
         </Tabs>
       </DialogContent>

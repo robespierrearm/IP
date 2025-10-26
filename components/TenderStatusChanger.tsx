@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { m } from 'framer-motion';
 import { Tender, STATUS_TRANSITIONS, STATUS_LABELS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import {
@@ -224,7 +224,7 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
           // Современный минималистичный стиль для Победа/Проигрыш
           if (nextStatus === 'победа') {
             return (
-              <motion.button
+              <m.button
                 key={nextStatus}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -236,12 +236,12 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
               >
                 <CheckCircle className="h-3.5 w-3.5" />
                 Победа
-              </motion.button>
+              </m.button>
             );
           }
           if (nextStatus === 'проигрыш') {
             return (
-              <motion.button
+              <m.button
                 key={nextStatus}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -253,7 +253,7 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
               >
                 <XCircle className="h-3.5 w-3.5" />
                 Проигрыш
-              </motion.button>
+              </m.button>
             );
           }
           // Остальные переходы - современный стиль
@@ -267,7 +267,7 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
             'проигрыш': 'text-red-700 bg-red-50 hover:bg-red-100 border-red-200',
           };
           return (
-            <motion.button
+            <m.button
               key={nextStatus}
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -286,7 +286,7 @@ export function TenderStatusChanger({ tender, onStatusChange }: TenderStatusChan
             >
               {getStatusIcon(nextStatus)}
               {STATUS_LABELS[nextStatus]}
-            </motion.button>
+            </m.button>
           );
         })}
       </div>
