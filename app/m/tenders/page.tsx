@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Tender, STATUS_LABELS } from '@/lib/supabase';
 import { useTenders, useDeleteTender } from '@/hooks/useQueries';
@@ -15,11 +16,16 @@ import { TenderCardModern } from '@/components/mobile/TenderCardModern';
 import { TenderCardApple } from '@/components/mobile/TenderCardApple';
 import { AnimatedTenderCard } from '@/components/mobile/AnimatedTenderCard';
 import { TenderCardSkeletonGroup } from '@/components/mobile/TenderCardSkeleton';
-import { TenderDetailsModal } from '@/components/mobile/TenderDetailsModal';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useDebounce } from '@/hooks/useDebounce';
+
+// Lazy load detail modal - opens only on card click
+const TenderDetailsModal = dynamic(
+  () => import('@/components/mobile/TenderDetailsModal').then(mod => ({ default: mod.TenderDetailsModal })),
+  { loading: () => null }
+);
 
 type CardStyle = 'original' | 'modern' | 'apple';
 

@@ -1,10 +1,19 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { supabase, Tender, Expense } from '@/lib/supabase';
-import { TenderAccountingV1 } from '@/components/TenderAccountingV1';
 import { TrendingUp, TrendingDown, DollarSign, FileText, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+
+// Lazy load accounting component - it's heavy (includes PDF generation)
+const TenderAccountingV1 = dynamic(
+  () => import('@/components/TenderAccountingV1').then(mod => ({ default: mod.TenderAccountingV1 })),
+  { 
+    loading: () => <div className="text-center py-8 text-gray-500">Загрузка бухгалтерии...</div>,
+    ssr: false // Disable SSR for this component (uses browser APIs)
+  }
+);
 
 interface TenderWithExpenses {
   tender: Tender;
