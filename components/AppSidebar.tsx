@@ -36,6 +36,11 @@ const menuItems = [
     icon: Home,
   },
   {
+    title: '🧪 Дашборд ТЕСТ',
+    href: '/dashboard-test',
+    icon: Home,
+  },
+  {
     title: 'Тендеры',
     href: '/tenders',
     icon: FileText,
