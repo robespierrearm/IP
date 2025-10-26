@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -12,23 +12,50 @@ if (typeof window === 'undefined') { // Только на сервере
   });
 }
 
-// КРИТИЧЕСКАЯ ПРОВЕРКА для всех окружений
-if (!supabaseUrl || !supabaseAnonKey) {
-  const errorMessage = 
-    `❌ CRITICAL: Supabase credentials не настроены!\n` +
-    `URL: ${supabaseUrl ? '✓ SET' : '✗ MISSING'}\n` +
-    `KEY: ${supabaseAnonKey ? '✓ SET' : '✗ MISSING'}\n` +
-    `Environment: ${process.env.NODE_ENV}\n\n` +
-    `Для Vercel: Settings → Environment Variables\n` +
-    `Для локалки: Создайте .env.local`;
-  
-  console.error(errorMessage);
-  
-  // Fail fast - не создаём broken client
-  throw new Error('Supabase credentials не настроены. См. консоль.');
+// Проверка наличия credentials (не бросаем Error на module scope!)
+const hasCredentials = !!(supabaseUrl && supabaseAnonKey);
+
+if (!hasCredentials && typeof window === 'undefined') {
+  console.error('❌ CRITICAL: Supabase credentials не настроены!');
+  console.error('URL:', supabaseUrl ? '✓ SET' : '✗ MISSING');
+  console.error('KEY:', supabaseAnonKey ? '✓ SET' : '✗ MISSING');
+  console.error('Environment:', process.env.NODE_ENV);
+  console.error('\nДля Vercel: Settings → Environment Variables');
+  console.error('Для локалки: Создайте .env.local с NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Создаём клиент только если credentials есть
+// Иначе создаём dummy client который будет выдавать понятную ошибку
+let supabaseClient: SupabaseClient;
+
+if (hasCredentials) {
+  supabaseClient = createClient(supabaseUrl!, supabaseAnonKey!);
+} else {
+  // Создаём proxy который выдаёт понятную ошибку при любом вызове
+  supabaseClient = new Proxy({} as SupabaseClient, {
+    get() {
+      throw new Error(
+        'Supabase client не инициализирован: отсутствуют NEXT_PUBLIC_SUPABASE_URL или NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
+        'Проверьте environment variables в Vercel Dashboard → Settings → Environment Variables'
+      );
+    }
+  });
+}
+
+export const supabase = supabaseClient;
+
+/**
+ * Проверяет что Supabase credentials настроены
+ * @throws {Error} Если credentials отсутствуют
+ */
+export function checkSupabaseCredentials(): void {
+  if (!hasCredentials) {
+    throw new Error(
+      'Supabase credentials не настроены. ' +
+      'Добавьте NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY в environment variables.'
+    );
+  }
+}
 
 // Типы для базы данных
 export interface Tender {

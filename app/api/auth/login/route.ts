@@ -11,6 +11,31 @@ export async function POST(request: NextRequest) {
   try {
     logger.debug('Login API called');
     
+    // Проверяем что Supabase доступен (диагностика для production)
+    try {
+      const hasUrl = !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const hasKey = !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!hasUrl || !hasKey) {
+        logger.error('Supabase credentials missing', { hasUrl, hasKey, env: process.env.NODE_ENV });
+        return NextResponse.json(
+          { 
+            error: 'Ошибка конфигурации сервера',
+            details: process.env.NODE_ENV === 'development' 
+              ? `Missing: ${!hasUrl ? 'SUPABASE_URL' : ''} ${!hasKey ? 'SUPABASE_ANON_KEY' : ''}`
+              : undefined
+          },
+          { status: 500 }
+        );
+      }
+    } catch (configError) {
+      logger.error('Configuration check failed', { error: configError });
+      return NextResponse.json(
+        { error: 'Ошибка конфигурации сервера' },
+        { status: 500 }
+      );
+    }
+    
     const body = await request.json();
     logger.debug('Request body parsed', { hasEmail: !!body.email, hasPassword: !!body.password });
     
