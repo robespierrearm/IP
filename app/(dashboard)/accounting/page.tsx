@@ -1,19 +1,24 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { supabase, Tender, Expense } from '@/lib/supabase';
 import { TenderAccounting } from '@/components/TenderAccounting';
-import { TrendingUp, TrendingDown, DollarSign, FileText } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, FileText, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TenderWithExpenses {
   tender: Tender;
   expenses: Expense[];
 }
 
+type Period = 'all' | 'month' | 'quarter' | 'year';
+
 export default function AccountingPage() {
   const [tendersWithExpenses, setTendersWithExpenses] = useState<TenderWithExpenses[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [expensesTableMissing, setExpensesTableMissing] = useState(false);
+  const [period, setPeriod] = useState<Period>('all');
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Загрузка данных
   const loadData = async () => {
@@ -68,15 +73,41 @@ export default function AccountingPage() {
     loadData();
   }, []);
 
+  // Фильтрация по периоду
+  const filteredData = useMemo(() => {
+    if (period === 'all') return tendersWithExpenses;
+    
+    const now = selectedDate;
+    const y = now.getFullYear(), m = now.getMonth();
+    let startDate: Date, endDate: Date;
+    
+    if (period === 'month') {
+      startDate = new Date(y, m, 1);
+      endDate = new Date(y, m + 1, 0);
+    } else if (period === 'quarter') {
+      const q = Math.floor(m / 3) * 3;
+      startDate = new Date(y, q, 1);
+      endDate = new Date(y, q + 3, 0);
+    } else {
+      startDate = new Date(y, 0, 1);
+      endDate = new Date(y, 11, 31);
+    }
+    
+    return tendersWithExpenses.filter(item => {
+      const tenderDate = new Date(item.tender.created_at || '');
+      return tenderDate >= startDate && tenderDate <= endDate;
+    });
+  }, [tendersWithExpenses, period, selectedDate]);
+
   // Общая статистика - доход считаем только по завершённым тендерам
-  const totalIncome = tendersWithExpenses.reduce((sum, item) => {
+  const totalIncome = filteredData.reduce((sum, item) => {
     if (item.tender.status === 'завершён') {
       return sum + (item.tender.win_price || 0);
     }
     return sum;
   }, 0);
   
-  const totalExpenses = tendersWithExpenses.reduce((sum, item) => 
+  const totalExpenses = filteredData.reduce((sum, item) => 
     sum + item.expenses.reduce((expSum, exp) => expSum + exp.amount, 0), 0
   );
   const grossProfit = totalIncome - totalExpenses;
@@ -92,14 +123,92 @@ export default function AccountingPage() {
     }).format(amount);
   };
 
+  const getPeriodLabel = () => {
+    const months = ['Янв', 'Фев', 'Мар', 'Апр', 'Май', 'Июн', 'Июл', 'Авг', 'Сен', 'Окт', 'Ноя', 'Дек'];
+    if (period === 'month') return `${months[selectedDate.getMonth()]} ${selectedDate.getFullYear()}`;
+    if (period === 'quarter') return `Q${Math.floor(selectedDate.getMonth() / 3) + 1} ${selectedDate.getFullYear()}`;
+    if (period === 'year') return `${selectedDate.getFullYear()}`;
+    return 'Всё время';
+  };
+
+  const changeDate = (dir: number) => {
+    const d = new Date(selectedDate);
+    if (period === 'month') d.setMonth(d.getMonth() + dir);
+    else if (period === 'quarter') d.setMonth(d.getMonth() + dir * 3);
+    else d.setFullYear(d.getFullYear() + dir);
+    setSelectedDate(d);
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Заголовок */}
-      <div className="mb-6 md:mb-8">
-        <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-0.5">Бухгалтерия</h1>
-        <p className="text-xs text-gray-600">
-          Финансовый учёт по выигранным тендерам (доход считается только по завершённым)
-        </p>
+      {/* Заголовок с фильтром */}
+      <div className="mb-6 md:mb-8 flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-0.5">Бухгалтерия</h1>
+          <p className="text-xs text-gray-600">Финансовый учёт</p>
+        </div>
+        
+        {/* Компактный фильтр периодов */}
+        <div className="flex items-center gap-2 bg-white border rounded-lg p-2 shadow-sm">
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant={period === 'all' ? 'default' : 'ghost'}
+              onClick={() => setPeriod('all')}
+              className="h-7 px-2 text-xs"
+            >
+              Всё
+            </Button>
+            <Button
+              size="sm"
+              variant={period === 'month' ? 'default' : 'ghost'}
+              onClick={() => setPeriod('month')}
+              className="h-7 px-2 text-xs"
+            >
+              Месяц
+            </Button>
+            <Button
+              size="sm"
+              variant={period === 'quarter' ? 'default' : 'ghost'}
+              onClick={() => setPeriod('quarter')}
+              className="h-7 px-2 text-xs"
+            >
+              Квартал
+            </Button>
+            <Button
+              size="sm"
+              variant={period === 'year' ? 'default' : 'ghost'}
+              onClick={() => setPeriod('year')}
+              className="h-7 px-2 text-xs"
+            >
+              Год
+            </Button>
+          </div>
+          {period !== 'all' && (
+            <div className="flex items-center gap-1 border-l pl-2 ml-1">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => changeDate(-1)}
+                className="h-7 w-7 p-0"
+              >
+                ←
+              </Button>
+              <span className="text-xs font-medium text-gray-700 min-w-[80px] text-center">
+                {getPeriodLabel()}
+              </span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => changeDate(1)}
+                className="h-7 w-7 p-0"
+              >
+                →
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Уведомление об отсутствии таблицы expenses */}
@@ -130,7 +239,7 @@ export default function AccountingPage() {
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="text-gray-600 mt-4">Загрузка данных...</p>
         </div>
-      ) : tendersWithExpenses.length === 0 ? (
+      ) : filteredData.length === 0 ? (
         <div className="text-center py-12 bg-white rounded-lg border">
           <FileText className="h-16 w-16 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Нет данных для отображения</h3>
@@ -230,7 +339,7 @@ export default function AccountingPage() {
           {/* Список тендеров с accordion */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold text-gray-900">Детализация по тендерам</h2>
-            {tendersWithExpenses.map((item) => (
+            {filteredData.map((item) => (
               <TenderAccounting
                 key={item.tender.id}
                 tender={item.tender}
