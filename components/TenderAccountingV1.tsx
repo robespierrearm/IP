@@ -47,29 +47,70 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
     loadCounts();
   }, [tender.id]);
 
+  const buildPdf = async () => {
+    const [{ default: jsPDF }, { default: html2canvas }] = await Promise.all([import('jspdf'), import('html2canvas')]);
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const container = document.createElement('div');
+    container.style.cssText = 'position:fixed;left:-10000px;top:0;width:800px;background:#fff;color:#111827;font-family:Arial;font-size:12px;padding:24px;border:1px solid #e5e7eb;';
+    const title = document.createElement('div');
+    title.style.cssText = 'font-weight:700;font-size:16px;margin-bottom:8px;';
+    title.textContent = `TenderCRM — Отчёт: ${tender.name}`;
+    container.appendChild(title);
+    const dateEl = document.createElement('div');
+    dateEl.style.cssText = 'color:#374151;margin-bottom:16px;';
+    dateEl.textContent = `Дата: ${new Date().toLocaleDateString('ru-RU')}`;
+    container.appendChild(dateEl);
+    const sTable = document.createElement('table');
+    sTable.style.cssText = 'width:100%;border-collapse:collapse;border:1px solid #e5e7eb;margin-bottom:16px;';
+    sTable.innerHTML = '<thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;">Показатель</th><th style="text-align:right;padding:8px;border-bottom:1px solid #e5e7eb;">Значение</th></tr></thead><tbody>' +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Доход</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.income)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Расходы (безнал)</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.bankExpenses)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Расходы (наличка)</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.cashExpenses)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Расходы всего</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.totalExpenses)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Прибыль</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.profit)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">Налог УСН (7%)</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(formattedSummary.tax)}</td></tr>` +
+      `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;"><strong>Чистая прибыль</strong></td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;"><strong>${fmt(formattedSummary.netProfit)}</strong></td></tr>` +
+      '</tbody>';
+    container.appendChild(sTable);
+    const h4 = document.createElement('div');
+    h4.style.cssText = 'font-weight:600;margin-bottom:8px;';
+    h4.textContent = 'Детализация расходов';
+    container.appendChild(h4);
+    const eTable = document.createElement('table');
+    eTable.style.cssText = 'width:100%;border-collapse:collapse;border:1px solid #e5e7eb;';
+    let eRows = '<thead><tr style="background:#f9fafb;"><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;">Тип</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;">Категория</th><th style="text-align:left;padding:8px;border-bottom:1px solid #e5e7eb;">Описание</th><th style="text-align:right;padding:8px;border-bottom:1px solid #e5e7eb;">Сумма</th></tr></thead><tbody>';
+    expenses.forEach((e) => {
+      eRows += `<tr><td style="padding:8px;border-top:1px solid #e5e7eb;">${e.is_cash ? 'Наличка' : 'Безнал'}</td><td style="padding:8px;border-top:1px solid #e5e7eb;">${e.category}</td><td style="padding:8px;border-top:1px solid #e5e7eb;">${e.description || '—'}</td><td style="padding:8px;border-top:1px solid #e5e7eb;text-align:right;">${fmt(e.amount)}</td></tr>`;
+    });
+    eRows += '</tbody>';
+    eTable.innerHTML = eRows;
+    container.appendChild(eTable);
+    document.body.appendChild(container);
+    try {
+      const canvas = await html2canvas(container, { scale: 2, useCORS: true, backgroundColor: '#fff', onclone: (clonedDoc) => { clonedDoc.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => el.parentNode?.removeChild(el)); (clonedDoc.documentElement as HTMLElement).style.backgroundColor = '#fff'; (clonedDoc.body as HTMLElement).style.backgroundColor = '#fff'; } });
+      const imgData = canvas.toDataURL('image/png');
+      const imgWidth = pageWidth - 80;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      if (imgHeight > pageHeight - 80) { const w = ((pageHeight - 80) * canvas.width) / canvas.height; doc.addImage(imgData, 'PNG', 40, 40, w, pageHeight - 80); } else { doc.addImage(imgData, 'PNG', 40, 40, imgWidth, imgHeight); }
+    } finally { container.remove(); }
+    return doc;
+  };
+
   const handleDownloadPdf = async () => {
     try {
-      const res = await fetch('/api/generate-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tender, expenses, summary: formattedSummary }) });
-      if (!res.ok) throw new Error('Ошибка');
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Сводка_${tender.name}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      const doc = await buildPdf();
+      doc.save(`Отчет_${tender.name}.pdf`);
     } catch (e) { alert('Не удалось скачать PDF'); }
   };
 
   const handleSharePdf = async () => {
     setIsSharing(true);
     try {
-      const res = await fetch('/api/generate-pdf', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tender, expenses, summary: formattedSummary }) });
-      if (!res.ok) throw new Error('Ошибка');
-      const blob = await res.blob();
-      const file = new File([blob], `Сводка_${tender.name}.pdf`, { type: 'application/pdf' });
+      const doc = await buildPdf();
+      const blob = doc.output('blob');
+      const file = new File([blob], `Отчет_${tender.name}.pdf`, { type: 'application/pdf' });
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: `Финансовая сводка — ${tender.name}`, text: 'Финансовая сводка' });
       } else { alert('Браузер не поддерживает "Поделиться"'); }
@@ -80,12 +121,13 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
     if (!formData.category.trim() || !formData.amount) return;
     if (editingId) {
       await supabase.from('expenses').update({ category: formData.category, amount: parseFloat(formData.amount), description: formData.description, is_cash: formData.is_cash }).eq('id', editingId);
+      setEditingId(null);
+      setAddingNew(false);
     } else {
       await supabase.from('expenses').insert([{ tender_id: tender.id, category: formData.category, amount: parseFloat(formData.amount), description: formData.description, is_cash: formData.is_cash }]);
+      // НЕ закрываем форму, только очищаем поля
     }
     setFormData({ category: '', amount: '', description: '', is_cash: false });
-    setEditingId(null);
-    setAddingNew(false);
     onExpenseAdded();
   };
 
@@ -172,10 +214,15 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
                       {addingNew && (
                         <tr className="backdrop-blur-xl bg-blue-500/10 border-b border-blue-300/30">
                           <td className="px-3 py-2">
-                            <div className="flex gap-1">
-                              <button onClick={() => setFormData({ ...formData, is_cash: false })} className={cn("px-2 py-1 text-xs rounded transition-all", !formData.is_cash ? "bg-blue-500 text-white shadow-sm" : "bg-white/50 text-gray-600 hover:bg-white/80")}>💳</button>
-                              <button onClick={() => setFormData({ ...formData, is_cash: true })} className={cn("px-2 py-1 text-xs rounded transition-all", formData.is_cash ? "bg-green-500 text-white shadow-sm" : "bg-white/50 text-gray-600 hover:bg-white/80")}>💵</button>
-                            </div>
+                            <label className="flex items-center gap-1 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={formData.is_cash}
+                                onChange={(e) => setFormData({ ...formData, is_cash: e.target.checked })}
+                                className="w-4 h-4 rounded border-gray-300"
+                              />
+                              <span className="text-xs text-gray-700">Нал</span>
+                            </label>
                           </td>
                           <td className="px-3 py-2"><Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} placeholder="Категория" className="h-8 text-sm backdrop-blur-xl bg-white/60" /></td>
                           <td className="px-3 py-2"><Input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} placeholder="0" className="h-8 text-sm text-right backdrop-blur-xl bg-white/60" /></td>
@@ -191,10 +238,15 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
                         editingId === expense.id ? (
                           <tr key={expense.id} className="backdrop-blur-xl bg-yellow-500/10 border-b border-yellow-300/30">
                             <td className="px-3 py-2">
-                              <div className="flex gap-1">
-                                <button onClick={() => setFormData({ ...formData, is_cash: false })} className={cn("px-2 py-1 text-xs rounded", !formData.is_cash ? "bg-blue-500 text-white" : "bg-white/50 text-gray-600")}>💳</button>
-                                <button onClick={() => setFormData({ ...formData, is_cash: true })} className={cn("px-2 py-1 text-xs rounded", formData.is_cash ? "bg-green-500 text-white" : "bg-white/50 text-gray-600")}>💵</button>
-                              </div>
+                              <label className="flex items-center gap-1 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={formData.is_cash}
+                                  onChange={(e) => setFormData({ ...formData, is_cash: e.target.checked })}
+                                  className="w-4 h-4 rounded border-gray-300"
+                                />
+                                <span className="text-xs text-gray-700">Нал</span>
+                              </label>
                             </td>
                             <td className="px-3 py-2"><Input value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="h-8 text-sm backdrop-blur-xl bg-white/60" /></td>
                             <td className="px-3 py-2"><Input type="number" value={formData.amount} onChange={(e) => setFormData({ ...formData, amount: e.target.value })} className="h-8 text-sm text-right backdrop-blur-xl bg-white/60" /></td>
@@ -263,8 +315,28 @@ export function TenderAccountingV1({ tender, expenses, onExpenseAdded, onExpense
                 {expenses.length === 0 ? <p className="text-sm text-gray-500">Расходы не добавлены</p> : (
                   <div className="max-h-64 overflow-auto bg-white border border-gray-200 rounded-lg">
                     <table className="w-full text-sm">
-                      <thead className="bg-gray-50 border-b border-gray-200"><tr><th className="text-left p-2 text-gray-700">Тип</th><th className="text-left p-2 text-gray-700">Категория</th><th className="text-left p-2 text-gray-700">Описание</th><th className="text-right p-2 text-gray-700">Сумма</th></tr></thead>
-                      <tbody>{expenses.map((e) => (<tr key={e.id} className="border-t border-gray-100"><td className="p-2"><span className={cn("px-2 py-0.5 rounded text-xs font-medium", e.is_cash ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700")}>{e.is_cash ? '💵' : '💳'}</span></td><td className="p-2">{e.category}</td><td className="p-2 text-gray-600">{e.description || '—'}</td><td className="p-2 text-right font-medium">{fmt(e.amount)}</td></tr>))}</tbody>
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="text-left p-2 text-gray-700">Тип</th>
+                          <th className="text-left p-2 text-gray-700">Категория</th>
+                          <th className="text-left p-2 text-gray-700">Описание</th>
+                          <th className="text-right p-2 text-gray-700">Сумма</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {expenses.map((e) => (
+                          <tr key={e.id} className="border-t border-gray-100">
+                            <td className="p-2">
+                              <span className={cn("px-2 py-0.5 rounded text-xs font-medium", e.is_cash ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700")}>
+                                {e.is_cash ? '💵 Нал' : '💳 Безнал'}
+                              </span>
+                            </td>
+                            <td className="p-2">{e.category}</td>
+                            <td className="p-2 text-gray-600">{e.description || '—'}</td>
+                            <td className="p-2 text-right font-medium">{fmt(e.amount)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
                     </table>
                   </div>
                 )}
