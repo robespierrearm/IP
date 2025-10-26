@@ -17,7 +17,7 @@ export default function AccountingPage() {
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
   const [showAddExpenseModal, setShowAddExpenseModal] = useState(false);
   const [selectedTenderId, setSelectedTenderId] = useState<number | null>(null);
-  const [newExpense, setNewExpense] = useState({ category: '', amount: '', description: '' });
+  const [newExpense, setNewExpense] = useState({ category: '', amount: '', description: '', is_cash: false });
 
   useEffect(() => {
     loadData();
@@ -87,7 +87,7 @@ export default function AccountingPage() {
   };
 
   // ОПТИМИЗАЦИЯ: Мемоизированные вычисления - пересчёт только при изменении данных
-  const { totalIncome, totalExpenses, grossProfit, totalTax, netProfit } = useMemo(() => {
+  const { totalIncome, totalExpenses, bankExpenses, cashExpenses, grossProfit, totalTax, netProfit } = useMemo(() => {
     // Доход считаем только по завершённым тендерам
     const income = tendersWithExpenses.reduce((sum, item) => {
       if (item?.tender?.status === 'завершён') {
@@ -102,13 +102,23 @@ export default function AccountingPage() {
       0
     );
 
+    // УСН: только безнал расходы уменьшают налоговую базу!
+    const bank = tendersWithExpenses.reduce(
+      (sum, item) => sum + (item?.expenses || []).filter(e => !e.is_cash).reduce((expSum, exp) => expSum + (exp?.amount || 0), 0),
+      0
+    );
+    const cash = expenses - bank;
+
     const profit = income - expenses;
-    const tax = profit > 0 ? profit * 0.07 : 0; // УСН 7%
+    const taxableProfit = income - bank; // база для УСН (только безнал!)
+    const tax = taxableProfit > 0 ? taxableProfit * 0.07 : 0; // УСН 7%
     const net = profit - tax;
 
     return {
       totalIncome: income,
       totalExpenses: expenses,
+      bankExpenses: bank,
+      cashExpenses: cash,
       grossProfit: profit,
       totalTax: tax,
       netProfit: net,
@@ -130,6 +140,7 @@ export default function AccountingPage() {
       category: newExpense.category,
       amount: parseFloat(newExpense.amount),
       description: newExpense.description || null,
+      is_cash: newExpense.is_cash,
       created_at: new Date().toISOString(),
     };
 
@@ -142,7 +153,7 @@ export default function AccountingPage() {
     }
 
     setShowAddExpenseModal(false);
-    setNewExpense({ category: '', amount: '', description: '' });
+    setNewExpense({ category: '', amount: '', description: '', is_cash: false });
     loadData();
   };
 
@@ -187,6 +198,10 @@ export default function AccountingPage() {
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3">
                   <div className="text-xs opacity-80 mb-1">Расходы</div>
                   <div className="text-lg font-bold">{formatPrice(totalExpenses)}</div>
+                  <div className="flex gap-2 mt-1 text-xs opacity-80">
+                    <span>💳 {formatPrice(bankExpenses).replace(' ₽', '')}</span>
+                    <span>💵 {formatPrice(cashExpenses).replace(' ₽', '')}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -211,6 +226,10 @@ export default function AccountingPage() {
                 </div>
                 <div className="text-sm text-gray-600 mb-1">Расходы</div>
                 <div className="text-xl font-bold text-gray-900">{formatPrice(totalExpenses)}</div>
+                <div className="flex gap-2 mt-1 text-xs text-gray-600">
+                  <span>💳 {formatPrice(bankExpenses).replace(' ₽', '')}</span>
+                  <span>💵 {formatPrice(cashExpenses).replace(' ₽', '')}</span>
+                </div>
               </div>
 
               <div className="bg-white rounded-2xl p-4 shadow-sm">
@@ -317,11 +336,14 @@ export default function AccountingPage() {
                                   key={expense.id}
                                   className="bg-white rounded-xl p-3 flex items-center justify-between gap-2"
                                 >
-                                  <div className="flex-1 min-w-0">
-                                    <div className="font-medium text-gray-900 text-sm">{expense.category}</div>
-                                    {expense.description && (
-                                      <div className="text-xs text-gray-600 mt-1">{expense.description}</div>
-                                    )}
+                                  <div className="flex-1 min-w-0 flex items-center gap-2">
+                                    <span className="text-base flex-shrink-0">{expense.is_cash ? '💵' : '💳'}</span>
+                                    <div className="min-w-0">
+                                      <div className="font-medium text-gray-900 text-sm">{expense.category}</div>
+                                      {expense.description && (
+                                        <div className="text-xs text-gray-600 mt-1">{expense.description}</div>
+                                      )}
+                                    </div>
                                   </div>
                                   <div className="font-semibold text-red-600">
                                     {formatPrice(expense.amount)}
@@ -416,6 +438,18 @@ export default function AccountingPage() {
                     rows={3}
                     className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
                   />
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newExpense.is_cash}
+                      onChange={(e) => setNewExpense({ ...newExpense, is_cash: e.target.checked })}
+                      className="w-5 h-5 rounded border-gray-300"
+                    />
+                    <span className="text-sm font-medium text-gray-700">💵 Наличка (не учитывается в УСН)</span>
+                  </label>
                 </div>
               </div>
 
