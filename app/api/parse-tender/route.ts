@@ -3,6 +3,45 @@ import { NextRequest, NextResponse } from 'next/server';
 // API endpoint для парсинга тендеров через ИИ
 // Использует существующие провайдеры: Google AI и Intelligence.io
 
+// Вспомогательная функция для валидации даты
+function validateDate(dateString: any): string | null {
+  if (!dateString || dateString === 'null') return null;
+  
+  const str = String(dateString).trim();
+  
+  // Проверяем формат YYYY-MM-DD
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (dateRegex.test(str)) {
+    const date = new Date(str);
+    // Проверяем что дата валидная
+    if (!isNaN(date.getTime())) {
+      return str;
+    }
+  }
+  
+  return null;
+}
+
+// Вспомогательная функция для парсинга цены
+function parsePrice(priceValue: any): number | null {
+  if (!priceValue || priceValue === 'null') return null;
+  
+  // Если уже число
+  if (typeof priceValue === 'number') {
+    return priceValue > 0 ? priceValue : null;
+  }
+  
+  // Если строка - пытаемся извлечь число
+  if (typeof priceValue === 'string') {
+    // Убираем все кроме цифр и точки
+    const cleaned = priceValue.replace(/[^\d.]/g, '');
+    const num = parseFloat(cleaned);
+    return !isNaN(num) && num > 0 ? num : null;
+  }
+  
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -43,43 +82,74 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Очищаем HTML от скриптов и стилей для экономии токенов
+    // Очищаем HTML - оставляем только текстовое содержимое
     const cleanedHtml = pageContent
+      // Удаляем скрипты
       .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+      // Удаляем стили
       .replace(/<style\b[^<]*(?:(?!<\/style>)<[^<]*)*<\/style>/gi, '')
+      // Удаляем комментарии
       .replace(/<!--[\s\S]*?-->/g, '')
-      .substring(0, 30000); // Ограничиваем размер для Llama
+      // Удаляем SVG
+      .replace(/<svg\b[^<]*(?:(?!<\/svg>)<[^<]*)*<\/svg>/gi, '')
+      // Удаляем inline стили
+      .replace(/\s+style="[^"]*"/gi, '')
+      // Удаляем классы (оставляем только контент)
+      .replace(/\s+class="[^"]*"/gi, '')
+      // Удаляем лишние пробелы
+      .replace(/\s+/g, ' ')
+      .trim()
+      .substring(0, 25000); // Ограничиваем размер
 
     // Промпт для ИИ
-    const prompt = `Ты - эксперт по извлечению данных из веб-страниц тендеров.
+    const prompt = `Ты - эксперт по парсингу тендеров. Твоя задача - извлечь ТОЛЬКО информацию о тендере.
 
-Проанализируй следующую HTML страницу тендера и извлеки информацию в JSON формате.
+КРИТИЧЕСКИ ВАЖНО:
+- Возвращай ТОЛЬКО JSON объект
+- БЕЗ markdown (без \`\`\`json)
+- БЕЗ дополнительного текста
+- Если не уверен в поле - ставь null
 
-ВАЖНО: Возвращай ТОЛЬКО JSON, без дополнительного текста и markdown.
+ИЗВЛЕКИ СЛЕДУЮЩИЕ ДАННЫЕ:
 
-Нужно найти и извлечь следующие поля:
-1. name - название тендера/закупки (обязательно)
-2. purchase_number - номер закупки/извещения (если есть)
-3. region - регион/адрес поставки (если есть)
-4. publication_date - дата публикации в формате YYYY-MM-DD (если есть)
-5. submission_deadline - срок подачи заявок в формате YYYY-MM-DD (если есть)
-6. start_price - начальная/максимальная цена (только число без валюты, если есть)
-7. link - ссылка на тендер (используй URL: ${url || 'не указана'})
+1. **name** (ОБЯЗАТЕЛЬНО) - Название тендера/закупки
+   Ищи: "Предмет закупки", "Наименование", "Тендер:", "Закупка:"
+   Пример: "Строительство школы в Москве"
 
-Если поле не найдено, используй null.
+2. **purchase_number** - Номер закупки/извещения
+   Ищи: "Номер извещения", "№", "Реестровый номер"
+   Пример: "0373100005423000123"
 
-Формат ответа:
+3. **region** - Регион/адрес поставки
+   Ищи: "Регион", "Адрес поставки", "Место поставки"
+   Пример: "Москва" или "г. Москва, ул. Ленина"
+
+4. **publication_date** - Дата публикации (формат: YYYY-MM-DD)
+   Ищи: "Дата размещения", "Опубликовано", "Дата публикации"
+   Пример: "2025-10-20"
+
+5. **submission_deadline** - Дедлайн подачи заявок (формат: YYYY-MM-DD)
+   Ищи: "Окончание приёма заявок", "Дата окончания", "Дедлайн"
+   Пример: "2025-11-15"
+
+6. **start_price** - Начальная цена (ТОЛЬКО ЧИСЛО, без валюты и пробелов)
+   Ищи: "Начальная цена", "НМЦК", "Цена контракта"
+   Пример: 15000000 (не "15 000 000 руб")
+
+7. **link** - Ссылка (используй: ${url || 'null'})
+
+СТРОГИЙ ФОРМАТ ОТВЕТА (БЕЗ ЛИШНЕГО ТЕКСТА):
 {
-  "name": "string",
-  "purchase_number": "string или null",
-  "region": "string или null",
-  "publication_date": "YYYY-MM-DD или null",
-  "submission_deadline": "YYYY-MM-DD или null",
+  "name": "...",
+  "purchase_number": "..." или null,
+  "region": "..." или null,
+  "publication_date": "YYYY-MM-DD" или null,
+  "submission_deadline": "YYYY-MM-DD" или null,
   "start_price": число или null,
-  "link": "string или null"
+  "link": "..." или null
 }
 
-HTML страницы:
+HTML СТРАНИЦЫ:
 ${cleanedHtml}`;
 
     let parsedData;
@@ -111,22 +181,33 @@ ${cleanedHtml}`;
     // Валидация результата
     if (!parsedData || !parsedData.name) {
       return NextResponse.json(
-        { error: 'ИИ не смог извлечь данные. Попробуйте другую страницу или вставьте HTML код.' },
+        { error: 'ИИ не смог найти название тендера. Убедитесь что HTML содержит информацию о тендере.' },
+        { status: 400 }
+      );
+    }
+
+    // Очистка и валидация данных
+    const cleanedData = {
+      name: String(parsedData.name || '').trim(),
+      purchase_number: parsedData.purchase_number ? String(parsedData.purchase_number).trim() : '',
+      link: parsedData.link || url || '',
+      region: parsedData.region ? String(parsedData.region).trim() : '',
+      publication_date: validateDate(parsedData.publication_date) || '',
+      submission_deadline: validateDate(parsedData.submission_deadline) || '',
+      start_price: parsePrice(parsedData.start_price),
+    };
+
+    // Проверка что хотя бы название есть
+    if (!cleanedData.name || cleanedData.name === 'null' || cleanedData.name.length < 5) {
+      return NextResponse.json(
+        { error: 'Название тендера слишком короткое или некорректное. Проверьте HTML страницы.' },
         { status: 400 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      data: {
-        name: parsedData.name || '',
-        purchase_number: parsedData.purchase_number || '',
-        link: parsedData.link || url || '',
-        region: parsedData.region || '',
-        publication_date: parsedData.publication_date || '',
-        submission_deadline: parsedData.submission_deadline || '',
-        start_price: parsedData.start_price || null,
-      }
+      data: cleanedData
     });
 
   } catch (error: any) {
@@ -171,15 +252,27 @@ async function parseWithIntelligenceIO(prompt: string) {
   }
 
   const result = await response.json();
-  const content = result.choices[0]?.message?.content || '';
+  let content = result.choices[0]?.message?.content || '';
   
-  // Извлекаем JSON из ответа
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('ИИ не вернул валидный JSON');
+  // Очищаем ответ от markdown
+  content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  // Извлекаем JSON из ответа (берем первый и последний {})
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1) {
+    throw new Error('ИИ не вернул JSON объект');
   }
   
-  return JSON.parse(jsonMatch[0]);
+  const jsonString = content.substring(firstBrace, lastBrace + 1);
+  
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('JSON parse error:', jsonString);
+    throw new Error('ИИ вернул невалидный JSON');
+  }
 }
 
 // Функция парсинга через Google AI (Gemini)
@@ -212,13 +305,25 @@ async function parseWithGoogleAI(prompt: string) {
   }
 
   const result = await response.json();
-  const content = result.candidates[0]?.content?.parts[0]?.text || '';
+  let content = result.candidates[0]?.content?.parts[0]?.text || '';
   
-  // Извлекаем JSON из ответа
-  const jsonMatch = content.match(/\{[\s\S]*\}/);
-  if (!jsonMatch) {
-    throw new Error('ИИ не вернул валидный JSON');
+  // Очищаем ответ от markdown
+  content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+  
+  // Извлекаем JSON из ответа (берем первый и последний {})
+  const firstBrace = content.indexOf('{');
+  const lastBrace = content.lastIndexOf('}');
+  
+  if (firstBrace === -1 || lastBrace === -1) {
+    throw new Error('ИИ не вернул JSON объект');
   }
   
-  return JSON.parse(jsonMatch[0]);
+  const jsonString = content.substring(firstBrace, lastBrace + 1);
+  
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.error('JSON parse error:', jsonString);
+    throw new Error('ИИ вернул невалидный JSON');
+  }
 }
