@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
     response.cookies.set('auth-token', token, {
       httpOnly: true,      // Недоступен из JavaScript (защита от XSS)
       secure: process.env.NODE_ENV === 'production', // HTTPS only в production
-      sameSite: 'lax',     // Защита от CSRF
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' для PWA на iOS
       maxAge: 60 * 60 * 24 * 7, // 7 дней
       path: '/',
     });

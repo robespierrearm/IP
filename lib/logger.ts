@@ -1,65 +1,31 @@
 /**
- * Server-side Logger using Winston
- * 
- * Usage:
- * import { logger } from '@/lib/logger';
- * 
- * logger.info('User logged in', { userId: 123 });
- * logger.error('Failed to process', { error: err.message });
- * logger.warn('Rate limit approaching', { count: 95 });
+ * Simple Console Logger for Vercel compatibility
+ * Winston doesn't work on Vercel Edge Runtime
  */
 
-import winston from 'winston';
+const formatMeta = (meta?: Record<string, any>): string => {
+  if (!meta || Object.keys(meta).length === 0) return '';
+  return ' ' + JSON.stringify(meta);
+};
 
-// Определяем формат логов
-const logFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.errors({ stack: true }),
-  winston.format.splat(),
-  winston.format.json()
-);
+export const logger = {
+  debug: (message: string, meta?: Record<string, any>) => {
+    if (process.env.NODE_ENV !== 'production') {
+      console.log(`[DEBUG] ${message}${formatMeta(meta)}`);
+    }
+  },
+  info: (message: string, meta?: Record<string, any>) => {
+    console.log(`[INFO] ${message}${formatMeta(meta)}`);
+  },
+  warn: (message: string, meta?: Record<string, any>) => {
+    console.warn(`[WARN] ${message}${formatMeta(meta)}`);
+  },
+  error: (message: string, meta?: Record<string, any>) => {
+    console.error(`[ERROR] ${message}${formatMeta(meta)}`);
+  },
+};
 
-// Формат для консоли (более читаемый)
-const consoleFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.timestamp({ format: 'HH:mm:ss' }),
-  winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    let metaStr = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
-    return `${timestamp} [${level}]: ${message} ${metaStr}`;
-  })
-);
-
-// Создаём logger
-export const logger = winston.createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
-  format: logFormat,
-  defaultMeta: { service: 'tender-crm' },
-  transports: [
-    // Console transport
-    new winston.transports.Console({
-      format: consoleFormat,
-    }),
-    
-    // File transport для ошибок (только в production)
-    ...(process.env.NODE_ENV === 'production'
-      ? [
-          new winston.transports.File({
-            filename: 'logs/error.log',
-            level: 'error',
-            maxsize: 5242880, // 5MB
-            maxFiles: 5,
-          }),
-          new winston.transports.File({
-            filename: 'logs/combined.log',
-            maxsize: 5242880, // 5MB
-            maxFiles: 5,
-          }),
-        ]
-      : []),
-  ],
-});
-
-// Helper functions для частых случаев
+// Helper functions
 export const logAPI = {
   request: (method: string, path: string, meta?: Record<string, any>) => {
     logger.info(`API Request: ${method} ${path}`, meta);
