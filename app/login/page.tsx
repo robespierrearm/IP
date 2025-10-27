@@ -71,6 +71,14 @@ export default function NewLoginPage() {
     
     // Слушаем событие beforeinstallprompt
     const handleBeforeInstallPrompt = (e: any) => {
+      // НЕ блокируем для Desktop - пусть браузер показывает свой prompt
+      const isDesktop = !(/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent));
+      if (isDesktop) {
+        // Desktop: браузер сам покажет кнопку "Установить"
+        return;
+      }
+      
+      // Mobile: блокируем нативный и показываем свой баннер
       e.preventDefault();
       setDeferredPrompt(e);
     };

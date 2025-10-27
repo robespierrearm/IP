@@ -1,12 +1,12 @@
 {
-  "name": "TenderCRM Mobile",
+  "name": "TenderCRM - Система управления тендерами",
   "short_name": "TenderCRM",
-  "description": "Мобильная CRM-система для управления тендерами строительной компании",
-  "start_url": "/m/dashboard",
+  "description": "Профессиональная CRM для управления тендерами, поставщиками и бухгалтерией",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#6366F1",
   "theme_color": "#6366F1",
-  "orientation": "portrait",
+  "orientation": "any",
   "scope": "/",
   "icons": [
     {
