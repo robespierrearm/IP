@@ -234,9 +234,13 @@ export default function DashboardPage() {
               size="sm"
               variant="outline"
               disabled={isLoading}
-              className="backdrop-blur-xl bg-white/50 hover:bg-white/70 border border-white/20 transition-all duration-300"
+              className={`backdrop-blur-xl border transition-all duration-300 ${
+                isLoading 
+                  ? 'bg-green-500/90 hover:bg-green-500/90 border-green-400/50 text-white shadow-lg shadow-green-500/50' 
+                  : 'bg-white/50 hover:bg-white/70 border-white/20'
+              }`}
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 transition-all ${isLoading ? 'animate-spin text-white' : ''}`} />
             </Button>
           </div>
         </div>
