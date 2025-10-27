@@ -22,6 +22,7 @@ export default function ChatPage() {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [isAddingLink, setIsAddingLink] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Загрузка сообщений
@@ -46,7 +47,13 @@ export default function ChatPage() {
     const subscription = supabase
       .channel('messages')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, (payload) => {
-        setMessages(prev => [...prev, payload.new as Message]);
+        const newMessage = payload.new as Message;
+        // Проверяем что сообщение не дублируется
+        setMessages(prev => {
+          const exists = prev.some(msg => msg.id === newMessage.id);
+          if (exists) return prev;
+          return [...prev, newMessage];
+        });
       })
       .subscribe();
 
@@ -64,26 +71,44 @@ export default function ChatPage() {
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    const messageData: MessageInsert = {
-      user_id: currentUser.id,
-      username: currentUser.username || 'Аноним',
-      message_type: 'message',
-      content: newMessage,
-    };
+    setIsSending(true);
+    const messageText = newMessage;
+    setNewMessage(''); // Очищаем поле сразу
 
-    const { error } = await supabase
-      .from('messages')
-      .insert([messageData]);
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      const messageData: MessageInsert = {
+        user_id: currentUser.id,
+        username: currentUser.username || 'Аноним',
+        message_type: 'message',
+        content: messageText,
+      };
 
-    if (error) {
-      console.error('Ошибка отправки сообщения:', error);
-      return;
+      const { data, error } = await supabase
+        .from('messages')
+        .insert([messageData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Ошибка отправки сообщения:', error);
+        toast.error('Ошибка', {
+          description: 'Не удалось отправить сообщение'
+        });
+        setNewMessage(messageText); // Возвращаем текст в поле
+        return;
+      }
+
+      // Оптимистично добавляем сообщение в UI
+      if (data) {
+        setMessages(prev => [...prev, data as Message]);
+      }
+
+      await logActivity('Отправлено сообщение в чат', ACTION_TYPES.LOGIN);
+    } finally {
+      setIsSending(false);
     }
-
-    await logActivity('Отправлено сообщение в чат', ACTION_TYPES.LOGIN);
-    setNewMessage('');
   };
 
   // Добавление заметки
@@ -108,9 +133,11 @@ export default function ChatPage() {
         note_color: noteColor,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
-        .insert([noteData]);
+        .insert([noteData])
+        .select()
+        .single();
 
       if (error) {
         console.error('Ошибка добавления заметки:', error);
@@ -118,6 +145,11 @@ export default function ChatPage() {
           description: 'Не удалось добавить заметку'
         });
         return;
+      }
+
+      // Оптимистично добавляем заметку в UI
+      if (data) {
+        setMessages(prev => [...prev, data as Message]);
       }
 
       await logActivity('Добавлена заметка в чат', ACTION_TYPES.LOGIN);
@@ -155,9 +187,11 @@ export default function ChatPage() {
         link_url: linkUrl,
       };
 
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
-        .insert([linkData]);
+        .insert([linkData])
+        .select()
+        .single();
 
       if (error) {
         console.error('Ошибка добавления ссылки:', error);
@@ -165,6 +199,11 @@ export default function ChatPage() {
           description: 'Не удалось добавить ссылку'
         });
         return;
+      }
+
+      // Оптимистично добавляем ссылку в UI
+      if (data) {
+        setMessages(prev => [...prev, data as Message]);
       }
 
       await logActivity('Добавлена ссылка в чат', ACTION_TYPES.LOGIN);
@@ -340,16 +379,22 @@ export default function ChatPage() {
             <Input
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              onKeyPress={(e) => e.key === 'Enter' && !isSending && handleSendMessage()}
               placeholder="Введите сообщение..."
               className="flex-1 bg-white border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+              disabled={isSending}
             />
             <Button 
               onClick={handleSendMessage} 
               size="sm" 
-              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 shadow-md active:scale-95 transition-transform"
+              disabled={isSending}
             >
-              <Send className="h-4 w-4" />
+              {isSending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
