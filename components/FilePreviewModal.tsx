@@ -115,8 +115,11 @@ export function FilePreviewModal({
       return (
         <div className="flex items-center justify-center h-full">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Загрузка...</p>
+            <div className="relative mx-auto mb-4 w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            </div>
+            <p className="text-gray-600 text-sm">Загрузка...</p>
           </div>
         </div>
       );

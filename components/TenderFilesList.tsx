@@ -249,7 +249,10 @@ export function TenderFilesList({ tenderId, tenderStatus }: TenderFilesListProps
   if (isLoading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="relative w-8 h-8">
+          <div className="absolute inset-0 rounded-full border-3 border-gray-200"></div>
+          <div className="absolute inset-0 rounded-full border-3 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+        </div>
       </div>
     );
   }

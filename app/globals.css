@@ -185,3 +185,13 @@
     background-position: -200% 0;
   }
 }
+
+/* Анимация shimmer для skeleton loader */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}

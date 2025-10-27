@@ -325,7 +325,10 @@ export function FilesPanel({ isActive = true }: FilesPanelProps) {
       <div className="flex-1 overflow-auto border rounded-lg bg-white">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <div className="relative w-12 h-12">
+              <div className="absolute inset-0 rounded-full border-4 border-gray-200"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+            </div>
           </div>
         ) : filteredFiles.length === 0 ? (
           <div className="text-center py-20">
