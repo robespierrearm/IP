@@ -156,6 +156,9 @@ ${cleanedHtml}`;
 
     // Используем Intelligence.io или Google AI
     try {
+      console.log('🤖 Отправляю запрос к ИИ, провайдер:', provider);
+      console.log('📝 Размер HTML:', cleanedHtml.length, 'символов');
+      
       if (provider === 'intelligence') {
         parsedData = await parseWithIntelligenceIO(prompt);
       } else if (provider === 'google') {
@@ -163,15 +166,21 @@ ${cleanedHtml}`;
       } else {
         throw new Error('Неизвестный провайдер. Используйте intelligence или google');
       }
+      
+      console.log('✅ ИИ вернул данные:', JSON.stringify(parsedData, null, 2));
     } catch (error: any) {
-      console.error('AI parsing error:', error);
+      console.error('❌ AI parsing error:', error.message);
+      console.error('Полная ошибка:', error);
       
       // Если Intelligence не сработал, пробуем Google
       if (provider === 'intelligence') {
+        console.log('🔄 Пробую Google AI как fallback...');
         try {
           parsedData = await parseWithGoogleAI(prompt);
+          console.log('✅ Google AI вернул данные:', JSON.stringify(parsedData, null, 2));
         } catch (fallbackError: any) {
-          throw new Error(`Ошибка парсинга: ${error.message}`);
+          console.error('❌ Google AI тоже не сработал:', fallbackError.message);
+          throw new Error(`Ошибка парсинга обоими провайдерами: ${error.message}`);
         }
       } else {
         throw error;
@@ -254,6 +263,8 @@ async function parseWithIntelligenceIO(prompt: string) {
   const result = await response.json();
   let content = result.choices[0]?.message?.content || '';
   
+  console.log('📥 Intelligence.io сырой ответ:', content.substring(0, 500));
+  
   // Очищаем ответ от markdown
   content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
   
@@ -262,15 +273,17 @@ async function parseWithIntelligenceIO(prompt: string) {
   const lastBrace = content.lastIndexOf('}');
   
   if (firstBrace === -1 || lastBrace === -1) {
+    console.error('❌ Нет JSON в ответе. Полный ответ:', content);
     throw new Error('ИИ не вернул JSON объект');
   }
   
   const jsonString = content.substring(firstBrace, lastBrace + 1);
+  console.log('🔍 Извлечённый JSON:', jsonString.substring(0, 300));
   
   try {
     return JSON.parse(jsonString);
   } catch (error) {
-    console.error('JSON parse error:', jsonString);
+    console.error('❌ JSON parse error. Строка:', jsonString);
     throw new Error('ИИ вернул невалидный JSON');
   }
 }
@@ -307,6 +320,8 @@ async function parseWithGoogleAI(prompt: string) {
   const result = await response.json();
   let content = result.candidates[0]?.content?.parts[0]?.text || '';
   
+  console.log('📥 Google AI сырой ответ:', content.substring(0, 500));
+  
   // Очищаем ответ от markdown
   content = content.replace(/```json\s*/g, '').replace(/```\s*/g, '');
   
@@ -315,15 +330,17 @@ async function parseWithGoogleAI(prompt: string) {
   const lastBrace = content.lastIndexOf('}');
   
   if (firstBrace === -1 || lastBrace === -1) {
+    console.error('❌ Нет JSON в ответе. Полный ответ:', content);
     throw new Error('ИИ не вернул JSON объект');
   }
   
   const jsonString = content.substring(firstBrace, lastBrace + 1);
+  console.log('🔍 Извлечённый JSON:', jsonString.substring(0, 300));
   
   try {
     return JSON.parse(jsonString);
   } catch (error) {
-    console.error('JSON parse error:', jsonString);
+    console.error('❌ JSON parse error. Строка:', jsonString);
     throw new Error('ИИ вернул невалидный JSON');
   }
 }
