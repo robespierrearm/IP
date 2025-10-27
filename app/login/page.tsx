@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { m, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle, Download, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -37,6 +37,11 @@ export default function NewLoginPage() {
   // Forgot password mode
   const [forgotPasswordMode, setForgotPasswordMode] = useState(false);
   
+  // PWA Install
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showPWAPrompt, setShowPWAPrompt] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  
   useEffect(() => {
     setMounted(true);
     
@@ -44,8 +49,56 @@ export default function NewLoginPage() {
     const currentUser = localStorage.getItem('currentUser');
     if (currentUser) {
       router.push('/dashboard');
+      return;
     }
+    
+    // Определяем мобильное устройство
+    const checkMobile = () => {
+      const mobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      setIsMobile(mobile);
+      
+      // Показываем PWA prompt только для мобильных
+      if (mobile) {
+        // Проверяем что PWA не установлена
+        const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
+        if (!isStandalone) {
+          setShowPWAPrompt(true);
+        }
+      }
+    };
+    
+    checkMobile();
+    
+    // Слушаем событие beforeinstallprompt
+    const handleBeforeInstallPrompt = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    };
   }, [router]);
+  
+  // Функция установки PWA
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) {
+      // Fallback для iOS - показываем инструкцию
+      alert('Для установки приложения:\n\n1. Нажмите кнопку "Поделиться" (квадрат со стрелкой)\n2. Выберите "На экран \"Домой\""');
+      return;
+    }
+    
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      setShowPWAPrompt(false);
+    }
+    
+    setDeferredPrompt(null);
+  };
   
   // Валидация
   const validateEmail = (email: string): boolean => {
@@ -187,6 +240,50 @@ export default function NewLoginPage() {
       
       {/* Grid pattern */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+      
+      {/* PWA Install Banner (Mobile Only) */}
+      <AnimatePresence>
+        {showPWAPrompt && isMobile && (
+          <m.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="w-full max-w-md relative z-10 mb-4"
+          >
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 shadow-lg relative overflow-hidden">
+              {/* Glow effect */}
+              <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+              
+              <div className="relative flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3 flex-1">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <Download className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-semibold text-sm">Установить приложение</p>
+                    <p className="text-blue-100 text-xs">Быстрый доступ без браузера</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleInstallPWA}
+                    className="px-4 py-2 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 active:scale-95 transition-all"
+                  >
+                    Установить
+                  </button>
+                  <button
+                    onClick={() => setShowPWAPrompt(false)}
+                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </m.div>
+        )}
+      </AnimatePresence>
       
       {/* Login Card */}
       <m.div
