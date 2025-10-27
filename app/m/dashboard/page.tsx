@@ -57,8 +57,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Шапка - КОМПАКТНАЯ СТЕКЛЯННАЯ */}
-      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-indigo-500/20 border-b border-white/20 px-4 pt-4 pb-6 shadow-lg">
+      {/* Шапка - СТЕКЛЯННАЯ */}
+      <div className="backdrop-blur-xl bg-white/40 border-b border-white/30 px-4 pt-4 pb-6 shadow-sm">
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-gray-600 text-xs mb-1">Добро пожаловать,</p>
@@ -220,12 +220,20 @@ export default function DashboardPage() {
           className="fixed inset-0 bg-black/50 z-50 flex items-end"
           onClick={() => setShowRemindersModal(false)}
         >
-          <div
-            className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto animate-slide-up"
+          <motion.div
+            drag="y"
+            dragConstraints={{ top: 0, bottom: 0 }}
+            dragElastic={0.2}
+            onDragEnd={(e, info) => {
+              if (info.offset.y > 100) {
+                setShowRemindersModal(false);
+              }
+            }}
+            className="bg-white rounded-t-3xl w-full max-h-[80vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Индикатор свайпа */}
-            <div className="flex justify-center py-3">
+            <div className="flex justify-center py-3 cursor-grab active:cursor-grabbing">
               <div className="w-12 h-1 bg-gray-300 rounded-full"></div>
             </div>
 
@@ -321,7 +329,7 @@ export default function DashboardPage() {
                 Закрыть
               </button>
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
     </div>
