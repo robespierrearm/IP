@@ -83,10 +83,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Показываем загрузку только при первой проверке
   if (isChecking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-500 via-primary-600 to-secondary-600">
-        <div className="text-white text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-          <p className="text-sm opacity-80">Проверка авторизации...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-slate-50">
+        <div className="text-center">
+          {/* Современный спиннер */}
+          <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="absolute inset-0 rounded-full border-4 border-slate-200"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-t-indigo-500 border-r-transparent border-b-transparent border-l-transparent animate-spin"></div>
+          </div>
+          
+          {/* Текст */}
+          <p className="text-slate-600 text-sm font-medium">Проверка авторизации...</p>
+          <p className="text-slate-400 text-xs mt-2">Пожалуйста, подождите</p>
         </div>
       </div>
     );
