@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { ArrowLeft, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import { haptics } from '@/lib/haptics';
+import { queryKeys } from '@/hooks/useQueries';
 
 export default function AddSupplierPage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
@@ -45,6 +48,10 @@ export default function AddSupplierPage() {
       toast.success('Поставщик добавлен!', {
         description: 'Поставщик успешно сохранён'
       });
+      
+      // Обновляем кеш поставщиков
+      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all });
+      
       router.push('/m/suppliers');
     } catch (error) {
       setIsSaving(false);

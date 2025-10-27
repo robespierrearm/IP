@@ -2,12 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { supabase, Supplier } from '@/lib/supabase';
 import { ArrowLeft, Save } from 'lucide-react';
+import { queryKeys } from '@/hooks/useQueries';
 
 export default function EditSupplierPage() {
   const router = useRouter();
   const params = useParams();
+  const queryClient = useQueryClient();
   const supplierId = params.id as string;
 
   const [supplier, setSupplier] = useState<Supplier | null>(null);
@@ -51,6 +54,9 @@ export default function EditSupplierPage() {
     setIsSaving(false);
 
     if (!error) {
+      // Обновляем кеш поставщиков
+      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all });
+      
       router.push('/m/suppliers');
     } else {
       alert('Ошибка при сохранении');

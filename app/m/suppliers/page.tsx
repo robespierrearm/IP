@@ -75,7 +75,11 @@ export default function SuppliersPage() {
       toast.success('Поставщик удалён', {
         description: `${supplierToDelete.name} удалён из списка`
       });
-      // Кэш обновится автоматически!
+      
+      // Закрываем модалку и сбрасываем состояние
+      setSupplierToDelete(null);
+      setDeletingId(null);
+      setOpenCardId(-1);
     } catch (error) {
       console.error('Error deleting supplier:', error);
       setDeletingId(null);
