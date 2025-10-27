@@ -111,10 +111,13 @@ export default function NewLoginPage() {
       setSuccess(true);
       localStorage.setItem('currentUser', JSON.stringify(data.user));
       
-      // Анимированный переход
+      // Уведомляем AuthProvider об изменении
+      window.dispatchEvent(new Event('auth-change'));
+      
+      // Небольшая задержка для анимации
       setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
+        router.push('/dashboard');
+      }, 500);
       
     } catch (err) {
       console.error('Login error:', err);
