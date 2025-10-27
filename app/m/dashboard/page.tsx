@@ -57,8 +57,8 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Шапка - СТЕКЛЯННАЯ */}
-      <div className="backdrop-blur-xl bg-white/40 border-b border-white/30 px-4 pt-4 pb-6 shadow-sm">
+      {/* Шапка - СИНЯЯ СТЕКЛЯННАЯ СВЕТЯЩАЯСЯ */}
+      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-400/30 via-blue-500/25 to-purple-500/30 px-4 pb-6 shadow-lg shadow-blue-500/20" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
         <div className="flex items-center justify-between mb-4">
           <div>
             <p className="text-gray-600 text-xs mb-1">Добро пожаловать,</p>
