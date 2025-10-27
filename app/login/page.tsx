@@ -250,35 +250,27 @@ export default function NewLoginPage() {
             exit={{ opacity: 0, y: -20 }}
             className="w-full max-w-md relative z-10 mb-4"
           >
-            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-4 shadow-lg relative overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl p-3 shadow-lg relative overflow-hidden">
               {/* Glow effect */}
-              <div className="absolute inset-0 bg-white/10 backdrop-blur-sm"></div>
+              <div className="absolute inset-0 bg-white/10"></div>
               
-              <div className="relative flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
-                    <Download className="w-6 h-6 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white font-semibold text-sm">Установить приложение</p>
-                    <p className="text-blue-100 text-xs">Быстрый доступ без браузера</p>
-                  </div>
+              <div className="relative flex items-center gap-2">
+                <Download className="w-5 h-5 text-white flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-medium text-sm truncate">Установить приложение</p>
                 </div>
-                
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handleInstallPWA}
-                    className="px-4 py-2 bg-white text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-50 active:scale-95 transition-all"
-                  >
-                    Установить
-                  </button>
-                  <button
-                    onClick={() => setShowPWAPrompt(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-4 h-4 text-white" />
-                  </button>
-                </div>
+                <button
+                  onClick={handleInstallPWA}
+                  className="px-3 py-1.5 bg-white text-blue-600 rounded-lg text-xs font-medium active:scale-95 transition-all flex-shrink-0"
+                >
+                  Установить
+                </button>
+                <button
+                  onClick={() => setShowPWAPrompt(false)}
+                  className="p-1 hover:bg-white/20 rounded-lg transition-colors flex-shrink-0"
+                >
+                  <X className="w-4 h-4 text-white" />
+                </button>
               </div>
             </div>
           </m.div>
