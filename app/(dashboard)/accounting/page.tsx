@@ -29,53 +29,70 @@ export default function AccountingPage() {
   const [period, setPeriod] = useState<Period>('all');
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  // Загрузка данных
+  // Загрузка данных - ОПТИМИЗИРОВАНО
   const loadData = async () => {
     setIsLoading(true);
 
-    // Загружаем тендеры со статусами "победа", "в работе", "завершён"
-    const { data: tenders, error: tendersError } = await supabase
-      .from('tenders')
-      .select('*')
-      .in('status', ['победа', 'в работе', 'завершён'])
-      .order('created_at', { ascending: false });
+    try {
+      // ОПТИМИЗАЦИЯ: Параллельная загрузка тендеров и расходов
+      const [tendersResult, expensesResult] = await Promise.all([
+        supabase
+          .from('tenders')
+          .select('*')
+          .in('status', ['победа', 'в работе', 'завершён'])
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('expenses')
+          .select('*')
+      ]);
 
-    if (tendersError) {
-      console.error('Ошибка загрузки тендеров:', tendersError);
-      setIsLoading(false);
-      return;
-    }
+      const { data: tenders, error: tendersError } = tendersResult;
+      const { data: expenses, error: expensesError } = expensesResult;
 
-    if (!tenders || tenders.length === 0) {
-      setTendersWithExpenses([]);
-      setIsLoading(false);
-      return;
-    }
-
-    // Загружаем расходы для всех тендеров
-    const { data: expenses, error: expensesError } = await supabase
-      .from('expenses')
-      .select('*')
-      .in('tender_id', tenders.map(t => t.id));
-
-    if (expensesError) {
-      // Если таблица expenses не существует (код PGRST116 или 42P01), это нормально
-      if (expensesError.code === 'PGRST116' || expensesError.code === '42P01') {
-        console.warn('Таблица expenses не найдена. Создайте её в Supabase (см. SETUP_INSTRUCTIONS.md)');
-        setExpensesTableMissing(true);
-      } else {
-        console.error('Ошибка загрузки расходов:', expensesError);
+      if (tendersError) {
+        console.error('Ошибка загрузки тендеров:', tendersError);
+        setIsLoading(false);
+        return;
       }
+
+      if (!tenders || tenders.length === 0) {
+        setTendersWithExpenses([]);
+        setIsLoading(false);
+        return;
+      }
+
+      if (expensesError) {
+        // Если таблица expenses не существует (код PGRST116 или 42P01), это нормально
+        if (expensesError.code === 'PGRST116' || expensesError.code === '42P01') {
+          console.warn('Таблица expenses не найдена. Создайте её в Supabase (см. SETUP_INSTRUCTIONS.md)');
+          setExpensesTableMissing(true);
+        } else {
+          console.error('Ошибка загрузки расходов:', expensesError);
+        }
+      }
+
+      // ОПТИМИЗАЦИЯ: Создаём Map для O(1) lookup вместо filter O(n)
+      const expensesByTenderId = new Map<number, Expense[]>();
+      (expenses || []).forEach(expense => {
+        const tenderId = expense.tender_id;
+        if (!expensesByTenderId.has(tenderId)) {
+          expensesByTenderId.set(tenderId, []);
+        }
+        expensesByTenderId.get(tenderId)!.push(expense);
+      });
+
+      // Группируем расходы по тендерам используя Map (быстрее)
+      const result: TenderWithExpenses[] = tenders.map(tender => ({
+        tender,
+        expenses: expensesByTenderId.get(tender.id) || [],
+      }));
+
+      setTendersWithExpenses(result);
+    } catch (error) {
+      console.error('Критическая ошибка загрузки:', error);
+    } finally {
+      setIsLoading(false);
     }
-
-    // Группируем расходы по тендерам
-    const result: TenderWithExpenses[] = tenders.map(tender => ({
-      tender,
-      expenses: (expenses || []).filter(exp => exp.tender_id === tender.id),
-    }));
-
-    setTendersWithExpenses(result);
-    setIsLoading(false);
   };
 
   useEffect(() => {
