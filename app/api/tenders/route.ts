@@ -5,34 +5,6 @@ import { cookies } from 'next/headers';
 // Кэширование на 60 секунд
 export const revalidate = 60;
 
-// Функция для определения приоритета статуса
-function getStatusPriority(status: string): number {
-  const priorities: { [key: string]: number } = {
-    'подано': 1,           // Новые - сверху
-    'на рассмотрении': 2,  // На рассмотрении
-    'в работе': 3,         // В работе
-    'завершён': 4,         // Завершённые
-    'архив': 4,            // Архив внизу
-  };
-  return priorities[status.toLowerCase()] || 5;
-}
-
-// Функция сортировки тендеров
-function sortTenders(tenders: any[]): any[] {
-  return tenders.sort((a, b) => {
-    // Сначала по приоритету статуса
-    const priorityA = getStatusPriority(a.status);
-    const priorityB = getStatusPriority(b.status);
-    
-    if (priorityA !== priorityB) {
-      return priorityA - priorityB;
-    }
-    
-    // Если статусы равны - по дате создания (новые сверху)
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
-}
-
 // GET - получить все тендеры
 export async function GET(request: NextRequest) {
   try {
@@ -53,15 +25,11 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit');
     const offset = searchParams.get('offset');
 
-    // Строим запрос с сортировкой по приоритету статуса
+    // Строим запрос
     let query = supabase
       .from('tenders')
-      .select('*', { count: 'exact' });
-    
-    // Сортировка:
-    // 1. По приоритету статуса (подано -> на рассмотрении -> в работе -> завершён/архив)
-    // 2. По дате создания (новые сверху)
-    // Supabase не поддерживает CASE в .order(), поэтому сортируем на клиенте после получения
+      .select('*', { count: 'exact' })
+      .order('created_at', { ascending: false });
 
     // Фильтр по статусу
     if (status && status !== 'all') {
@@ -85,11 +53,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Сортируем тендеры по приоритету статуса и дате
-    const sortedData = data ? sortTenders(data) : [];
-
     return NextResponse.json({
-      data: sortedData,
+      data,
       count,
       success: true
     });
