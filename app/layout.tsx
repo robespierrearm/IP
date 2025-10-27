@@ -45,7 +45,7 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "TenderCRM",
   },
-  themeColor: "#7C3AED", // purple-600 для статус-бара
+  themeColor: "#3B82F6", // blue-500 для синего статус-бара
   openGraph: {
     type: "website",
     title: "TenderCRM - Система управления тендерами",
@@ -59,7 +59,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#7C3AED",
+  themeColor: "#3B82F6",
   viewportFit: "cover",
 };
 
