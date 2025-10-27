@@ -5,8 +5,9 @@ import { supabase, Message, MessageInsert, NOTE_COLORS } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { Send, StickyNote, Link as LinkIcon, X, Trash2 } from 'lucide-react';
+import { Send, StickyNote, Link as LinkIcon, X, Trash2, Loader2 } from 'lucide-react';
 import { logActivity, ACTION_TYPES } from '@/lib/activityLogger';
+import { toast } from 'sonner';
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -18,6 +19,9 @@ export default function ChatPage() {
   const [linkContent, setLinkContent] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [isAddingNote, setIsAddingNote] = useState(false);
+  const [isAddingLink, setIsAddingLink] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Загрузка сообщений
@@ -84,59 +88,97 @@ export default function ChatPage() {
 
   // Добавление заметки
   const handleAddNote = async () => {
-    if (!noteContent.trim()) return;
-
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    const noteData: MessageInsert = {
-      user_id: currentUser.id,
-      username: currentUser.username || 'Аноним',
-      message_type: 'note',
-      content: noteContent,
-      note_color: noteColor,
-    };
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([noteData]);
-
-    if (error) {
-      console.error('Ошибка добавления заметки:', error);
+    if (!noteContent.trim()) {
+      toast.error('Ошибка', {
+        description: 'Введите текст заметки'
+      });
       return;
     }
 
-    await logActivity('Добавлена заметка в чат', ACTION_TYPES.LOGIN);
-    setNoteContent('');
-    setShowNoteDialog(false);
+    setIsAddingNote(true);
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      const noteData: MessageInsert = {
+        user_id: currentUser.id,
+        username: currentUser.username || 'Аноним',
+        message_type: 'note',
+        content: noteContent,
+        note_color: noteColor,
+      };
+
+      const { error } = await supabase
+        .from('messages')
+        .insert([noteData]);
+
+      if (error) {
+        console.error('Ошибка добавления заметки:', error);
+        toast.error('Ошибка', {
+          description: 'Не удалось добавить заметку'
+        });
+        return;
+      }
+
+      await logActivity('Добавлена заметка в чат', ACTION_TYPES.LOGIN);
+      
+      toast.success('Заметка добавлена', {
+        description: 'Заметка успешно добавлена в чат'
+      });
+      
+      setNoteContent('');
+      setShowNoteDialog(false);
+    } finally {
+      setIsAddingNote(false);
+    }
   };
 
   // Добавление ссылки
   const handleAddLink = async () => {
-    if (!linkContent.trim() || !linkUrl.trim()) return;
-
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    
-    const linkData: MessageInsert = {
-      user_id: currentUser.id,
-      username: currentUser.username || 'Аноним',
-      message_type: 'link',
-      content: linkContent,
-      link_url: linkUrl,
-    };
-
-    const { error } = await supabase
-      .from('messages')
-      .insert([linkData]);
-
-    if (error) {
-      console.error('Ошибка добавления ссылки:', error);
+    if (!linkContent.trim() || !linkUrl.trim()) {
+      toast.error('Ошибка', {
+        description: 'Заполните все поля'
+      });
       return;
     }
 
-    await logActivity('Добавлена ссылка в чат', ACTION_TYPES.LOGIN);
-    setLinkContent('');
-    setLinkUrl('');
-    setShowLinkDialog(false);
+    setIsAddingLink(true);
+
+    try {
+      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      
+      const linkData: MessageInsert = {
+        user_id: currentUser.id,
+        username: currentUser.username || 'Аноним',
+        message_type: 'link',
+        content: linkContent,
+        link_url: linkUrl,
+      };
+
+      const { error } = await supabase
+        .from('messages')
+        .insert([linkData]);
+
+      if (error) {
+        console.error('Ошибка добавления ссылки:', error);
+        toast.error('Ошибка', {
+          description: 'Не удалось добавить ссылку'
+        });
+        return;
+      }
+
+      await logActivity('Добавлена ссылка в чат', ACTION_TYPES.LOGIN);
+      
+      toast.success('Ссылка добавлена', {
+        description: 'Ссылка успешно добавлена в чат'
+      });
+      
+      setLinkContent('');
+      setLinkUrl('');
+      setShowLinkDialog(false);
+    } finally {
+      setIsAddingLink(false);
+    }
   };
 
   // Форматирование времени
@@ -158,19 +200,33 @@ export default function ChatPage() {
 
   // Очистка чата
   const handleClearChat = async () => {
-    const { error } = await supabase
-      .from('messages')
-      .delete()
-      .neq('id', 0); // Удаляем все сообщения
+    setIsClearing(true);
 
-    if (error) {
-      console.error('Ошибка очистки чата:', error);
-      return;
+    try {
+      const { error } = await supabase
+        .from('messages')
+        .delete()
+        .neq('id', 0); // Удаляем все сообщения
+
+      if (error) {
+        console.error('Ошибка очистки чата:', error);
+        toast.error('Ошибка', {
+          description: 'Не удалось очистить чат'
+        });
+        return;
+      }
+
+      await logActivity('Очищен чат', ACTION_TYPES.TENDER_DELETE);
+      
+      toast.success('Чат очищен', {
+        description: 'Все сообщения успешно удалены'
+      });
+      
+      setMessages([]);
+      setShowClearDialog(false);
+    } finally {
+      setIsClearing(false);
     }
-
-    await logActivity('Очищен чат', ACTION_TYPES.TENDER_DELETE);
-    setMessages([]);
-    setShowClearDialog(false);
   };
 
   return (
@@ -265,7 +321,7 @@ export default function ChatPage() {
               size="sm"
               variant="outline"
               onClick={() => setShowNoteDialog(true)}
-              className="text-xs bg-white hover:bg-yellow-50 border-yellow-200 text-yellow-700 hover:text-yellow-800"
+              className="text-xs bg-white hover:bg-yellow-50 border-yellow-200 text-yellow-700 hover:text-yellow-800 active:scale-95 transition-transform"
             >
               <StickyNote className="h-3.5 w-3.5 mr-1" />
               Заметка
@@ -274,7 +330,7 @@ export default function ChatPage() {
               size="sm"
               variant="outline"
               onClick={() => setShowLinkDialog(true)}
-              className="text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800"
+              className="text-xs bg-white hover:bg-blue-50 border-blue-200 text-blue-700 hover:text-blue-800 active:scale-95 transition-transform"
             >
               <LinkIcon className="h-3.5 w-3.5 mr-1" />
               Ссылка
@@ -335,11 +391,26 @@ export default function ChatPage() {
                 />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setShowNoteDialog(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowNoteDialog(false)}
+                  disabled={isAddingNote}
+                >
                   Отмена
                 </Button>
-                <Button onClick={handleAddNote} className="bg-blue-600 hover:bg-blue-700">
-                  Добавить
+                <Button 
+                  onClick={handleAddNote} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={isAddingNote}
+                >
+                  {isAddingNote ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Добавление...
+                    </>
+                  ) : (
+                    'Добавить'
+                  )}
                 </Button>
               </div>
             </div>
@@ -375,11 +446,26 @@ export default function ChatPage() {
                 />
               </div>
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => setShowLinkDialog(false)}>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setShowLinkDialog(false)}
+                  disabled={isAddingLink}
+                >
                   Отмена
                 </Button>
-                <Button onClick={handleAddLink} className="bg-blue-600 hover:bg-blue-700">
-                  Добавить
+                <Button 
+                  onClick={handleAddLink} 
+                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={isAddingLink}
+                >
+                  {isAddingLink ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Добавление...
+                    </>
+                  ) : (
+                    'Добавить'
+                  )}
                 </Button>
               </div>
             </div>
@@ -401,15 +487,29 @@ export default function ChatPage() {
               Все сообщения, заметки и ссылки будут безвозвратно удалены из базы данных. Это действие нельзя отменить.
             </p>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowClearDialog(false)}>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowClearDialog(false)}
+                disabled={isClearing}
+              >
                 Отмена
               </Button>
               <Button 
                 onClick={handleClearChat} 
                 className="bg-red-600 hover:bg-red-700 text-white"
+                disabled={isClearing}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Очистить
+                {isClearing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Очистка...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Очистить
+                  </>
+                )}
               </Button>
             </div>
           </Card>
