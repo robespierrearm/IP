@@ -96,8 +96,8 @@ export default function AdminPage() {
   };
 
   useEffect(() => {
-    loadUsers();
-    loadLogs();
+    // ОПТИМИЗАЦИЯ: Параллельная загрузка пользователей и логов
+    Promise.all([loadUsers(), loadLogs()]);
 
     // Обновление статуса каждые 30 секунд
     const interval = setInterval(() => {

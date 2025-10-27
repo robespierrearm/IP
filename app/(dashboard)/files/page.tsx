@@ -59,36 +59,44 @@ export default function FilesPage() {
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
 
-  // Загрузка файлов и тендеров
-  const loadFiles = async () => {
+  // Загрузка файлов и тендеров - ОПТИМИЗИРОВАНО
+  const loadData = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
-      .from('files')
-      .select('*')
-      .order('uploaded_at', { ascending: false });
-
-    if (error) {
-      console.error('Ошибка загрузки файлов:', error);
-    } else {
-      setFiles(data || []);
-    }
-    setIsLoading(false);
-  };
-
-  const loadTenders = async () => {
-    const { data } = await supabase
-      .from('tenders')
-      .select('id, name')
-      .order('created_at', { ascending: false });
     
-    if (data) {
-      setTenders(data);
+    try {
+      // ОПТИМИЗАЦИЯ: Параллельная загрузка файлов и тендеров
+      const [filesResult, tendersResult] = await Promise.all([
+        supabase
+          .from('files')
+          .select('*')
+          .order('uploaded_at', { ascending: false }),
+        supabase
+          .from('tenders')
+          .select('id, name')
+          .order('created_at', { ascending: false })
+      ]);
+
+      const { data: filesData, error: filesError } = filesResult;
+      const { data: tendersData } = tendersResult;
+
+      if (filesError) {
+        console.error('Ошибка загрузки файлов:', filesError);
+      } else {
+        setFiles(filesData || []);
+      }
+
+      if (tendersData) {
+        setTenders(tendersData);
+      }
+    } catch (error) {
+      console.error('Критическая ошибка загрузки:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    loadFiles();
-    loadTenders();
+    loadData();
   }, []);
 
   // Загрузка файла
@@ -147,7 +155,7 @@ export default function FilesPage() {
       }
 
       // Обновляем список
-      await loadFiles();
+      await loadData();
 
       // Сбрасываем форму
       setUploadFile(null);
@@ -225,7 +233,7 @@ export default function FilesPage() {
       return;
     }
 
-    await loadFiles();
+    await loadData();
   };
 
   // Переключение показа на дашборде
@@ -240,7 +248,7 @@ export default function FilesPage() {
       return;
     }
 
-    await loadFiles();
+    await loadData();
   };
 
   // Фильтрация
