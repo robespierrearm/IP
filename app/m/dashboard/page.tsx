@@ -57,12 +57,12 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-      {/* Шапка - СИНЯЯ СТЕКЛЯННАЯ СВЕТЯЩАЯСЯ */}
-      <div className="backdrop-blur-xl bg-gradient-to-br from-blue-400/30 via-blue-500/25 to-purple-500/30 px-4 pb-6 shadow-lg shadow-blue-500/20" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
+      {/* Шапка - ТЕМНАЯ СТЕКЛЯННАЯ СВЕТЯЩАЯСЯ */}
+      <div className="backdrop-blur-xl bg-gradient-to-br from-purple-600/80 via-blue-600/75 to-indigo-600/80 px-4 pb-6 shadow-2xl shadow-purple-500/30" style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p className="text-gray-600 text-xs mb-1">Добро пожаловать,</p>
-            <h1 className="text-xl font-bold text-gray-900">
+            <p className="text-white/70 text-xs mb-1">Добро пожаловать,</p>
+            <h1 className="text-xl font-bold text-white">
               {currentUser?.username || 'Пользователь'}
             </h1>
           </div>
@@ -71,14 +71,14 @@ export default function DashboardPage() {
             <button
               onClick={() => refetch()}
               disabled={isLoading}
-              className="p-2 bg-white/50 hover:bg-white/70 rounded-lg active:scale-95 transition-all disabled:opacity-50 backdrop-blur-xl"
+              className="p-2 bg-white/20 hover:bg-white/30 rounded-lg active:scale-95 transition-all disabled:opacity-50 backdrop-blur-xl"
             >
-              <RefreshCw className={`w-4 h-4 text-gray-700 ${isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 text-white ${isLoading ? 'animate-spin' : ''}`} />
             </button>
             
             <div className="text-right">
               <LiveClock />
-              <div className="text-gray-500 text-xs">
+              <div className="text-white/70 text-xs">
                 {new Date().toLocaleDateString('ru-RU', {
                   day: 'numeric',
                   month: 'long',

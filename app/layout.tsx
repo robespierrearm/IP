@@ -42,9 +42,10 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "TenderCRM",
   },
+  themeColor: "#7C3AED", // purple-600 для статус-бара
   openGraph: {
     type: "website",
     title: "TenderCRM - Система управления тендерами",
@@ -58,7 +59,7 @@ export const viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#6366F1",
+  themeColor: "#7C3AED",
   viewportFit: "cover",
 };
 
