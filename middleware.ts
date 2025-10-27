@@ -16,7 +16,7 @@ export function middleware(request: NextRequest) {
   const isMobile = forceMobile || isMobileDevice(userAgent);
 
   // Публичные пути (доступны без авторизации)
-  const publicPaths = ['/login', '/m/login', '/test-env'];
+  const publicPaths = ['/login', '/test-env', '/clear-cache'];
   const isPublicPath = publicPaths.includes(path);
 
   // Получаем токен из cookies
@@ -36,12 +36,6 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/m/dashboard', request.url));
       }
       return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-    
-    // Новая страница /login полностью адаптивная, редирект не нужен
-    // Если зашли на /m/login - редирект на единую /login
-    if (path === '/m/login') {
-      return NextResponse.redirect(new URL('/login', request.url));
     }
     
     return NextResponse.next();

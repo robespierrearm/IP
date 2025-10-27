@@ -35,8 +35,8 @@ export default function MenuPage() {
       // Уведомляем AuthProvider об изменении
       window.dispatchEvent(new Event('auth-change'));
       
-      // Редиректим на логин
-      window.location.href = '/m/login';
+      // Редиректим на логин (единая адаптивная страница)
+      router.replace('/login');
     }
   };
 

@@ -1,6 +1,5 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import { BottomNav } from '@/components/mobile/BottomNav';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -10,13 +9,6 @@ export default function MobileLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pathname = usePathname();
-
-  // Если это страница логина - показываем без BottomNav
-  if (pathname === '/m/login') {
-    return <>{children}</>;
-  }
-
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 pb-20">

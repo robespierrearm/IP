@@ -198,7 +198,7 @@ export default function SettingsPage() {
       
       localStorage.removeItem('currentUser');
       window.dispatchEvent(new Event('auth-change'));
-      window.location.href = '/m/login';
+      router.replace('/login');
     }
   };
 
