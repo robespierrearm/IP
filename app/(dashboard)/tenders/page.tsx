@@ -189,17 +189,27 @@ function TendersContent() {
 
       // Отправляем уведомления если статус изменился
       if (newStatus && oldStatus && newStatus !== oldStatus) {
+        console.log('🔔 СТАТУС ИЗМЕНИЛСЯ!');
+        console.log('  Старый статус:', oldStatus);
+        console.log('  Новый статус:', newStatus);
+        
         try {
           const { notifyStatusChange } = await import('@/lib/telegram-notifications');
           
           // Получаем полные данные тендера
           const updatedTender = { ...editingTender, ...updates };
+          console.log('📦 Данные тендера:', updatedTender);
           
+          console.log('🚀 Вызываю notifyStatusChange...');
           await notifyStatusChange(updatedTender, oldStatus, newStatus);
           console.log('✅ Уведомление об изменении статуса отправлено');
         } catch (notifyError) {
           console.error('❌ Ошибка отправки уведомления:', notifyError);
         }
+      } else {
+        console.log('⚠️ Статус НЕ изменился или пустой:');
+        console.log('  newStatus:', newStatus);
+        console.log('  oldStatus:', oldStatus);
       }
       
       setEditingTender(null);

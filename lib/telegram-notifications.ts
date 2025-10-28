@@ -103,15 +103,32 @@ export async function notifyNewTender(tender: any) {
 // Уведомление о победе
 export async function notifyTenderWon(tender: any) {
   try {
+    console.log('🎉 notifyTenderWon вызвана для:', tender?.name);
+    
     const { data: settings } = await supabase
       .from('telegram_notification_settings')
       .select('*')
       .eq('id', 1)
       .single();
 
-    if (!settings || !settings.notify_won || settings.recipients.length === 0) {
+    console.log('⚙️ Настройки для победы:', settings);
+
+    if (!settings) {
+      console.log('❌ Настроек нет!');
       return;
     }
+
+    if (!settings.notify_won) {
+      console.log('❌ Галочка "Победа" выключена!');
+      return;
+    }
+
+    if (settings.recipients.length === 0) {
+      console.log('❌ Нет получателей!');
+      return;
+    }
+
+    console.log('👥 Отправляю победу для:', settings.recipients);
 
     let message = `🎉 <b>ПОБЕДА В ТЕНДЕРЕ!</b>\n\n`;
     message += `✅ <b>${tender.name}</b>\n\n`;
@@ -120,15 +137,18 @@ export async function notifyTenderWon(tender: any) {
       message += `💰 Сумма: ${formatPrice(tender.win_price)}\n`;
     }
 
-    const sendPromises = settings.recipients.map((telegramId: string) =>
-      sendTelegramMessage(telegramId, message, {
+    console.log('📨 Текст сообщения:', message);
+
+    const sendPromises = settings.recipients.map((telegramId: string) => {
+      console.log('📤 Отправляю в telegram_id:', telegramId);
+      return sendTelegramMessage(telegramId, message, {
         reply_markup: {
           inline_keyboard: [[
             { text: '🌐 Открыть в CRM', url: `https://ip-mauve-pi.vercel.app/tenders` }
           ]]
         }
-      })
-    );
+      });
+    });
 
     await Promise.all(sendPromises);
     console.log('✅ Уведомления о победе отправлены');
@@ -168,33 +188,54 @@ export async function notifyTenderLost(tender: any) {
 // Уведомление об изменении статуса
 export async function notifyStatusChange(tender: any, oldStatus: string, newStatus: string) {
   try {
+    console.log('📨 notifyStatusChange вызвана');
+    console.log('  Тендер:', tender?.name);
+    console.log('  Старый статус:', oldStatus);
+    console.log('  Новый статус:', newStatus);
+    
     const { data: settings } = await supabase
       .from('telegram_notification_settings')
       .select('*')
       .eq('id', 1)
       .single();
 
-    if (!settings || settings.recipients.length === 0) {
+    console.log('⚙️ Настройки загружены:', settings);
+
+    if (!settings) {
+      console.log('❌ Настроек нет!');
       return;
     }
+
+    if (settings.recipients.length === 0) {
+      console.log('❌ Нет получателей!');
+      return;
+    }
+
+    console.log('👥 Получатели:', settings.recipients);
 
     // ПРИОРИТЕТ 1: Специфичные уведомления (Победа/Проигрыш)
     // Если есть специальная галочка для этого статуса - используем её
     if (newStatus === 'победа' && settings.notify_won) {
+      console.log('🎉 Отправляю уведомление о ПОБЕДЕ');
       return notifyTenderWon(tender);
     }
     
     if (newStatus === 'проигрыш' && settings.notify_lost) {
+      console.log('😔 Отправляю уведомление о ПРОИГРЫШЕ');
       return notifyTenderLost(tender);
     }
+
+    console.log('🔄 Проверяю галочку "Другие изменения":', settings.notify_status_change);
 
     // ПРИОРИТЕТ 2: Общее уведомление об изменении
     // Если нет специальной галочки, проверяем общую
     if (!settings.notify_status_change) {
+      console.log('❌ Галочка "Другие изменения" выключена, не отправляю');
       return; // Общие уведомления выключены
     }
 
     // Отправляем обычное уведомление об изменении статуса
+    console.log('📤 Отправляю общее уведомление об изменении');
     let message = `🔄 <b>Изменение статуса тендера</b>\n\n`;
     message += `${tender.name}\n\n`;
     message += `Было: ${oldStatus}\n`;
