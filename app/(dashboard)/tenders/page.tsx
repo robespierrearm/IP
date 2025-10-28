@@ -278,6 +278,28 @@ function TendersContent() {
           additional_data: additionalData
         }
       );
+
+      // Отправляем уведомления если статус изменился
+      if (newStatus && oldStatus && newStatus !== oldStatus) {
+        console.log('🔔 [БЫСТРАЯ КНОПКА] СТАТУС ИЗМЕНИЛСЯ!');
+        console.log('  Старый статус:', oldStatus);
+        console.log('  Новый статус:', newStatus);
+        
+        try {
+          const { notifyStatusChange } = await import('@/lib/telegram-notifications');
+          
+          // Получаем полные данные тендера
+          const updatedTender = { ...tender, ...updateData };
+          console.log('📦 Данные тендера:', updatedTender);
+          
+          console.log('🚀 Вызываю notifyStatusChange...');
+          await notifyStatusChange(updatedTender, oldStatus, newStatus);
+          console.log('✅ Уведомление об изменении статуса отправлено');
+        } catch (notifyError) {
+          console.error('❌ Ошибка отправки уведомления:', notifyError);
+        }
+      }
+      
       // Кэш обновится автоматически!
     } catch (error: any) {
       console.error('Ошибка смены статуса:', error);

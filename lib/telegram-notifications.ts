@@ -11,6 +11,11 @@ async function sendTelegramMessage(chatId: string, text: string, options: any = 
   try {
     const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
     
+    console.log('📞 Отправляю запрос в Telegram API:');
+    console.log('  URL:', url.replace(TELEGRAM_BOT_TOKEN, 'BOT_TOKEN'));
+    console.log('  chat_id:', chatId);
+    console.log('  text:', text.substring(0, 50) + '...');
+    
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -22,9 +27,21 @@ async function sendTelegramMessage(chatId: string, text: string, options: any = 
       }),
     });
 
-    return await response.json();
+    const result = await response.json();
+    
+    console.log('📥 Ответ от Telegram API:');
+    console.log('  Status:', response.status);
+    console.log('  Result:', result);
+    
+    if (!result.ok) {
+      console.error('❌ Telegram API вернул ошибку:', result);
+    } else {
+      console.log('✅ Сообщение успешно отправлено в Telegram!');
+    }
+    
+    return result;
   } catch (error) {
-    console.error('Error sending Telegram message:', error);
+    console.error('❌ Ошибка при отправке в Telegram:', error);
     throw error;
   }
 }
