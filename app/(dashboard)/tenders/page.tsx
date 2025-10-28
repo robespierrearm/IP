@@ -64,17 +64,33 @@ function TendersContent() {
   // Обработка данных из bookmarklet
   useEffect(() => {
     const actionParam = searchParams.get('action');
+    console.log('🔍 Checking action param:', actionParam);
+    
     if (actionParam === 'add-from-parser') {
+      console.log('✅ Action is add-from-parser');
+      
       const savedData = localStorage.getItem('parsedTender');
+      console.log('📦 Saved data from localStorage:', savedData);
+      
       if (savedData) {
         try {
           const data = JSON.parse(savedData);
+          console.log('✅ Parsed data:', data);
+          
           setBookmarkletData(data);
           setIsAddDialogOpen(true);
-          localStorage.removeItem('parsedTender');
+          
+          console.log('✅ Dialog should open now');
+          
+          // Очищаем после небольшой задержки
+          setTimeout(() => {
+            localStorage.removeItem('parsedTender');
+          }, 1000);
         } catch (error) {
-          console.error('Error parsing bookmarklet data:', error);
+          console.error('❌ Error parsing bookmarklet data:', error);
         }
+      } else {
+        console.log('❌ No saved data in localStorage');
       }
     }
   }, [searchParams]);
