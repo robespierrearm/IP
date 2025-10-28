@@ -170,6 +170,10 @@ function TendersContent() {
   // Обновление тендера через React Query mutation
   const handleUpdateTender = async (id: number, updates: Partial<Tender>) => {
     try {
+      // Сохраняем старый статус для проверки изменений
+      const oldStatus = editingTender?.status;
+      const newStatus = updates.status;
+      
       await updateTenderMutation.mutateAsync({ id, updates });
       
       // Логируем редактирование тендера
@@ -182,6 +186,21 @@ function TendersContent() {
           changes: updates
         }
       );
+
+      // Отправляем уведомления если статус изменился
+      if (newStatus && oldStatus && newStatus !== oldStatus) {
+        try {
+          const { notifyStatusChange } = await import('@/lib/telegram-notifications');
+          
+          // Получаем полные данные тендера
+          const updatedTender = { ...editingTender, ...updates };
+          
+          await notifyStatusChange(updatedTender, oldStatus, newStatus);
+          console.log('✅ Уведомление об изменении статуса отправлено');
+        } catch (notifyError) {
+          console.error('❌ Ошибка отправки уведомления:', notifyError);
+        }
+      }
       
       setEditingTender(null);
       // Кэш обновится автоматически!
