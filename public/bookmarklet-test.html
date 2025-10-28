@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 Bookmarklet - Тестовая Инструкция</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .step h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        .bookmarklet {
+            background: #1a1a1a;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px 5px;
+            cursor: move;
+            transition: transform 0.2s;
+            font-size: 16px;
+        }
+        .button:hover {
+            transform: scale(1.05);
+        }
+        .warning {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .success {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+        }
+        .test-area {
+            background: #f0f0f0;
+            padding: 30px;
+            border-radius: 12px;
+            margin: 30px 0;
+        }
+        .test-tender {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 ТЕСТОВЫЙ BOOKMARKLET</h1>
+        <p class="subtitle">Простой способ автоматически копировать данные тендера</p>
+
+        <div class="success">
+            <strong>✅ ЭТО БЕЗОПАСНО:</strong> Bookmarklet работает только на стороне вашего браузера. Никуда не отправляет ваши пароли или личные данные.
+        </div>
+
+        <div class="step">
+            <h3>📋 Шаг 1: Перетащите кнопку в закладки</h3>
+            <p>Просто зажмите кнопку ниже и перетащите её на панель закладок вашего браузера:</p>
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="javascript:(function(){const data={name:document.querySelector('h1, [class*=&quot;name&quot;], [class*=&quot;title&quot;]')?.textContent?.trim()||'',purchase_number:document.body.innerHTML.match(/№?\s*(\d{20,})/)?.[1]||'',region:document.body.innerHTML.match(/(г\.\s*\w+|Москва|Санкт-Петербург|область)/i)?.[0]||'',start_price:parseFloat(document.body.innerHTML.match(/(\d[\d\s,]*\d)/g)?.find(n=>parseFloat(n.replace(/[\s,]/g,''))>10000)?.replace(/[\s,]/g,'')||'0')||null};if(!data.name){alert('❌ Не найдено название тендера!\n\nПопробуйте на другой странице.');return;}const result=`📋 ДАННЫЕ ТЕНДЕРА:\n\n✅ Название: ${data.name}\n\n📝 Номер: ${data.purchase_number||'не найден'}\n\n📍 Регион: ${data.region||'не найден'}\n\n💰 Цена: ${data.start_price?new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB'}).format(data.start_price):'не найдена'}`;if(confirm(result+'\n\n➡️ Скопировать в буфер обмена?')){navigator.clipboard.writeText(JSON.stringify(data,null,2));alert('✅ Данные скопированы!\n\nТеперь можете вставить их в CRM.');}})();" class="button">
+                    📋→CRM
+                </a>
+            </div>
+            <p style="color: #666; font-size: 14px; text-align: center;">
+                ⬆️ Перетащите эту кнопку на панель закладок
+            </p>
+        </div>
+
+        <div class="step">
+            <h3>🧪 Шаг 2: Протестируйте на примере ниже</h3>
+            <p>Нажмите на созданную закладку прямо на этой странице, чтобы проверить как работает:</p>
+            
+            <div class="test-area">
+                <div class="test-tender">
+                    <h1>Строительство детского сада на 120 мест</h1>
+                    <p><strong>Номер извещения:</strong> 03731000054230001234567890</p>
+                    <p><strong>Регион:</strong> г. Москва</p>
+                    <p><strong>Начальная цена:</strong> 25 000 000 руб</p>
+                    <p><strong>Заказчик:</strong> Департамент образования</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>🚀 Шаг 3: Используйте на реальных сайтах</h3>
+            <p>Теперь откройте любой тендер и просто нажмите созданную закладку!</p>
+            <p><strong>Работает на:</strong></p>
+            <ul>
+                <li>✅ Сбербанк-АСТ (sberbank-ast.ru)</li>
+                <li>✅ Госзакупки (zakupki.gov.ru)</li>
+                <li>✅ ЕТС (ets.ru)</li>
+                <li>✅ Любых других сайтах с тендерами</li>
+            </ul>
+        </div>
+
+        <div class="warning">
+            <strong>💡 Совет:</strong> Если bookmarklet не нашёл какие-то данные, это нормально! Разные сайты по-разному оформляют информацию. Главное - он находит название тендера.
+        </div>
+
+        <div class="step">
+            <h3>🗑️ Как удалить</h3>
+            <p>Если не понравилось - просто удалите закладку из браузера (как обычную закладку).</p>
+        </div>
+
+        <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+            <p style="color: #666; margin: 0;">
+                Это ТЕСТОВАЯ версия. Данные копируются в буфер обмена как JSON.<br>
+                В будущем можем добавить автоматическое заполнение формы в CRM.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

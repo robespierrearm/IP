@@ -49,7 +49,6 @@ function TendersContent() {
   const [activeTab, setActiveTab] = useState<TabType>(tabParam || 'all');
   const [archiveFilter, setArchiveFilter] = useState<ArchiveFilter>('all');
   const [expandedTenderId, setExpandedTenderId] = useState<number | null>(null);
-  const [parsedTenderData, setParsedTenderData] = useState<any>(null);
   const { cardVersion } = useCardVersion(); // Из контекста
 
   // Обновляем activeTab при изменении URL
@@ -60,24 +59,6 @@ function TendersContent() {
       setActiveTab('all');
     }
   }, [tabParam]);
-
-  // Проверяем данные из парсера
-  useEffect(() => {
-    const actionParam = searchParams.get('action');
-    if (actionParam === 'add-from-parser') {
-      const savedData = localStorage.getItem('parsedTender');
-      if (savedData) {
-        try {
-          const data = JSON.parse(savedData);
-          setParsedTenderData(data);
-          setIsAddDialogOpen(true);
-          localStorage.removeItem('parsedTender'); // Очищаем после использования
-        } catch (error) {
-          console.error('Error parsing saved tender:', error);
-        }
-      }
-    }
-  }, [searchParams]);
 
   // Обработка параметра edit из URL
   useEffect(() => {
@@ -627,7 +608,6 @@ function TendersContent() {
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
         onAdd={handleAddTender}
-        initialData={parsedTenderData}
       />
 
       {editingTender && (

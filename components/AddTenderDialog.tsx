@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { m } from 'framer-motion';
 import { TenderInsert } from '@/lib/supabase';
 import { FileText, Hash, Link as LinkIcon, MapPin, Calendar, DollarSign, Clock } from 'lucide-react';
@@ -20,47 +20,26 @@ interface AddTenderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (tender: TenderInsert) => void;
-  initialData?: Partial<TenderInsert>; // Предзаполненные данные из парсера
 }
 
 export function AddTenderDialog({
   open,
   onOpenChange,
   onAdd,
-  initialData,
 }: AddTenderDialogProps) {
   const [formData, setFormData] = useState<TenderInsert>({
-    name: initialData?.name || '',
-    purchase_number: initialData?.purchase_number || '',
-    link: initialData?.link || '',
-    region: initialData?.region || '',
-    publication_date: initialData?.publication_date || new Date().toISOString().split('T')[0],
-    submission_date: initialData?.submission_date || '',
-    submission_deadline: initialData?.submission_deadline || '',
-    start_price: initialData?.start_price || null,
+    name: '',
+    purchase_number: '',
+    link: '',
+    region: '',
+    publication_date: new Date().toISOString().split('T')[0], // Текущая дата по умолчанию
+    submission_date: '',
+    submission_deadline: '',
+    start_price: null,
     submitted_price: null,
     win_price: null,
     status: 'новый',
   });
-
-  // Обновляем форму при изменении initialData
-  useEffect(() => {
-    if (initialData && open) {
-      setFormData({
-        name: initialData.name || '',
-        purchase_number: initialData.purchase_number || '',
-        link: initialData.link || '',
-        region: initialData.region || '',
-        publication_date: initialData.publication_date || new Date().toISOString().split('T')[0],
-        submission_date: initialData.submission_date || '',
-        submission_deadline: initialData.submission_deadline || '',
-        start_price: initialData.start_price || null,
-        submitted_price: null,
-        win_price: null,
-        status: 'новый',
-      });
-    }
-  }, [initialData, open]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
