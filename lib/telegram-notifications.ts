@@ -46,13 +46,12 @@ async function sendTelegramMessage(chatId: string, text: string, options: any = 
   }
 }
 
-// Форматирование цены
+// Форматирование цены для отображения
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
+    minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(price);
+  }).format(price) + ' ₽';
 }
 
 // Форматирование даты
@@ -63,6 +62,48 @@ function formatDate(dateString: string): string {
     month: '2-digit',
     year: 'numeric',
   });
+}
+
+// Подсчёт дней до дедлайна
+function getDaysUntilDeadline(deadlineString: string): number {
+  const deadline = new Date(deadlineString);
+  const now = new Date();
+  const diffTime = deadline.getTime() - now.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays;
+}
+
+// Форматирование "осталось дней"
+function formatDaysLeft(days: number): string {
+  if (days > 1) return `через ${days} дней`;
+  if (days === 1) return 'завтра';
+  if (days === 0) return '<b>сегодня!</b>';
+  if (days === -1) return '<b>вчера (просрочено!)</b>';
+  return `<b>просрочено на ${Math.abs(days)} дней!</b>`;
+}
+
+// Подсчёт процента экономии
+function calculateSavings(startPrice: number, submittedPrice: number): { amount: number; percent: number } {
+  const amount = startPrice - submittedPrice;
+  const percent = (amount / startPrice) * 100;
+  return { amount, percent };
+}
+
+// Получение суммы расходов из БД
+async function getTenderExpenses(tenderId: number): Promise<number> {
+  try {
+    const { data: expenses } = await supabase
+      .from('expenses')
+      .select('amount')
+      .eq('tender_id', tenderId);
+    
+    if (!expenses || expenses.length === 0) return 0;
+    
+    return expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+  } catch (error) {
+    console.error('Ошибка получения расходов:', error);
+    return 0;
+  }
 }
 
 // Уведомление о новом тендере
@@ -76,27 +117,26 @@ export async function notifyNewTender(tender: any) {
       .single();
 
     if (!settings || !settings.notify_new_tender || settings.recipients.length === 0) {
-      return; // Уведомления выключены или нет получателей
+      return;
     }
 
     // Формируем сообщение
-    let message = `📋 <b>Новый тендер добавлен!</b>\n\n`;
-    message += `✅ <b>${tender.name}</b>\n\n`;
+    let message = `<b>🆕 Новый тендер</b>\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `<b>📌 ${tender.name}</b>\n\n`;
     
-    if (tender.purchase_number) {
-      message += `📝 Номер: ${tender.purchase_number}\n`;
+    if (tender.start_price) {
+      message += `💰 Начальная цена: <code>${formatPrice(tender.start_price)}</code>\n`;
     }
     
     if (tender.region) {
       message += `📍 Регион: ${tender.region}\n`;
     }
     
-    if (tender.start_price) {
-      message += `💰 Цена: ${formatPrice(tender.start_price)}\n`;
-    }
-    
     if (tender.submission_deadline) {
+      const daysLeft = getDaysUntilDeadline(tender.submission_deadline);
       message += `⏰ Дедлайн: ${formatDate(tender.submission_deadline)}\n`;
+      message += `⏳ Осталось: ${formatDaysLeft(daysLeft)}\n`;
     }
 
     // Отправляем всем получателям
@@ -147,12 +187,23 @@ export async function notifyTenderWon(tender: any) {
 
     console.log('👥 Отправляю победу для:', settings.recipients);
 
-    let message = `🎉 <b>ПОБЕДА В ТЕНДЕРЕ!</b>\n\n`;
-    message += `✅ <b>${tender.name}</b>\n\n`;
+    let message = `<b>🎉🎉🎉 ПОБЕДА! 🎉🎉🎉</b>\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `<b>✅ ${tender.name}</b>\n\n`;
     
-    if (tender.win_price) {
-      message += `💰 Сумма: ${formatPrice(tender.win_price)}\n`;
+    const winPrice = tender.win_price || tender.submitted_price;
+    
+    if (winPrice) {
+      message += `💰 Сумма контракта: <code>${formatPrice(winPrice)}</code>\n`;
     }
+    
+    // Показываем экономию если есть начальная цена
+    if (tender.start_price && winPrice && winPrice < tender.start_price) {
+      const savings = calculateSavings(tender.start_price, winPrice);
+      message += `<b>📊 Экономия: ${formatPrice(savings.amount)}</b> (-${savings.percent.toFixed(1)}%)\n`;
+    }
+    
+    message += `\n🔥 ПОЗДРАВЛЯЕМ! 🔥`;
 
     console.log('📨 Текст сообщения:', message);
 
@@ -187,9 +238,15 @@ export async function notifyTenderLost(tender: any) {
       return;
     }
 
-    let message = `😔 <b>Проигрыш в тендере</b>\n\n`;
-    message += `${tender.name}\n\n`;
-    message += `Не расстраивайтесь, впереди новые возможности!`;
+    let message = `<b>😔 Не выиграли тендер</b>\n\n`;
+    message += `━━━━━━━━━━━━━━━━━━\n`;
+    message += `<b>📌 ${tender.name}</b>\n\n`;
+    
+    if (tender.submitted_price) {
+      message += `💸 Наша цена: <code>${formatPrice(tender.submitted_price)}</code>\n\n`;
+    }
+    
+    message += `Не расстраивайтесь!\nВпереди новые возможности 💪`;
 
     const sendPromises = settings.recipients.map((telegramId: string) =>
       sendTelegramMessage(telegramId, message)
@@ -251,15 +308,109 @@ export async function notifyStatusChange(tender: any, oldStatus: string, newStat
       return; // Общие уведомления выключены
     }
 
-    // Отправляем обычное уведомление об изменении статуса
-    console.log('📤 Отправляю общее уведомление об изменении');
-    let message = `🔄 <b>Изменение статуса тендера</b>\n\n`;
-    message += `${tender.name}\n\n`;
-    message += `Было: ${oldStatus}\n`;
-    message += `Стало: <b>${newStatus}</b>`;
+    // Отправляем умное уведомление в зависимости от статуса
+    console.log('📤 Отправляю уведомление для статуса:', newStatus);
+    
+    let message = '';
+    
+    // Умные уведомления для каждого статуса
+    if (newStatus === 'подано') {
+      message = `<b>📤 Заявка подана!</b>\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━\n`;
+      message += `<b>📌 ${tender.name}</b>\n\n`;
+      
+      if (tender.start_price && tender.submitted_price) {
+        const savings = calculateSavings(tender.start_price, tender.submitted_price);
+        message += `💵 Начальная: <code>${formatPrice(tender.start_price)}</code>\n`;
+        message += `💸 Наша цена: <code>${formatPrice(tender.submitted_price)}</code>\n`;
+        message += `<b>📊 Экономия: ${formatPrice(savings.amount)}</b> (-${savings.percent.toFixed(1)}%)\n\n`;
+      } else if (tender.submitted_price) {
+        message += `💸 Наша цена: <code>${formatPrice(tender.submitted_price)}</code>\n\n`;
+      }
+      
+      if (tender.submission_deadline) {
+        const daysLeft = getDaysUntilDeadline(tender.submission_deadline);
+        message += `⏰ Дедлайн: ${formatDate(tender.submission_deadline)} (${formatDaysLeft(daysLeft)})\n\n`;
+      }
+      
+      message += `Ждём результатов! 🤞`;
+      
+    } else if (newStatus === 'на рассмотрении') {
+      message = `<b>🔍 Тендер на рассмотрении</b>\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━\n`;
+      message += `<b>📌 ${tender.name}</b>\n\n`;
+      
+      if (tender.submission_date) {
+        message += `📅 Подано: ${formatDate(tender.submission_date)}\n`;
+      }
+      
+      if (tender.submission_deadline) {
+        const daysLeft = getDaysUntilDeadline(tender.submission_deadline);
+        message += `⏰ Дедлайн: ${formatDate(tender.submission_deadline)} (${formatDaysLeft(daysLeft)})\n`;
+      }
+      
+      if (tender.submitted_price) {
+        message += `💸 Наша цена: <code>${formatPrice(tender.submitted_price)}</code>\n`;
+      }
+      
+      message += `\nОжидаем решения заказчика...`;
+      
+    } else if (newStatus === 'в работе') {
+      message = `<b>⚙️ Работы начались</b>\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━\n`;
+      message += `<b>📌 ${tender.name}</b>\n\n`;
+      
+      const contractPrice = tender.win_price || tender.submitted_price;
+      if (contractPrice) {
+        message += `💰 Сумма контракта: <code>${formatPrice(contractPrice)}</code>\n`;
+      }
+      
+      if (tender.submission_date) {
+        message += `📅 Начало: ${formatDate(tender.submission_date)}\n`;
+      }
+      
+      message += `\nУдачи команде! 🚀`;
+      
+    } else if (newStatus === 'завершён') {
+      message = `<b>✅ Проект завершён!</b>\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━\n`;
+      message += `<b>📌 ${tender.name}</b>\n\n`;
+      
+      const contractPrice = tender.win_price || tender.submitted_price;
+      if (contractPrice) {
+        message += `💰 Контракт: <code>${formatPrice(contractPrice)}</code>\n`;
+        
+        // Получаем расходы из БД
+        if (tender.id) {
+          const expenses = await getTenderExpenses(tender.id);
+          if (expenses > 0) {
+            const profit = contractPrice - expenses;
+            const profitPercent = (profit / contractPrice) * 100;
+            message += `💸 Расходы: <code>${formatPrice(expenses)}</code>\n`;
+            message += `<b>💵 Прибыль: ${formatPrice(profit)}</b> (${profitPercent.toFixed(1)}%)\n`;
+          }
+        }
+      }
+      
+      message += `\n🎊 ОТЛИЧНАЯ РАБОТА! 🎊`;
+      
+    } else {
+      // Для остальных статусов - обычное уведомление
+      message = `<b>🔄 Изменение статуса</b>\n\n`;
+      message += `━━━━━━━━━━━━━━━━━━\n`;
+      message += `<b>📌 ${tender.name}</b>\n\n`;
+      message += `Было: ${oldStatus}\n`;
+      message += `Стало: <b>${newStatus}</b>`;
+    }
 
     const sendPromises = settings.recipients.map((telegramId: string) =>
-      sendTelegramMessage(telegramId, message)
+      sendTelegramMessage(telegramId, message, {
+        reply_markup: {
+          inline_keyboard: [[
+            { text: '🌐 Открыть в CRM', url: `https://ip-mauve-pi.vercel.app/tenders` }
+          ]]
+        }
+      })
     );
 
     await Promise.all(sendPromises);
