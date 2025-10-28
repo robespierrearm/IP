@@ -34,6 +34,10 @@ const TelegramPanel = dynamic(() => import('@/components/TelegramPanel').then(mo
   loading: () => <div className="p-4 text-center text-gray-500">Загрузка...</div>,
 });
 
+const TelegramNotifications = dynamic(() => import('@/components/TelegramNotifications').then(mod => ({ default: mod.TelegramNotifications })), {
+  loading: () => <div className="p-4 text-center text-gray-500">Загрузка...</div>,
+});
+
 export default function AdminPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -44,7 +48,7 @@ export default function AdminPage() {
   const [filterActionType, setFilterActionType] = useState('all');
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-  const [activePanel, setActivePanel] = useState<'users' | 'files' | 'telegram'>('users');
+  const [activePanel, setActivePanel] = useState<'users' | 'files' | 'telegram' | 'notifications'>('users');
   
   const [newUser, setNewUser] = useState<UserInsert>({
     username: '',
@@ -349,15 +353,33 @@ export default function AdminPage() {
               setIsPanelOpen(true);
             }}
           >
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-green-50">
-                <Send className="h-8 w-8 text-green-600" />
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <Send className="h-6 w-6 text-green-600" />
               </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Telegram</h3>
-                <p className="text-sm text-gray-600 mt-0.5">Подключение бота</p>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Telegram Бот</h3>
             </div>
+            <p className="text-sm text-gray-600">
+              Подключение и управление Telegram ботом
+            </p>
+          </Card>
+
+          <Card 
+            className="p-6 cursor-pointer transition-all hover:shadow-lg hover:-translate-y-1 border-2 border-orange-200 bg-white"
+            onClick={() => {
+              setActivePanel('notifications');
+              setIsPanelOpen(true);
+            }}
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Users className="h-6 w-6 text-orange-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900">Уведомления</h3>
+            </div>
+            <p className="text-sm text-gray-600">
+              Настройка уведомлений в Telegram
+            </p>
           </Card>
         </div>
       </div>
@@ -392,23 +414,27 @@ export default function AdminPage() {
                   ? 'bg-gradient-to-r from-blue-50 to-white' 
                   : activePanel === 'files'
                   ? 'bg-gradient-to-r from-purple-50 to-white'
-                  : 'bg-gradient-to-r from-green-50 to-white'
+                  : activePanel === 'telegram'
+                  ? 'bg-gradient-to-r from-green-50 to-white'
+                  : 'bg-gradient-to-r from-orange-50 to-white'
               }`}>
                 <div className="flex items-center gap-3">
                   <div className={`p-2 rounded-lg ${
-                    activePanel === 'users' ? 'bg-blue-100' : activePanel === 'files' ? 'bg-purple-100' : 'bg-green-100'
+                    activePanel === 'users' ? 'bg-blue-100' : activePanel === 'files' ? 'bg-purple-100' : activePanel === 'telegram' ? 'bg-green-100' : 'bg-orange-100'
                   }`}>
                     {activePanel === 'users' ? (
                       <Users className="h-5 w-5 text-blue-600" />
                     ) : activePanel === 'files' ? (
                       <FolderOpen className="h-5 w-5 text-purple-600" />
-                    ) : (
+                    ) : activePanel === 'telegram' ? (
                       <Send className="h-5 w-5 text-green-600" />
+                    ) : (
+                      <Users className="h-5 w-5 text-orange-600" />
                     )}
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">
-                      {activePanel === 'users' ? 'Пользователи и журнал' : activePanel === 'files' ? 'Файловая система' : 'Telegram Бот'}
+                      {activePanel === 'users' ? 'Пользователи и журнал' : activePanel === 'files' ? 'Файловая система' : activePanel === 'telegram' ? 'Telegram Бот' : 'Уведомления'}
                     </h2>
                     {activePanel === 'users' && selectedUser && (
                       <p className="text-xs text-gray-600 mt-0.5">Журнал: {selectedUser.username}</p>
@@ -437,6 +463,10 @@ export default function AdminPage() {
                 ) : activePanel === 'telegram' ? (
                   <div className="w-full p-6 overflow-y-auto">
                     <TelegramPanel isActive={activePanel === 'telegram'} />
+                  </div>
+                ) : activePanel === 'notifications' ? (
+                  <div className="w-full p-6 overflow-y-auto">
+                    <TelegramNotifications />
                   </div>
                 ) : (
                   <>

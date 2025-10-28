@@ -136,7 +136,7 @@ function TendersContent() {
     };
 
     try {
-      await createTenderMutation.mutateAsync(payload);
+      const result = await createTenderMutation.mutateAsync(payload);
       
       // Логируем добавление тендера
       await logActivity(
@@ -149,6 +149,15 @@ function TendersContent() {
           start_price: tender.start_price
         }
       );
+
+      // Отправляем уведомления в Telegram
+      try {
+        const { notifyNewTender } = await import('@/lib/telegram-notifications');
+        await notifyNewTender(payload);
+      } catch (notifyError) {
+        console.error('Ошибка отправки уведомления:', notifyError);
+        // Не блокируем основной процесс если уведомление не отправилось
+      }
       
       setIsAddDialogOpen(false);
       // Кэш обновится автоматически!
