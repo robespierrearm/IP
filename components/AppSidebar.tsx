@@ -42,11 +42,6 @@ const menuItems = [
     icon: FileText,
   },
   {
-    title: 'Парсер',
-    href: '/parser',
-    icon: Zap,
-  },
-  {
     title: 'Поставщики',
     href: '/suppliers',
     icon: Users,
@@ -70,6 +65,11 @@ const menuItems = [
     title: 'Админка',
     href: '/admin',
     icon: Settings,
+  },
+  {
+    title: 'Парсер',
+    href: '/parser',
+    icon: Zap,
   },
 ];
 
