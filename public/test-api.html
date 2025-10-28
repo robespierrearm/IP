@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тест API</title>
+</head>
+<body>
+    <h1>Тест API Bookmarklet</h1>
+    <button onclick="testAPI()">Проверить API</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testAPI() {
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Отправляю запрос...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/bookmarklet-parse', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        html: '<h1>Строительство школы</h1><p>Номер: 01234567890123456789</p><p>Цена: 5000000 руб</p>',
+                        url: 'http://test.com'
+                    })
+                });
+                
+                const data = await response.json();
+                resultEl.textContent = 'Ответ:\n' + JSON.stringify(data, null, 2);
+            } catch (err) {
+                resultEl.textContent = 'Ошибка:\n' + err.message + '\n\n' + err.stack;
+            }
+        }
+    </script>
+</body>
+</html>
