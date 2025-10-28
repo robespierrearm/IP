@@ -174,11 +174,12 @@ export async function notifyStatusChange(tender: any, oldStatus: string, newStat
       .eq('id', 1)
       .single();
 
-    if (!settings || !settings.notify_status_change || settings.recipients.length === 0) {
+    if (!settings || settings.recipients.length === 0) {
       return;
     }
 
-    // Проверяем на победу или проигрыш
+    // ПРИОРИТЕТ 1: Специфичные уведомления (Победа/Проигрыш)
+    // Если есть специальная галочка для этого статуса - используем её
     if (newStatus === 'победа' && settings.notify_won) {
       return notifyTenderWon(tender);
     }
@@ -187,7 +188,13 @@ export async function notifyStatusChange(tender: any, oldStatus: string, newStat
       return notifyTenderLost(tender);
     }
 
-    // Обычное изменение статуса
+    // ПРИОРИТЕТ 2: Общее уведомление об изменении
+    // Если нет специальной галочки, проверяем общую
+    if (!settings.notify_status_change) {
+      return; // Общие уведомления выключены
+    }
+
+    // Отправляем обычное уведомление об изменении статуса
     let message = `🔄 <b>Изменение статуса тендера</b>\n\n`;
     message += `${tender.name}\n\n`;
     message += `Было: ${oldStatus}\n`;
