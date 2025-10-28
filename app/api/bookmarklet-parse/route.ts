@@ -2,15 +2,28 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // API для bookmarklet - парсинг через ИИ
 
+// Добавляем CORS для работы с bookmarklet на любых сайтах
+function addCorsHeaders(response: NextResponse) {
+  response.headers.set('Access-Control-Allow-Origin', '*');
+  response.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  return response;
+}
+
+// OPTIONS для preflight запросов
+export async function OPTIONS() {
+  return addCorsHeaders(new NextResponse(null, { status: 204 }));
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { html, url } = await request.json();
 
     if (!html) {
-      return NextResponse.json(
+      return addCorsHeaders(NextResponse.json(
         { error: 'HTML обязателен' },
         { status: 400 }
-      );
+      ));
     }
 
     // Очищаем HTML
@@ -96,7 +109,7 @@ ${cleanedHtml}`;
       throw new Error('Не найдено название тендера');
     }
 
-    return NextResponse.json({
+    return addCorsHeaders(NextResponse.json({
       success: true,
       data: {
         name: parsedData.name || '',
@@ -107,13 +120,13 @@ ${cleanedHtml}`;
         submission_deadline: parsedData.submission_deadline || '',
         start_price: parsedData.start_price || null,
       }
-    });
+    }));
 
   } catch (error: any) {
     console.error('Bookmarklet parse error:', error);
-    return NextResponse.json(
+    return addCorsHeaders(NextResponse.json(
       { error: error.message || 'Ошибка парсинга' },
       { status: 500 }
-    );
+    ));
   }
 }
