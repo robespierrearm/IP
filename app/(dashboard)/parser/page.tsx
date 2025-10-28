@@ -79,11 +79,27 @@ export default function ParserPage() {
           </m.div>
         </div>
 
+        {/* Большая кнопка для установки */}
+        <Card className="p-8 shadow-xl border-2 border-green-100 bg-gradient-to-br from-green-50 to-emerald-50">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">🚀 Установить Bookmarklet</h2>
+            <p className="text-gray-600 mb-6">Нажмите кнопку ниже для перехода на страницу установки</p>
+            <a 
+              href="/parser.html" 
+              target="_blank"
+              className="inline-block px-12 py-6 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold text-xl rounded-full shadow-xl hover:shadow-2xl transition-all transform hover:scale-105"
+            >
+              📋 Перейти к установке →
+            </a>
+            <p className="text-sm text-gray-500 mt-4">Откроется в новой вкладке</p>
+          </div>
+        </Card>
+
         {/* Инструкция */}
         <Card className="p-8 shadow-xl border-2 border-blue-100">
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
             <Sparkles className="h-6 w-6 text-blue-600" />
-            Как установить
+            Как это работает
           </h2>
 
           <div className="space-y-6">
