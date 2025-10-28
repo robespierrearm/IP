@@ -93,7 +93,9 @@ export function TelegramNotifications() {
   const handleSave = async () => {
     setIsSaving(true);
 
-    const { error } = await supabase
+    console.log('💾 Сохраняю настройки:', settings);
+
+    const { data, error } = await supabase
       .from('telegram_notification_settings')
       .update({
         recipients: settings.recipients,
@@ -104,13 +106,17 @@ export function TelegramNotifications() {
         notify_status_change: settings.notify_status_change,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', 1);
+      .eq('id', 1)
+      .select();
 
     if (error) {
       toast.error('Ошибка при сохранении настроек');
-      console.error(error);
+      console.error('❌ Ошибка сохранения:', error);
     } else {
+      console.log('✅ Настройки сохранены:', data);
       toast.success('Настройки сохранены!');
+      // Перезагружаем данные для проверки
+      await loadData();
     }
 
     setIsSaving(false);
