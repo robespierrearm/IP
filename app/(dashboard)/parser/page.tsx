@@ -84,7 +84,7 @@ export default function ParserPage() {
           </h2>
 
           <div className="space-y-6">
-            {/* Шаг 1 */}
+            {/* Шаг 1 - DRAG & DROP */}
             <m.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -94,23 +94,48 @@ export default function ParserPage() {
                 1
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-2">Скопируйте код bookmarklet</h3>
-                <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-3 relative">
-                  <code className="text-xs text-gray-700 break-all">
-                    {bookmarkletCode.substring(0, 100)}...
-                  </code>
-                  <Button
-                    onClick={handleCopyBookmarklet}
-                    size="sm"
-                    className="absolute top-2 right-2"
+                <h3 className="font-semibold text-gray-900 mb-3">Перетащите кнопку в закладки</h3>
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border-2 border-blue-200 text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    👇 Просто зажмите эту кнопку мышкой и перетащите на панель закладок вашего браузера
+                  </p>
+                  <a 
+                    href={bookmarkletCode}
+                    className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold text-lg rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 cursor-move"
+                    draggable="true"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      alert('⚠️ Не нажимайте!\n\nПеретащите эту кнопку на панель закладок вашего браузера (обычно вверху)');
+                    }}
                   >
-                    {copied ? (
-                      <><CheckCircle className="h-4 w-4 mr-2" /> Скопировано</>
-                    ) : (
-                      <><Copy className="h-4 w-4 mr-2" /> Копировать</>
-                    )}
-                  </Button>
+                    📋→CRM
+                  </a>
+                  <p className="text-xs text-gray-500 mt-4">
+                    ⬆️ Зажмите и тащите вверх на панель закладок
+                  </p>
                 </div>
+                
+                <details className="mt-4">
+                  <summary className="cursor-pointer text-sm text-blue-600 hover:text-blue-800">
+                    Или скопируйте код вручную (альтернативный способ)
+                  </summary>
+                  <div className="mt-3 bg-gray-50 p-4 rounded-lg border border-gray-200 relative">
+                    <code className="text-xs text-gray-700 break-all">
+                      {bookmarkletCode.substring(0, 100)}...
+                    </code>
+                    <Button
+                      onClick={handleCopyBookmarklet}
+                      size="sm"
+                      className="absolute top-2 right-2"
+                    >
+                      {copied ? (
+                        <><CheckCircle className="h-4 w-4 mr-2" /> Скопировано</>
+                      ) : (
+                        <><Copy className="h-4 w-4 mr-2" /> Копировать</>
+                      )}
+                    </Button>
+                  </div>
+                </details>
               </div>
             </m.div>
 
@@ -121,30 +146,8 @@ export default function ParserPage() {
               transition={{ delay: 0.1 }}
               className="flex gap-4"
             >
-              <div className="flex-shrink-0 w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center font-bold">
-                2
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-gray-900 mb-2">Создайте закладку в браузере</h3>
-                <ul className="list-disc list-inside space-y-2 text-gray-600 text-sm">
-                  <li>Откройте менеджер закладок (Ctrl+Shift+O или Cmd+Shift+O)</li>
-                  <li>Создайте новую закладку</li>
-                  <li>Название: <span className="font-mono bg-gray-100 px-2 py-1 rounded">📋→CRM</span></li>
-                  <li>URL: Вставьте скопированный код</li>
-                  <li>Сохраните</li>
-                </ul>
-              </div>
-            </m.div>
-
-            {/* Шаг 3 */}
-            <m.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex gap-4"
-            >
               <div className="flex-shrink-0 w-10 h-10 bg-green-600 text-white rounded-full flex items-center justify-center font-bold">
-                3
+                2
               </div>
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900 mb-2">Используйте на тендерных площадках</h3>
