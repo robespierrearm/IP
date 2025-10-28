@@ -69,28 +69,44 @@ function TendersContent() {
     if (actionParam === 'add-from-parser') {
       console.log('✅ Action is add-from-parser');
       
-      const savedData = localStorage.getItem('parsedTender');
-      console.log('📦 Saved data from localStorage:', savedData);
+      // СНАЧАЛА пробуем получить из URL параметра
+      const dataParam = searchParams.get('data');
+      console.log('📋 Data param from URL:', dataParam ? 'exists' : 'not found');
       
-      if (savedData) {
+      let parsedData = null;
+      
+      if (dataParam) {
         try {
-          const data = JSON.parse(savedData);
-          console.log('✅ Parsed data:', data);
-          
-          setBookmarkletData(data);
-          setIsAddDialogOpen(true);
-          
-          console.log('✅ Dialog should open now');
-          
-          // Очищаем после небольшой задержки
-          setTimeout(() => {
-            localStorage.removeItem('parsedTender');
-          }, 1000);
+          parsedData = JSON.parse(decodeURIComponent(dataParam));
+          console.log('✅ Parsed data from URL:', parsedData);
         } catch (error) {
-          console.error('❌ Error parsing bookmarklet data:', error);
+          console.error('❌ Error parsing URL data:', error);
         }
+      }
+      
+      // Если не получили из URL, пробуем localStorage
+      if (!parsedData) {
+        const savedData = localStorage.getItem('parsedTender');
+        console.log('📦 Trying localStorage:', savedData ? 'exists' : 'not found');
+        
+        if (savedData) {
+          try {
+            parsedData = JSON.parse(savedData);
+            console.log('✅ Parsed data from localStorage:', parsedData);
+            localStorage.removeItem('parsedTender');
+          } catch (error) {
+            console.error('❌ Error parsing localStorage data:', error);
+          }
+        }
+      }
+      
+      // Если получили данные - открываем форму
+      if (parsedData) {
+        setBookmarkletData(parsedData);
+        setIsAddDialogOpen(true);
+        console.log('✅ Dialog opened with data:', parsedData);
       } else {
-        console.log('❌ No saved data in localStorage');
+        console.log('❌ No data found anywhere!');
       }
     }
   }, [searchParams]);
