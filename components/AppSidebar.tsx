@@ -23,6 +23,7 @@ import {
   FolderOpen,
   MessageSquare,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -39,6 +40,11 @@ const menuItems = [
     title: 'Тендеры',
     href: '/tenders',
     icon: FileText,
+  },
+  {
+    title: 'Парсер',
+    href: '/parser',
+    icon: Zap,
   },
   {
     title: 'Поставщики',
