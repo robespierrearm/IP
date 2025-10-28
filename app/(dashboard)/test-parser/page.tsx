@@ -25,6 +25,7 @@ export default function TestParserPage() {
   const [isParsing, setIsParsing] = useState(false);
   const [parsedData, setParsedData] = useState<ParsedTender | null>(null);
   const [error, setError] = useState('');
+  const [errorHint, setErrorHint] = useState('');
   const [useMode, setUseMode] = useState<'url' | 'html'>('url');
 
   // Парсинг через ИИ
@@ -41,6 +42,7 @@ export default function TestParserPage() {
 
     setIsParsing(true);
     setError('');
+    setErrorHint('');
     setParsedData(null);
 
     try {
@@ -56,14 +58,25 @@ export default function TestParserPage() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Ошибка парсинга');
+        const errorMsg = result.error || 'Ошибка парсинга';
+        const hint = result.hint || '';
+        
+        setError(errorMsg);
+        setErrorHint(hint);
+        toast.error('Ошибка парсинга', { 
+          description: errorMsg,
+          duration: 8000 
+        });
+        throw new Error(errorMsg);
       }
 
       setParsedData(result.data);
       toast.success('✅ Тендер успешно распознан!');
     } catch (err: any) {
-      setError(err.message);
-      toast.error('Ошибка', { description: err.message });
+      if (!error) { // Только если ещё не установлена ошибка выше
+        setError(err.message);
+        toast.error('Ошибка', { description: err.message });
+      }
     } finally {
       setIsParsing(false);
     }
@@ -190,12 +203,24 @@ export default function TestParserPage() {
 
               {/* Ошибка */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
-                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-medium text-red-900">Ошибка парсинга</p>
-                    <p className="text-xs text-red-700 mt-1">{error}</p>
+                <div className="space-y-3">
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-medium text-red-900">Ошибка парсинга</p>
+                      <p className="text-xs text-red-700 mt-1">{error}</p>
+                    </div>
                   </div>
+                  
+                  {errorHint && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-3">
+                      <Sparkles className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-medium text-blue-900">💡 Как исправить:</p>
+                        <p className="text-xs text-blue-700 mt-1 whitespace-pre-line">{errorHint}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
