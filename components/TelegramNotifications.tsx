@@ -19,7 +19,6 @@ interface NotificationSettings {
   notify_new_tender: boolean;
   notify_won: boolean;
   notify_lost: boolean;
-  notify_deadline_24h: boolean;
   notify_status_change: boolean;
 }
 
@@ -30,7 +29,6 @@ export function TelegramNotifications() {
     notify_new_tender: true,
     notify_won: true,
     notify_lost: false,
-    notify_deadline_24h: true,
     notify_status_change: false,
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +69,6 @@ export function TelegramNotifications() {
           notify_new_tender: true,
           notify_won: true,
           notify_lost: false,
-          notify_deadline_24h: true,
           notify_status_change: false,
         })
         .select()
@@ -91,7 +88,6 @@ export function TelegramNotifications() {
         notify_new_tender: settingsData.notify_new_tender,
         notify_won: settingsData.notify_won,
         notify_lost: settingsData.notify_lost,
-        notify_deadline_24h: settingsData.notify_deadline_24h,
         notify_status_change: settingsData.notify_status_change,
       });
     }
@@ -127,7 +123,6 @@ export function TelegramNotifications() {
         notify_new_tender: settings.notify_new_tender,
         notify_won: settings.notify_won,
         notify_lost: settings.notify_lost,
-        notify_deadline_24h: settings.notify_deadline_24h,
         notify_status_change: settings.notify_status_change,
         updated_at: new Date().toISOString(),
       })
@@ -226,8 +221,8 @@ export function TelegramNotifications() {
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">📋 Новый тендер добавлен</div>
-                <div className="text-sm text-gray-500">Уведомление при добавлении тендера в систему</div>
+                <div className="font-medium text-gray-900">📋 Новый тендер</div>
+                <div className="text-sm text-gray-500">При добавлении нового тендера</div>
               </div>
             </label>
 
@@ -239,8 +234,8 @@ export function TelegramNotifications() {
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">🎉 Победа в тендере</div>
-                <div className="text-sm text-gray-500">Когда статус меняется на "Победа"</div>
+                <div className="font-medium text-gray-900">🎉 Победа</div>
+                <div className="text-sm text-gray-500">Когда статус становится "Победа"</div>
               </div>
             </label>
 
@@ -252,21 +247,8 @@ export function TelegramNotifications() {
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">😔 Проигрыш в тендере</div>
-                <div className="text-sm text-gray-500">Когда статус меняется на "Проигрыш"</div>
-              </div>
-            </label>
-
-            <label className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors">
-              <input
-                type="checkbox"
-                checked={settings.notify_deadline_24h}
-                onChange={() => handleNotificationToggle('notify_deadline_24h')}
-                className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-              />
-              <div className="flex-1">
-                <div className="font-medium text-gray-900">⏰ Дедлайн через 24 часа</div>
-                <div className="text-sm text-gray-500">Напоминание за день до дедлайна</div>
+                <div className="font-medium text-gray-900">😔 Проигрыш</div>
+                <div className="text-sm text-gray-500">Когда статус становится "Проигрыш"</div>
               </div>
             </label>
 
@@ -278,8 +260,8 @@ export function TelegramNotifications() {
                 className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
               />
               <div className="flex-1">
-                <div className="font-medium text-gray-900">🔄 Любое изменение статуса</div>
-                <div className="text-sm text-gray-500">При любом изменении статуса тендера</div>
+                <div className="font-medium text-gray-900">🔄 Другие изменения</div>
+                <div className="text-sm text-gray-500">При изменении на другие статусы (кроме Победы/Проигрыша)</div>
               </div>
             </label>
           </div>
