@@ -54,11 +54,36 @@ export function TelegramNotifications() {
     }
 
     // Загружаем настройки
-    const { data: settingsData } = await supabase
+    let { data: settingsData, error: settingsError } = await supabase
       .from('telegram_notification_settings')
       .select('*')
       .eq('id', 1)
-      .single();
+      .maybeSingle(); // Используем maybeSingle вместо single
+    
+    // Если настроек нет - создаём
+    if (!settingsData) {
+      console.log('📝 Настроек нет, создаю...');
+      const { data: newSettings, error: insertError } = await supabase
+        .from('telegram_notification_settings')
+        .insert({
+          id: 1,
+          recipients: [],
+          notify_new_tender: true,
+          notify_won: true,
+          notify_lost: false,
+          notify_deadline_24h: true,
+          notify_status_change: false,
+        })
+        .select()
+        .single();
+      
+      if (insertError) {
+        console.error('❌ Ошибка создания настроек:', insertError);
+      } else {
+        settingsData = newSettings;
+        console.log('✅ Настройки созданы:', settingsData);
+      }
+    }
     
     if (settingsData) {
       setSettings({
