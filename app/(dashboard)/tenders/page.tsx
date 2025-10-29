@@ -136,10 +136,14 @@ function TendersContent() {
     };
 
     try {
+      // Добавляем тендер в БД
       const result = await createTenderMutation.mutateAsync(payload);
       
-      // Логируем добавление тендера
-      await logActivity(
+      // СРАЗУ закрываем диалог (не ждём логирования и уведомлений!)
+      setIsAddDialogOpen(false);
+      
+      // Логирование и уведомления - в фоне (не блокируют UI)
+      logActivity(
         `Добавлен тендер: ${tender.name}`,
         ACTION_TYPES.TENDER_ADD,
         { 
@@ -148,18 +152,13 @@ function TendersContent() {
           status: tender.status,
           start_price: tender.start_price
         }
-      );
+      ).catch(err => console.error('Ошибка логирования:', err));
 
-      // Отправляем уведомления в Telegram
-      try {
-        const { notifyNewTender } = await import('@/lib/telegram-notifications');
-        await notifyNewTender(payload);
-      } catch (notifyError) {
-        console.error('Ошибка отправки уведомления:', notifyError);
-        // Не блокируем основной процесс если уведомление не отправилось
-      }
+      // Отправляем уведомления в Telegram (в фоне)
+      import('@/lib/telegram-notifications')
+        .then(({ notifyNewTender }) => notifyNewTender(payload))
+        .catch(err => console.error('Ошибка отправки уведомления:', err));
       
-      setIsAddDialogOpen(false);
       // Кэш обновится автоматически!
     } catch (error: any) {
       console.error('Ошибка добавления тендера:', error);
