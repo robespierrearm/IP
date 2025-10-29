@@ -123,10 +123,10 @@ export function useCreateTender() {
       
       return result.data;
     },
-    onSuccess: () => {
-      // Инвалидируем ВСЕ запросы тендеров
-      queryClient.invalidateQueries({ queryKey: queryKeys.tenders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    onSuccess: async () => {
+      // НЕМЕДЛЕННО перезагружаем данные (не ждем следующего рендера!)
+      await queryClient.refetchQueries({ queryKey: queryKeys.tenders.all });
+      await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
     },
   });
 }
@@ -144,11 +144,11 @@ export function useUpdateTender() {
       
       return result.data;
     },
-    onSuccess: (_, variables) => {
-      // Инвалидируем конкретный тендер и списки
-      queryClient.invalidateQueries({ queryKey: queryKeys.tenders.detail(variables.id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tenders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    onSuccess: async (_, variables) => {
+      // НЕМЕДЛЕННО перезагружаем данные
+      await queryClient.refetchQueries({ queryKey: queryKeys.tenders.detail(variables.id) });
+      await queryClient.refetchQueries({ queryKey: queryKeys.tenders.all });
+      await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
     },
   });
 }
@@ -166,11 +166,10 @@ export function useDeleteTender() {
       
       return result.data;
     },
-    onSuccess: (_, id) => {
-      // Удаляем из кэша
-      queryClient.removeQueries({ queryKey: queryKeys.tenders.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.tenders.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.dashboard });
+    onSuccess: async () => {
+      // НЕМЕДЛЕННО перезагружаем данные
+      await queryClient.refetchQueries({ queryKey: queryKeys.tenders.all });
+      await queryClient.refetchQueries({ queryKey: queryKeys.dashboard });
     },
   });
 }
@@ -212,8 +211,9 @@ export function useCreateSupplier() {
       
       return result.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all });
+    onSuccess: async () => {
+      // НЕМЕДЛЕННО перезагружаем данные
+      await queryClient.refetchQueries({ queryKey: queryKeys.suppliers.all });
     },
   });
 }
@@ -231,9 +231,10 @@ export function useUpdateSupplier() {
       
       return result.data;
     },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.detail(variables.id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all });
+    onSuccess: async (_, variables) => {
+      // НЕМЕДЛЕННО перезагружаем данные
+      await queryClient.refetchQueries({ queryKey: queryKeys.suppliers.detail(variables.id) });
+      await queryClient.refetchQueries({ queryKey: queryKeys.suppliers.all });
     },
   });
 }
@@ -251,9 +252,10 @@ export function useDeleteSupplier() {
       
       return result.data;
     },
-    onSuccess: (_, id) => {
+    onSuccess: async (_, id) => {
+      // Удаляем из кэша и перезагружаем список
       queryClient.removeQueries({ queryKey: queryKeys.suppliers.detail(id) });
-      queryClient.invalidateQueries({ queryKey: queryKeys.suppliers.all });
+      await queryClient.refetchQueries({ queryKey: queryKeys.suppliers.all });
     },
   });
 }

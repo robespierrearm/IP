@@ -492,16 +492,14 @@ function TendersContent() {
               return (
                 <m.div
                   key={tender.id}
-                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
                   transition={{ 
                     type: "spring",
-                    stiffness: 260,
-                    damping: 20,
-                    delay: index * 0.03
+                    stiffness: 300,
+                    damping: 25,
                   }}
-                  layout
                 >
                   <TenderCardULTIMATE
                     tender={tender}
@@ -517,16 +515,14 @@ function TendersContent() {
             return (
             <m.div
               key={tender.id}
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
               transition={{ 
                 type: "spring",
-                stiffness: 260,
-                damping: 20,
-                delay: index * 0.03
+                stiffness: 300,
+                damping: 25,
               }}
-              layout
             >
             <Card 
               className={`p-4 hover:shadow-xl hover:scale-[1.005] transition-all duration-200 cursor-pointer border-l-4 ${

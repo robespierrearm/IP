@@ -203,16 +203,14 @@ export default function SuppliersPage() {
             {filteredSuppliers.map((supplier, index) => (
               <motion.div
                 key={supplier.id}
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
                 transition={{ 
                   type: "spring",
-                  stiffness: 260,
-                  damping: 20,
-                  delay: index * 0.03
+                  stiffness: 300,
+                  damping: 25,
                 }}
-                layout
                 className="grid grid-cols-[2.5fr_1.5fr_2fr_2fr_2.5fr_110px] gap-6 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
               >
                 {/* Компания */}
